@@ -1,0 +1,55 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.RADIOLOGIE_ROLES = exports.LABORATOIRE_ROLES = exports.PHARMACIE_ROLES = exports.PATIENT_ROLES = exports.MEDECIN_ROLES = exports.UserRole = void 0;
+var UserRole;
+(function (UserRole) {
+    UserRole["PATIENT"] = "PATIENT";
+    UserRole["PATIENT_TUTEUR"] = "PATIENT_TUTEUR";
+    UserRole["PATIENT_PROTEGE"] = "PATIENT_PROTEGE";
+    UserRole["MEDECIN_GENERALISTE"] = "MEDECIN_GENERALISTE";
+    UserRole["MEDECIN_SPECIALISTE"] = "MEDECIN_SPECIALISTE";
+    UserRole["MEDECIN_CHEF_SERVICE"] = "MEDECIN_CHEF_SERVICE";
+    UserRole["MEDECIN_URGENTISTE"] = "MEDECIN_URGENTISTE";
+    UserRole["ASSISTANT_MEDICAL"] = "ASSISTANT_MEDICAL";
+    UserRole["SECRETAIRE_MEDICAL"] = "SECRETAIRE_MEDICAL";
+    UserRole["PHARMACIEN_TITULAIRE"] = "PHARMACIEN_TITULAIRE";
+    UserRole["PHARMACIEN_ADJOINT"] = "PHARMACIEN_ADJOINT";
+    UserRole["PREPARATEUR_PHARMACIE"] = "PREPARATEUR_PHARMACIE";
+    UserRole["BIOLOGISTE"] = "BIOLOGISTE";
+    UserRole["TECHNICIEN_LABO"] = "TECHNICIEN_LABO";
+    UserRole["PRELEVEUR"] = "PRELEVEUR";
+    UserRole["SECRETAIRE_LABO"] = "SECRETAIRE_LABO";
+    UserRole["RADIOLOGUE"] = "RADIOLOGUE";
+    UserRole["MANIPULATEUR_RADIO"] = "MANIPULATEUR_RADIO";
+    UserRole["SECRETAIRE_RADIO"] = "SECRETAIRE_RADIO";
+    UserRole["ADMIN_SYSTEM"] = "ADMIN_SYSTEM";
+    UserRole["SUPPORT"] = "SUPPORT";
+})(UserRole || (exports.UserRole = UserRole = {}));
+exports.MEDECIN_ROLES = [
+    UserRole.MEDECIN_GENERALISTE,
+    UserRole.MEDECIN_SPECIALISTE,
+    UserRole.MEDECIN_CHEF_SERVICE,
+    UserRole.MEDECIN_URGENTISTE,
+];
+exports.PATIENT_ROLES = [
+    UserRole.PATIENT,
+    UserRole.PATIENT_TUTEUR,
+    UserRole.PATIENT_PROTEGE,
+];
+exports.PHARMACIE_ROLES = [
+    UserRole.PHARMACIEN_TITULAIRE,
+    UserRole.PHARMACIEN_ADJOINT,
+    UserRole.PREPARATEUR_PHARMACIE,
+];
+exports.LABORATOIRE_ROLES = [
+    UserRole.BIOLOGISTE,
+    UserRole.TECHNICIEN_LABO,
+    UserRole.PRELEVEUR,
+    UserRole.SECRETAIRE_LABO,
+];
+exports.RADIOLOGIE_ROLES = [
+    UserRole.RADIOLOGUE,
+    UserRole.MANIPULATEUR_RADIO,
+    UserRole.SECRETAIRE_RADIO,
+];
+//# sourceMappingURL=user-role.enum.js.map

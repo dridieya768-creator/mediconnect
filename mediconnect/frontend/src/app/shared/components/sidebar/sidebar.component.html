@@ -1,0 +1,47 @@
+<aside class="sidebar" [style.--brand-color]="brandColor">
+  <div class="sidebar-logo">
+    <div class="logo-row">
+      <div class="logo-icon">{{ portalIcon }}</div>
+      <div>
+        <div class="logo-text">MediConnect</div>
+        <div class="logo-sub" *ngIf="establishmentName">{{ establishmentName }}</div>
+      </div>
+    </div>
+    <span class="role-badge">{{ portalName }}</span>
+  </div>
+
+  <div class="user-profile" *ngIf="currentUser() as user">
+    <div class="user-avatar">
+      {{ user.firstName[0] }}{{ user.lastName[0] }}
+    </div>
+    <div>
+      <div class="user-name">{{ user.firstName }} {{ user.lastName }}</div>
+      <div class="user-role">{{ user.role }}</div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <ng-container *ngFor="let section of navSections">
+      <div class="nav-section-label" *ngIf="section.label">{{ section.label }}</div>
+      <a
+        *ngFor="let item of section.items"
+        [routerLink]="item.route"
+        routerLinkActive="active"
+        class="nav-item"
+      >
+        <span class="nav-icon">{{ item.icon }}</span>
+        <span class="nav-label">{{ item.label }}</span>
+        <span class="nav-badge" *ngIf="item.badge"
+          [style.background]="item.badgeColor || 'var(--brand-color)'">
+          {{ item.badge }}
+        </span>
+      </a>
+    </ng-container>
+  </nav>
+
+  <div class="sidebar-footer">
+    <button class="logout-btn" (click)="logout()">
+      <span>🚪</span> Déconnexion
+    </button>
+  </div>
+</aside>

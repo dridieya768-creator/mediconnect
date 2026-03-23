@@ -1,0 +1,110 @@
+<div class="register-page">
+  <div class="register-card">
+    <div class="register-header">
+      <a routerLink="/auth/login" class="back-link">← Retour</a>
+      <div class="logo">🏥 MediConnect</div>
+      <h2>Créer un compte</h2>
+      <p>Rejoignez la plateforme e-Santé</p>
+    </div>
+
+    <div class="error-box" *ngIf="error">⚠️ {{ error }}</div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="register-form">
+
+      <div class="form-row">
+        <div class="mc-form-group">
+          <label class="mc-label">Prénom</label>
+          <input class="mc-input" type="text" formControlName="firstName" placeholder="Ahmed">
+        </div>
+        <div class="mc-form-group">
+          <label class="mc-label">Nom</label>
+          <input class="mc-input" type="text" formControlName="lastName" placeholder="Mansouri">
+        </div>
+      </div>
+
+      <div class="mc-form-group">
+        <label class="mc-label">Email</label>
+        <input class="mc-input" type="email" formControlName="email" placeholder="votre&#64;email.com">
+      </div>
+
+      <div class="mc-form-group">
+        <label class="mc-label">Téléphone</label>
+        <input class="mc-input" type="tel" formControlName="phone" placeholder="+216 98 765 432">
+      </div>
+
+      <div class="mc-form-group">
+        <label class="mc-label">Rôle</label>
+        <select class="mc-input" formControlName="role">
+          <option value="" disabled>-- Sélectionnez votre rôle --</option>
+          <option *ngFor="let r of roles" [value]="r.value">{{ r.label }}</option>
+        </select>
+      </div>
+
+      <div class="mc-form-group specialite-field" *ngIf="isMedecinSpecialiste">
+        <label class="mc-label">
+          Spécialité médicale <span class="required-star">*</span>
+        </label>
+        <select class="mc-input" formControlName="specialite">
+          <option value="" disabled>-- Choisissez votre spécialité --</option>
+          <option *ngFor="let s of specialites" [value]="s.value">{{ s.label }}</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <div class="mc-form-group">
+          <label class="mc-label">Mot de passe</label>
+          <input class="mc-input" type="password" formControlName="password" placeholder="••••••••">
+        </div>
+        <div class="mc-form-group">
+          <label class="mc-label">Confirmer</label>
+          <input class="mc-input" type="password" formControlName="confirmPassword" placeholder="••••••••">
+        </div>
+      </div>
+
+      <!-- ── Documents médicaux ────────────────────────────────────── -->
+      <div class="docs-section" *ngIf="isMedecin">
+        <div class="docs-title">📋 Documents requis pour validation</div>
+        <p class="docs-subtitle">
+          Ces documents seront examinés par un administrateur avant l'activation de votre compte.
+        </p>
+
+        <div class="doc-upload-list">
+          <div class="doc-upload-item" *ngFor="let doc of requiredDocs">
+            <div class="doc-info">
+              <span class="doc-icon">{{ doc.icon }}</span>
+              <div>
+                <div class="doc-name">
+                  {{ doc.label }}
+                  <span class="required-star" *ngIf="doc.required">*</span>
+                </div>
+                <div class="doc-hint">PDF uniquement · max 5MB</div>
+              </div>
+            </div>
+            <div class="doc-upload-btn-wrap">
+              <input type="file" accept=".pdf"
+                     [id]="'file-' + doc.type"
+                     (change)="onFileSelected($event, doc.type)"
+                     style="display:none">
+              <label [for]="'file-' + doc.type"
+                     class="doc-btn"
+                     [class.uploaded]="uploadedFiles[doc.type]">
+                {{ uploadedFiles[doc.type]
+                   ? '✅ ' + uploadedFiles[doc.type].name
+                   : '📎 Choisir un fichier' }}
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="submit-btn" [disabled]="isLoading || form.invalid">
+        {{ isLoading ? "Création en cours..." : "Créer mon compte" }}
+      </button>
+
+    </form>
+
+    <div class="login-link">
+      Déjà un compte ? <a routerLink="/auth/login">Se connecter</a>
+    </div>
+  </div>
+</div>

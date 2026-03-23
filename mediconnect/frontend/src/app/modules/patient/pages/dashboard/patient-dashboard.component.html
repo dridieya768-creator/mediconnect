@@ -1,0 +1,150 @@
+<div class="page-header">
+  <h1 class="page-title">Bonjour, {{ currentUser()?.firstName }} 👋</h1>
+  <p class="page-subtitle">Votre tableau de bord santé — {{ today | date:'EEEE d MMMM yyyy':'':'fr' }}</p>
+</div>
+
+<!-- LOADING -->
+<div *ngIf="isLoading()" style="display:flex; justify-content:center; padding:60px;">
+  <div style="text-align:center; color:#64748b;">
+    <div style="font-size:40px; margin-bottom:12px;">⏳</div>
+    <p>Chargement de votre tableau de bord...</p>
+  </div>
+</div>
+
+<ng-container *ngIf="!isLoading()">
+
+  <!-- ALERT anomalie (affiché seulement si données anormales - à connecter plus tard) -->
+  <!-- <div class="mc-alert warning" style="margin-bottom: 24px;">
+    <span>⚠️</span>
+    <div><strong>Résultat anormal détecté</strong><br>Glycémie à jeun légèrement élevée — Consultez votre médecin</div>
+  </div> -->
+
+  <!-- STATS -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon" style="background: #f0fdfa; font-size: 24px;">📅</div>
+      <div class="stat-value" style="color: #0d9488;">{{ stats().appointments }}</div>
+      <div class="stat-label">Rendez-vous à venir</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background: #eff6ff; font-size: 24px;">💊</div>
+      <div class="stat-value" style="color: #3b82f6;">{{ stats().prescriptions }}</div>
+      <div class="stat-label">Ordonnances actives</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background: #f0fdf4; font-size: 24px;">🧪</div>
+      <div class="stat-value" style="color: #10b981;">{{ stats().analyses }}</div>
+      <div class="stat-label">Analyses disponibles</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background: #fffbeb; font-size: 24px;">📄</div>
+      <div class="stat-value" style="color: #f59e0b;">{{ stats().documents }}</div>
+      <div class="stat-label">Documents médicaux</div>
+    </div>
+  </div>
+
+  <div class="dashboard-grid">
+
+    <!-- APPOINTMENTS -->
+    <div class="mc-card">
+      <div class="mc-card-header">
+        <h3 class="mc-card-title">📅 Prochains rendez-vous</h3>
+        <a routerLink="/patient/rendez-vous/nouveau" class="btn-mc outline" style="font-size: 12px; padding: 6px 12px;">
+          + Prendre RDV
+        </a>
+      </div>
+
+      <!-- RDV réels -->
+      <div class="appointment-list" *ngIf="upcomingAppointments().length > 0">
+        <div class="appt-item" *ngFor="let appt of upcomingAppointments()">
+          <div class="appt-date">
+            <div class="appt-day">{{ formatDay(appt.appointmentDate) }}</div>
+            <div class="appt-month">{{ formatMonth(appt.appointmentDate) }}</div>
+          </div>
+          <div class="appt-info">
+            <div class="appt-doctor">Dr. {{ getDoctorName(appt) }}</div>
+            <div class="appt-spec">
+              {{ getSpecialty(appt) }}
+              <span *ngIf="isVideo(appt)"> — Téléconsultation</span>
+            </div>
+            <div class="appt-time">
+              {{ isVideo(appt) ? '💻' : '🕙' }} {{ formatTime(appt.appointmentDate) }}
+              <span *ngIf="appt.durationMinutes"> — {{ appt.durationMinutes }} min</span>
+            </div>
+          </div>
+          <span class="badge" [ngClass]="getStatusClass(appt.status)">
+            {{ getStatusLabel(appt.status) }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Aucun RDV -->
+      <div *ngIf="upcomingAppointments().length === 0"
+           style="text-align:center; padding:40px 20px; color:#94a3b8;">
+        <div style="font-size:48px; margin-bottom:12px;">📭</div>
+        <p style="margin:0 0 16px;">Aucun rendez-vous à venir</p>
+        <a routerLink="/patient/rendez-vous/nouveau" class="btn-mc primary" style="font-size:13px;">
+          + Prendre un rendez-vous
+        </a>
+      </div>
+    </div>
+
+    <!-- QR CODE -->
+    <div class="qr-section">
+      <div class="qr-card">
+        <div class="qr-title">🔐 Mon QR Code Patient</div>
+        <div class="qr-sub">Présentez ce code lors de vos consultations</div>
+
+        <div class="qr-display">
+          @if (qrCodeImage()) {
+            <img [src]="qrCodeImage()" alt="QR Code Patient" style="width:200px; height:200px; border-radius:8px;" />
+            <div style="font-size:11px; color:#64748b; margin-top:8px; letter-spacing:1px;">
+              {{ qrDisplayId() }}
+            </div>
+          } @else {
+            <div class="qr-placeholder">
+              <div style="font-size: 80px; margin-bottom: 8px;">📲</div>
+              <div style="font-size: 12px; color: #475569;">Chargement...</div>
+            </div>
+          }
+        </div>
+
+        <div class="qr-actions">
+          <button class="btn-mc primary" style="flex:1; justify-content:center;"
+                  (click)="downloadPdf()" [disabled]="!qrCodeImage()">
+            ⬇ Télécharger PDF
+          </button>
+          <button class="btn-mc outline" style="flex:1; justify-content:center;"
+                  (click)="printQr()" [disabled]="!qrCodeImage()">
+            🖨 Imprimer
+          </button>
+        </div>
+      </div>
+
+      <!-- Ordonnances actives -->
+      <div class="mc-card" style="margin-top:16px;" *ngIf="activePrescriptions().length > 0">
+        <div class="mc-card-header">
+          <h3 class="mc-card-title">💊 Ordonnances actives</h3>
+        </div>
+        <div *ngFor="let rx of activePrescriptions()"
+             style="display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid #f1f5f9;">
+          <span style="font-size:20px;">💊</span>
+          <div style="flex:1;">
+            <div style="font-size:13px; font-weight:600; color:#0f172a;">
+              {{ rx.medicationName || rx.medication || 'Médicament' }}
+            </div>
+            <div style="font-size:11px; color:#94a3b8;">
+              {{ rx.dosage || '' }}
+              <span *ngIf="rx.expiresAt"> — expire {{ rx.expiresAt | date:'dd MMM yyyy':'':'fr' }}</span>
+            </div>
+          </div>
+          <span style="padding:3px 10px; border-radius:20px; font-size:11px; font-weight:500; background:#f0fdf4; color:#10b981;">
+            Active
+          </span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</ng-container>

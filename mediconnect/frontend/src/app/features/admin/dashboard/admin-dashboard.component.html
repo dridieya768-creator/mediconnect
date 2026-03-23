@@ -1,0 +1,362 @@
+<!-- TOAST -->
+<div class="mc-toast" *ngIf="toast()" [class.error]="toast()?.type === 'error'">
+  {{ toast()?.msg }}
+</div>
+
+<div class="admin-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="admin-sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-icon">🏥</span>
+      <div>
+        <div class="brand-name">e-Santé</div>
+        <div class="brand-sub">Administration</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item active" routerLink="/admin/dashboard"><span>📊</span> Dashboard</a>
+      <a class="nav-item" routerLink="/admin/securite"><span>🔒</span> Sécurité & Audit</a>
+      <a class="nav-item" routerLink="/admin/monitoring"><span>📈</span> Monitoring</a>
+      <a class="nav-item" routerLink="/admin/sauvegardes"><span>💾</span> Sauvegardes</a>
+      <a class="nav-item" routerLink="/admin/configuration"><span>⚙️</span> Configuration</a>
+      <a class="nav-item" routerLink="/admin/support"><span>🎫</span> Support</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="su-avatar">A</div>
+        <div>
+          <div class="su-name">{{ currentUser()?.firstName }} {{ currentUser()?.lastName }}</div>
+          <div class="su-role">Super Admin</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="admin-main">
+
+    <div class="admin-page-header">
+      <div>
+        <div class="admin-breadcrumb">Portail Admin · /admin/dashboard</div>
+        <h1 class="admin-page-title">Gestion des Utilisateurs</h1>
+      </div>
+      <button class="btn-mc primary" (click)="openAdd()">
+        <span>＋</span> Nouvel Utilisateur
+      </button>
+    </div>
+
+    <div *ngIf="isLoading()" class="admin-loading">
+      <div style="font-size:40px">⏳</div>
+      <p>Chargement des utilisateurs...</p>
+    </div>
+
+    <ng-container *ngIf="!isLoading()">
+
+      <!-- Médecins en attente -->
+      <div class="pending-doctors-section" *ngIf="pendingDoctors().length > 0">
+        <div class="pending-header">
+          <h2 class="pending-title">
+            🩺 Médecins en attente de validation
+            <span class="pending-badge">{{ pendingDoctors().length }}</span>
+          </h2>
+          <p class="pending-subtitle">Ces médecins ont créé un compte et attendent votre approbation.</p>
+        </div>
+        <div class="pending-list">
+          <div class="pending-card" *ngFor="let doc of pendingDoctors()">
+            <div class="pending-avatar">{{ getInitials(doc) }}</div>
+            <div class="pending-info">
+              <div class="pending-name">Dr. {{ doc.firstName }} {{ doc.lastName }}</div>
+              <div class="pending-meta">
+                <span>📧 {{ doc.email }}</span>
+                <span>🏷️ {{ doc.role | titlecase }}</span>
+                <span>📅 Inscrit le {{ doc.createdAt | date:'dd/MM/yyyy' }}</span>
+              </div>
+            </div>
+            <div class="pending-actions">
+              <button class="btn-pending-view" (click)="openDoctorModal(doc)">
+                👁️ Examiner
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="admin-stats-grid">
+        <div class="admin-stat-card">
+          <div class="asc-icon" style="background:#e8f4fd">👥</div>
+          <div>
+            <div class="asc-value" style="color:#1a6fa8">{{ stats().total }}</div>
+            <div class="asc-label">Total utilisateurs</div>
+          </div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="asc-icon" style="background:#eaf6f0">✅</div>
+          <div>
+            <div class="asc-value" style="color:#1a7a4a">{{ stats().actifs }}</div>
+            <div class="asc-label">Comptes actifs</div>
+          </div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="asc-icon" style="background:#fef3e2">👨‍⚕️</div>
+          <div>
+            <div class="asc-value" style="color:#8a5a00">{{ stats().medecins }}</div>
+            <div class="asc-label">Médecins</div>
+          </div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="asc-icon" style="background:#f3e8ff">🧑</div>
+          <div>
+            <div class="asc-value" style="color:#6b1fa8">{{ stats().patients }}</div>
+            <div class="asc-label">Patients</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filtres -->
+      <div class="mc-card admin-filters">
+        <div class="filter-search">
+          <span class="filter-icon">🔍</span>
+          <input type="text" placeholder="Rechercher par nom ou email..."
+            [ngModel]="search()" (ngModelChange)="search.set($event)" />
+        </div>
+        <select [ngModel]="filterRole()" (ngModelChange)="filterRole.set($event)">
+          <option value="TOUS">Tous les rôles</option>
+          <option *ngFor="let r of ROLES" [value]="r">{{ r | titlecase }}</option>
+        </select>
+        <select [ngModel]="filterStatut()" (ngModelChange)="filterStatut.set($event)">
+          <option value="TOUS">Tous les statuts</option>
+          <option *ngFor="let s of STATUTS" [value]="s">{{ s | titlecase }}</option>
+        </select>
+        <span class="filter-count">{{ filteredUsers().length }} résultat(s)</span>
+      </div>
+
+      <!-- Table -->
+      <div class="mc-card admin-table-card">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Utilisateur</th>
+              <th>Email</th>
+              <th>Rôle</th>
+              <th>Téléphone</th>
+              <th>Statut</th>
+              <th>Créé le</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="filteredUsers().length === 0">
+              <td colspan="7" class="table-empty">
+                <div style="font-size:40px">📭</div>
+                <p>Aucun utilisateur trouvé</p>
+              </td>
+            </tr>
+            <tr *ngFor="let u of filteredUsers(); trackBy: trackById">
+              <td>
+                <div class="user-cell">
+                  <div class="user-avatar" [attr.data-role]="u.role">{{ getInitials(u) }}</div>
+                  <span class="user-fullname">{{ u.firstName }} {{ u.lastName }}</span>
+                </div>
+              </td>
+              <td class="text-muted">{{ u.email }}</td>
+              <td>
+                <span class="role-badge" [attr.data-role]="u.role">{{ u.role | titlecase }}</span>
+              </td>
+              <td class="text-mono">{{ u.phone || '—' }}</td>
+              <td>
+                <span class="status-badge" [ngClass]="'status-' + u.status.toLowerCase()">
+                  {{ getStatusLabel(u.status) }}
+                </span>
+              </td>
+              <td class="text-muted text-sm">{{ u.createdAt | date:'dd/MM/yyyy' }}</td>
+              <td>
+                <div class="action-buttons">
+                  <!-- ✅ $any(u) pour éviter l'erreur NG7 de comparaison de types -->
+                  <button
+                    *ngIf="(u.role | titlecase).includes('Medecin') && ($any(u).status === 'PENDING_VERIFICATION' || $any(u).status === 'PENDING')"
+                    class="action-btn approve" (click)="openDoctorModal(u)" title="Valider">🩺</button>
+                  <button class="action-btn edit" (click)="openEdit(u)" title="Modifier">✏️</button>
+                  <button class="action-btn toggle" (click)="toggleStatus(u)"
+                    [title]="u.status === 'ACTIVE' ? 'Désactiver' : 'Activer'"
+                    [class.deactivate]="u.status === 'ACTIVE'">
+                    {{ u.status === 'ACTIVE' ? '⏸' : '▶️' }}
+                  </button>
+                  <button class="action-btn delete" (click)="openDelete(u)" title="Supprimer">🗑</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="table-footer">
+          Affichage de {{ filteredUsers().length }} / {{ users().length }} utilisateurs
+        </div>
+      </div>
+
+    </ng-container>
+  </main>
+</div>
+
+
+<!-- MODAL Ajouter / Modifier -->
+<div class="mc-modal-overlay" *ngIf="modal() === 'add' || modal() === 'edit'" (click)="closeModal()">
+  <div class="mc-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ modal() === 'add' ? 'Ajouter un utilisateur' : 'Modifier l\'utilisateur' }}</h2>
+      <button class="modal-close" (click)="closeModal()">×</button>
+    </div>
+    <form [formGroup]="userForm" (ngSubmit)="saveUser()" class="modal-form">
+      <div class="form-row">
+        <label class="form-group">
+          <span class="form-label">Prénom *</span>
+          <input formControlName="firstName" type="text" placeholder="Jean" />
+        </label>
+        <label class="form-group">
+          <span class="form-label">Nom *</span>
+          <input formControlName="lastName" type="text" placeholder="Dupont" />
+        </label>
+      </div>
+      <label class="form-group">
+        <span class="form-label">Email *</span>
+        <input formControlName="email" type="email" placeholder="jean.dupont@email.fr" />
+      </label>
+      <label class="form-group" *ngIf="modal() === 'add'">
+        <span class="form-label">Mot de passe *</span>
+        <input formControlName="password" type="password" placeholder="Min. 8 caractères" />
+      </label>
+      <div class="form-row">
+        <label class="form-group">
+          <span class="form-label">Rôle *</span>
+          <select formControlName="role">
+            <option *ngFor="let r of ROLES" [value]="r">{{ r | titlecase }}</option>
+          </select>
+        </label>
+        <label class="form-group" *ngIf="modal() === 'edit'">
+          <span class="form-label">Statut</span>
+          <select formControlName="status">
+            <option *ngFor="let s of STATUTS" [value]="s">{{ s | titlecase }}</option>
+          </select>
+        </label>
+      </div>
+      <label class="form-group">
+        <span class="form-label">Téléphone <span class="optional">(optionnel)</span></span>
+        <input formControlName="phone" type="tel" placeholder="06 12 34 56 78" />
+      </label>
+      <div class="modal-actions">
+        <button type="button" class="btn-mc outline" (click)="closeModal()">Annuler</button>
+        <button type="submit" class="btn-mc primary" [disabled]="isSubmitting()">
+          {{ isSubmitting() ? 'Enregistrement...' : 'Enregistrer' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<!-- MODAL Suppression -->
+<div class="mc-modal-overlay" *ngIf="modal() === 'delete'" (click)="closeModal()">
+  <div class="mc-modal mc-modal--sm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Confirmer la suppression</h2>
+      <button class="modal-close" (click)="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <p>Voulez-vous supprimer <strong>{{ selectedUser()?.firstName }} {{ selectedUser()?.lastName }}</strong> ?</p>
+      <p class="delete-warning">⚠️ Cette action est irréversible.</p>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-mc outline" (click)="closeModal()">Annuler</button>
+      <button class="btn-mc danger" (click)="confirmDelete()" [disabled]="isSubmitting()">
+        {{ isSubmitting() ? 'Suppression...' : 'Supprimer' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- MODAL Validation Médecin -->
+<div class="mc-modal-overlay" *ngIf="modal() === 'doctor'" (click)="closeModal()">
+  <div class="mc-modal mc-modal--doctor" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>🩺 Validation du compte médecin</h2>
+      <button class="modal-close" (click)="closeModal()">×</button>
+    </div>
+    <div class="modal-body" *ngIf="doctorModal()">
+
+      <!-- Profil médecin -->
+      <div class="doctor-profile">
+        <div class="doctor-avatar-lg">{{ getInitials(doctorModal()!) }}</div>
+        <div class="doctor-details">
+          <h3>Dr. {{ doctorModal()!.firstName }} {{ doctorModal()!.lastName }}</h3>
+          <div class="doctor-meta-grid">
+            <div class="doctor-meta-item">
+              <span class="meta-label">📧 Email</span>
+              <span class="meta-value">{{ doctorModal()!.email }}</span>
+            </div>
+            <div class="doctor-meta-item">
+              <span class="meta-label">🏷️ Spécialité</span>
+              <span class="meta-value">{{ doctorModal()!.role | titlecase }}</span>
+            </div>
+            <div class="doctor-meta-item">
+              <span class="meta-label">📞 Téléphone</span>
+              <span class="meta-value">{{ doctorModal()!.phone || 'Non renseigné' }}</span>
+            </div>
+            <div class="doctor-meta-item">
+              <span class="meta-label">📅 Inscrit le</span>
+              <span class="meta-value">{{ doctorModal()!.createdAt | date:'dd/MM/yyyy à HH:mm' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Documents soumis -->
+      <div class="docs-review-section">
+        <div class="docs-review-title">📋 Documents soumis</div>
+
+        <div class="docs-loading" *ngIf="isLoadingDocs()">
+          <div class="docs-spinner"></div>
+          <span>Chargement des documents...</span>
+        </div>
+
+        <div class="docs-empty" *ngIf="!isLoadingDocs() && doctorDocs().length === 0">
+          ⚠️ Aucun document soumis par ce médecin
+        </div>
+
+        <div class="docs-list" *ngIf="!isLoadingDocs() && doctorDocs().length > 0">
+          <div class="doc-row" *ngFor="let doc of doctorDocs()">
+            <div class="doc-row-left">
+              <span class="doc-row-label">{{ getDocLabel(doc.type) }}</span>
+              <span class="doc-row-name">{{ doc.originalName }}</span>
+            </div>
+            <button class="doc-view-btn" (click)="openDoc(doc)">
+              👁 Voir le PDF
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="doctor-notice">
+        <strong>ℹ️ Vérification requise</strong>
+        <p>Vérifiez les documents et informations du médecin avant d'approuver son compte.</p>
+      </div>
+
+      <!-- Motif de refus -->
+      <div class="form-group" style="margin-top:16px;">
+        <label class="form-label">Motif de refus (si refus)</label>
+        <textarea class="form-input" rows="3" [(ngModel)]="rejectReason"
+          placeholder="Expliquez la raison du refus au médecin..."></textarea>
+      </div>
+
+    </div>
+    <div class="modal-actions doctor-modal-actions">
+      <button class="btn-mc outline" (click)="closeModal()">Annuler</button>
+      <button class="btn-mc danger" (click)="rejectDoctor()" [disabled]="isSubmitting()">
+        {{ isSubmitting() ? '⏳' : '❌ Refuser' }}
+      </button>
+      <button class="btn-mc primary" (click)="approveDoctor()" [disabled]="isSubmitting()">
+        {{ isSubmitting() ? '⏳' : '✅ Approuver' }}
+      </button>
+    </div>
+  </div>
+</div>

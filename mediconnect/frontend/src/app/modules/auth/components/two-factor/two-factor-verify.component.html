@@ -1,0 +1,33 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="shield-icon">🛡️</div>
+    <h2>Vérification 2FA</h2>
+    <p>Entrez le code à 6 chiffres depuis votre application d'authentification</p>
+
+    <div class="apps-row">
+      <div class="app-badge">📱 Google Authenticator</div>
+      <div class="app-badge">🔐 Authy</div>
+    </div>
+
+    <div class="error-box" *ngIf="error">⚠️ {{ error }}</div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="code-field">
+        <input
+          type="text"
+          formControlName="code"
+          placeholder="000000"
+          maxlength="6"
+          inputmode="numeric"
+          autocomplete="one-time-code"
+          autofocus>
+      </div>
+      <p class="dev-note">💡 Mode développement : utilisez <code>000000</code></p>
+      <button type="submit" [disabled]="isLoading || form.invalid">
+        {{ isLoading ? "Vérification..." : "Vérifier le code →" }}
+      </button>
+    </form>
+
+    <a routerLink="/auth/login" class="back-link">← Retour à la connexion</a>
+  </div>
+</div>
