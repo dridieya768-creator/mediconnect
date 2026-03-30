@@ -31,20 +31,20 @@ export class PatientDashboardComponent implements OnInit {
   // Stats calculées depuis les vraies données
   stats = computed(() => ({
     appointments: this.appointments().filter(a =>
-      a.status === AppointmentStatus.CONFIRMED ||
-      a.status === AppointmentStatus.REQUESTED
+      a.status === AppointmentStatus.CONFIRMED &&
+      new Date(a.appointmentDate) >= new Date()
     ).length,
     prescriptions: this.prescriptions().length,
     analyses: 0,   // à connecter quand le module analyses sera prêt
     documents: 0,  // à connecter quand le module documents sera prêt
   }));
 
-  // RDV à venir (triés, max 3)
+  // RDV confirmés à venir (triés par date, max 5)
   upcomingAppointments = computed(() =>
     this.appointments()
-      .filter(a => a.status !== AppointmentStatus.CANCELLED && a.status !== AppointmentStatus.COMPLETED)
+      .filter(a => a.status === AppointmentStatus.CONFIRMED)
       .sort((a, b) => new Date(a.appointmentDate).getTime() - new Date(b.appointmentDate).getTime())
-      .slice(0, 3)
+      .slice(0, 5)
   );
 
   // Ordonnances actives (max 3)
@@ -65,7 +65,8 @@ export class PatientDashboardComponent implements OnInit {
     this.http.get<any>('/api/v1/patients/me').pipe(
       catchError(() => of(null))
     ).subscribe(response => {
-      const patient = response?.data ?? response;
+      const outer = response?.data ?? response;
+      const patient = outer?.data ?? outer;
       this.patient.set(patient);
 
       if (!patient?.id) {
@@ -75,18 +76,21 @@ export class PatientDashboardComponent implements OnInit {
 
       // 2. Charger en parallèle : RDV + Ordonnances + QR code
       forkJoin({
-        appointments: this.http.get<any[]>(`/api/v1/appointments/patient/${patient.id}`).pipe(
-          catchError(() => of([]))
+        appointments: this.http.get<any>(`/api/v1/appointments/patient/${patient.id}`).pipe(
+          catchError(() => of({ data: [] }))
         ),
-        prescriptions: this.http.get<any[]>(`/api/v1/prescriptions/patient/${patient.id}`).pipe(
-          catchError(() => of([]))
+        prescriptions: this.http.get<any>(`/api/v1/prescriptions/patient/${patient.id}`).pipe(
+          catchError(() => of({ data: [] }))
         ),
         qr: this.http.get<any>('/api/v1/patient/qr').pipe(
           catchError(() => of(null))
         ),
       }).subscribe(({ appointments, prescriptions, qr }) => {
-        this.appointments.set(Array.isArray(appointments) ? appointments : []);
-        this.prescriptions.set(Array.isArray(prescriptions) ? prescriptions : []);
+        // Extraire les tableaux — TransformInterceptor wraps: { data: [...] }
+        const apptList = appointments?.data ?? appointments;
+        const rxList   = prescriptions?.data ?? prescriptions;
+        this.appointments.set(Array.isArray(apptList) ? apptList : []);
+        this.prescriptions.set(Array.isArray(rxList)   ? rxList   : []);
 
         if (qr) {
           const img = qr?.data?.qrImage || qr?.qrImage;
@@ -111,10 +115,14 @@ export class PatientDashboardComponent implements OnInit {
     return new Date(d).toLocaleDateString('fr-FR', { month: 'short' }).toUpperCase();
   }
 
-  getDoctorName(appt: any): string {
-    return appt.doctor?.lastName || appt.doctor?.last_name ||
-           appt.medecin?.user?.last_name || 'Médecin';
+ getDoctorName(a: any): string {
+  if (a.doctor) {
+    const first = a.doctor.firstName || a.doctor.first_name || '';
+    const last  = a.doctor.lastName  || a.doctor.last_name  || '';
+    return `${first} ${last}`.trim() || 'Médecin';
   }
+  return 'Médecin';
+}
 
   getSpecialty(appt: any): string {
     return appt.medecin?.specialite || appt.doctor?.specialty || 'Médecin généraliste';

@@ -250,7 +250,7 @@ var AdminService = /** @class */ (function () {
             });
         });
     };
-    // ✅ Requête fixe — colonnes confirmées dans les logs
+    // ✅ FIX : aliases camelCase pour correspondre exactement à l'interface DoctorDocument du frontend
     AdminService.prototype.getDoctorDocuments = function (userId) {
         return __awaiter(this, void 0, void 0, function () {
             var docs, err_1;
@@ -258,9 +258,10 @@ var AdminService = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, this.userRepository.query("SELECT id, user_id, type, filename, original_name, file_path, base64, status, created_at\n         FROM doctor_documents\n         WHERE user_id = $1\n         ORDER BY created_at ASC", [userId])];
+                        return [4 /*yield*/, this.userRepository.query("SELECT\n           id,\n           user_id        AS \"userId\",\n           type,\n           filename,\n           original_name  AS \"originalName\",\n           file_path      AS \"filePath\",\n           base64,\n           status,\n           created_at     AS \"createdAt\"\n         FROM doctor_documents\n         WHERE user_id = $1\n         ORDER BY created_at ASC", [userId])];
                     case 1:
                         docs = _a.sent();
+                        console.log("[Admin] getDoctorDocuments: " + docs.length + " doc(s) pour userId=" + userId);
                         return [2 /*return*/, docs];
                     case 2:
                         err_1 = _a.sent();

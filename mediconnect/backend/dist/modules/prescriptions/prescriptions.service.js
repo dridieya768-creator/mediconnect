@@ -18,35 +18,75 @@ const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const prescription_entity_1 = require("./entities/prescription.entity");
 const qr_codes_service_1 = require("../qr-codes/qr-codes.service");
+const interaction_checker_service_1 = require("./interaction-checker.service");
+const pdf_service_1 = require("./pdf.service");
+const fs_1 = require("fs");
+const path_1 = require("path");
 let PrescriptionsService = class PrescriptionsService {
-    constructor(repo, qrCodesService) {
+    constructor(repo, qrCodesService, interactionChecker, pdfService) {
         this.repo = repo;
         this.qrCodesService = qrCodesService;
+        this.interactionChecker = interactionChecker;
+        this.pdfService = pdfService;
+    }
+    checkInteractions(medications) {
+        return this.interactionChecker.checkInteractions(medications);
     }
     async create(dto) {
-        const expiresAt = new Date();
-        expiresAt.setMonth(expiresAt.getMonth() + 3);
-        const entity = this.repo.create({
-            patientId: dto.patientId,
-            doctorId: dto.doctorId,
-            medications: dto.medications ?? [],
-            appointmentId: dto.appointmentId,
-            issuedAt: new Date(),
-            expiresAt,
-            status: prescription_entity_1.PrescriptionStatus.ACTIVE,
-            qrCode: "PENDING",
-            qrJwt: "PENDING",
-        });
-        const saved = (await this.repo.save(entity));
-        const qrCode = await this.qrCodesService.generateOrdonnanceQr(saved.id, {
-            patientId: dto.patientId ?? "",
-            patientName: dto.patientName ?? "",
-            patientNss: dto.patientNss ?? "",
-            medecinRpps: dto.medecinRpps ?? "",
-            medecinName: dto.medecinName ?? "",
-        });
-        await this.repo.update(saved.id, { qrCode });
-        return this.findOne(saved.id);
+        try {
+            const now = new Date();
+            const expiresAt = new Date(now);
+            expiresAt.setDate(expiresAt.getDate() + 90);
+            const tempCode = `PENDING-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+            const entity = this.repo.create({
+                patientId: dto.patientId,
+                doctorId: dto.doctorId,
+                medications: dto.medications ?? [],
+                appointmentId: dto.appointmentId,
+                notes: dto.notes,
+                issuedAt: now,
+                expiresAt,
+                status: prescription_entity_1.PrescriptionStatus.ACTIVE,
+                qrCode: tempCode,
+                qrJwt: '',
+            });
+            const saved = (await this.repo.save(entity));
+            try {
+                const qrCode = await this.qrCodesService.generateOrdonnanceQr(saved.id, {
+                    patientId: dto.patientId ?? '',
+                    patientName: dto.patientName ?? '',
+                    patientNss: dto.patientNss ?? '',
+                    medecinRpps: dto.medecinRpps ?? '',
+                    medecinName: dto.medecinName ?? '',
+                });
+                await this.repo.update(saved.id, { qrCode });
+                try {
+                    const prescription = await this.findOne(saved.id);
+                    console.log('[PrescriptionsService] Generating PDF for prescription:', saved.id);
+                    const pdfBuffer = await this.pdfService.generatePrescriptionPdf(prescription, dto.medecinName || 'Médecin', dto.patientName || 'Patient');
+                    console.log('[PrescriptionsService] PDF generated, size:', pdfBuffer.length, 'bytes');
+                    const uploadsDir = (0, path_1.join)(process.cwd(), 'uploads', 'prescriptions');
+                    if (!(0, fs_1.existsSync)(uploadsDir))
+                        (0, fs_1.mkdirSync)(uploadsDir, { recursive: true });
+                    const filename = `prescription-${saved.id}.pdf`;
+                    (0, fs_1.writeFileSync)((0, path_1.join)(uploadsDir, filename), pdfBuffer);
+                    const pdfUrl = `/uploads/prescriptions/${filename}`;
+                    await this.repo.update(saved.id, { pdfUrl });
+                    console.log('[PrescriptionsService] PDF saved at:', pdfUrl);
+                }
+                catch (pdfErr) {
+                    console.error('[PrescriptionsService] PDF generation FAILED:', pdfErr?.message, pdfErr?.stack?.substring(0, 300));
+                }
+            }
+            catch (qrErr) {
+                console.warn('[PrescriptionsService] QR generation failed:', qrErr?.message);
+            }
+            return this.findOne(saved.id);
+        }
+        catch (err) {
+            console.error('[PrescriptionsService] create() error:', err?.message, err?.detail);
+            throw err;
+        }
     }
     async findOne(id) {
         const p = await this.repo.findOne({ where: { id } });
@@ -54,8 +94,24 @@ let PrescriptionsService = class PrescriptionsService {
             throw new common_1.NotFoundException("Prescription introuvable");
         return p;
     }
+    async findByQrCode(qrCode) {
+        const p = await this.repo.findOne({ where: { qrCode } });
+        if (!p)
+            throw new common_1.NotFoundException("Ordonnance introuvable");
+        return p;
+    }
     async findByPatient(patientId) {
-        return this.repo.find({ where: { patientId }, order: { createdAt: "DESC" } });
+        try {
+            return await this.repo.find({
+                where: { patientId },
+                order: { createdAt: 'DESC' },
+                relations: [],
+            });
+        }
+        catch (err) {
+            console.warn('[PrescriptionsService] findByPatient error:', err?.message);
+            return [];
+        }
     }
     async scanAtPharmacy(qrCode, dispensedQuantities) {
         const p = await this.repo.findOne({ where: { qrCode } });
@@ -85,6 +141,8 @@ exports.PrescriptionsService = PrescriptionsService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(prescription_entity_1.Prescription)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
-        qr_codes_service_1.QrCodesService])
+        qr_codes_service_1.QrCodesService,
+        interaction_checker_service_1.InteractionCheckerService,
+        pdf_service_1.PdfService])
 ], PrescriptionsService);
 //# sourceMappingURL=prescriptions.service.js.map

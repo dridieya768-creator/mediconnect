@@ -74,7 +74,8 @@ let AdminController = class AdminController {
         return this.adminService.resetPassword(id);
     }
     async getDoctorDocuments(id) {
-        return this.adminService.getDoctorDocuments(id);
+        const docs = await this.adminService.getDoctorDocuments(id);
+        return docs;
     }
 };
 exports.AdminController = AdminController;
@@ -140,7 +141,7 @@ __decorate([
 ], AdminController.prototype, "resetPassword", null);
 __decorate([
     (0, common_1.Get)('users/:id/documents'),
-    (0, swagger_1.ApiOperation)({ summary: 'Documents soumis par un médecin' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Documents soumis par un médecin lors de son inscription' }),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),

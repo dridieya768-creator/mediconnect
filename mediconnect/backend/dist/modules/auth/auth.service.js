@@ -26,6 +26,8 @@ const uuid_1 = require("uuid");
 const nodemailer = require("nodemailer");
 const notifications_service_1 = require("../notifications/notifications.service");
 const notification_entity_1 = require("../notifications/notification.entity");
+const fs = require("fs");
+const path_1 = require("path");
 function generateTotpSecret() {
     return crypto.randomBytes(20).toString("hex").toUpperCase();
 }
@@ -97,6 +99,10 @@ let AuthService = class AuthService {
             status: isMedecin ? user_entity_1.UserStatus.PENDING_VERIFICATION : user_entity_1.UserStatus.ACTIVE,
         });
         const savedUser = await this.userRepository.save(user);
+        if (isMedecin && registerDto.documents?.length) {
+            await this.saveDoctorDocuments(savedUser.id, registerDto.documents);
+            console.log(`[Auth] ${registerDto.documents.length} document(s) sauvegardé(s) pour ${savedUser.email}`);
+        }
         if (savedUser.role === user_entity_1.UserRole.PATIENT) {
             await this.createPatientProfile(savedUser);
         }
@@ -310,6 +316,24 @@ let AuthService = class AuthService {
             notification: {},
         });
         return this.patientRepository.save(patient);
+    }
+    async saveDoctorDocuments(userId, documents) {
+        try {
+            const dir = (0, path_1.join)(process.cwd(), "uploads", "doctor-docs", userId);
+            fs.mkdirSync(dir, { recursive: true });
+            for (const doc of documents) {
+                const buffer = Buffer.from(doc.base64, "base64");
+                const filename = `${doc.type}_${Date.now()}.pdf`;
+                const filepath = (0, path_1.join)(dir, filename);
+                fs.writeFileSync(filepath, buffer);
+                await this.userRepository.query(`INSERT INTO doctor_documents(id, user_id, type, filename, original_name, base64, file_path, status, created_at)
+           VALUES(uuid_generate_v4(), $1, $2, $3, $4, $5, $6, 'PENDING', now())`, [userId, doc.type, filename, doc.filename, doc.base64, filepath]);
+                console.log(`[Auth] Document sauvegardé: ${doc.type} pour ${userId}`);
+            }
+        }
+        catch (e) {
+            console.warn("[Auth] Erreur sauvegarde documents:", e.message);
+        }
     }
     async generateTokens(user) {
         const payload = { sub: user.id, email: user.email, role: user.role, tenantId: user.tenantId };

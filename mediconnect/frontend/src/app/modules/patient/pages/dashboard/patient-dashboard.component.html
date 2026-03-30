@@ -48,13 +48,13 @@
     <!-- APPOINTMENTS -->
     <div class="mc-card">
       <div class="mc-card-header">
-        <h3 class="mc-card-title">📅 Prochains rendez-vous</h3>
-        <a routerLink="/patient/rendez-vous/nouveau" class="btn-mc outline" style="font-size: 12px; padding: 6px 12px;">
-          + Prendre RDV
+        <h3 class="mc-card-title">📅 Prochains rendez-vous confirmés</h3>
+        <a routerLink="/patient/appointments" class="btn-mc outline" style="font-size: 12px; padding: 6px 12px;">
+          Voir tous
         </a>
       </div>
 
-      <!-- RDV réels -->
+      <!-- RDV confirmés -->
       <div class="appointment-list" *ngIf="upcomingAppointments().length > 0">
         <div class="appt-item" *ngFor="let appt of upcomingAppointments()">
           <div class="appt-date">
@@ -78,14 +78,11 @@
         </div>
       </div>
 
-      <!-- Aucun RDV -->
+      <!-- Aucun RDV confirmé -->
       <div *ngIf="upcomingAppointments().length === 0"
            style="text-align:center; padding:40px 20px; color:#94a3b8;">
         <div style="font-size:48px; margin-bottom:12px;">📭</div>
-        <p style="margin:0 0 16px;">Aucun rendez-vous à venir</p>
-        <a routerLink="/patient/rendez-vous/nouveau" class="btn-mc primary" style="font-size:13px;">
-          + Prendre un rendez-vous
-        </a>
+        <p style="margin:0;">Aucun rendez-vous confirmé à venir</p>
       </div>
     </div>
 

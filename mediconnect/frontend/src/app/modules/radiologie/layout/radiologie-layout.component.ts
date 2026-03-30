@@ -10,7 +10,7 @@ import { SidebarComponent, NavSection } from "@shared/components/sidebar/sidebar
     <app-sidebar
       portalName="Portail Radiologie"
       portalIcon="🔬"
-      brandColor="#0891b2"
+      brandColor="#1a56db"
       [navSections]="navSections"
     />
     <div class="page-container">

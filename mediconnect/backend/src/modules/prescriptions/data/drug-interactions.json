@@ -1,0 +1,62 @@
+[
+  {
+    "drug1": "warfarine",
+    "drug2": "aspirine",
+    "severity": "severe",
+    "description": "Risque hémorragique majeur — association contre-indiquée"
+  },
+  {
+    "drug1": "metformine",
+    "drug2": "alcool",
+    "severity": "moderee",
+    "description": "Risque d'acidose lactique augmenté avec la consommation d'alcool"
+  },
+  {
+    "drug1": "fluoxetine",
+    "drug2": "tramadol",
+    "severity": "severe",
+    "description": "Risque de syndrome sérotoninergique potentiellement fatal"
+  },
+  {
+    "drug1": "amoxicilline",
+    "drug2": "methotrexate",
+    "severity": "moderee",
+    "description": "L'amoxicilline peut augmenter la toxicité du méthotrexate"
+  },
+  {
+    "drug1": "ibuprofene",
+    "drug2": "aspirine",
+    "severity": "moderee",
+    "description": "Risque accru d'effets indésirables gastro-intestinaux"
+  },
+  {
+    "drug1": "paracetamol",
+    "drug2": "alcool",
+    "severity": "mineure",
+    "description": "Consommation excessive d'alcool peut augmenter la toxicité hépatique"
+  },
+  {
+    "drug1": "digoxine",
+    "drug2": "amiodarone",
+    "severity": "severe",
+    "description": "Risque de toxicité digitalique — surveillance ECG obligatoire"
+  },
+  {
+    "drug1": "simvastatine",
+    "drug2": "clarithromycine",
+    "severity": "severe",
+    "description": "Risque de rhabdomyolyse — association contre-indiquée"
+  },
+  {
+    "drug1": "ciprofloxacine",
+    "drug2": "antiacides",
+    "severity": "mineure",
+    "description": "Les antiacides réduisent l'absorption de la ciprofloxacine"
+  },
+  {
+    "drug1": "lisinopril",
+    "drug2": "potassium",
+    "severity": "moderee",
+    "description": "Risque d'hyperkaliémie — surveillance de la kaliémie recommandée"
+  }
+]

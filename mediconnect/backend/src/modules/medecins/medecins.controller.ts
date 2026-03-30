@@ -1,121 +1,127 @@
-import { Controller, Get, Put, Query, Body, UseGuards, Req } from "@nestjs/common";
-import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
-import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
-import { User, UserRole } from "../users/entities/user.entity";
+import { Controller, Get, Delete, Put, Body, UseGuards, Param, Patch, Query } from '@nestjs/common';
+import { MedecinsService } from './medecins.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { User } from '@modules/users/entities/user.entity';
+import { CurrentUser } from '@common/decorators/current-user.decorator';
+import { UpdateAvailabilityDto } from './update-availability.dto';
+import { SearchMedecinsDto } from './dto/search-medecins.dto';
+import { GetSlotsQueryDto } from './dto/get-slots-query.dto';
 
-@ApiTags("medecins")
-@ApiBearerAuth()
+// DTO
+export class UpdateMedecinProfileDto {
+  titre?: string;
+  specialite?: string;
+  numeroOrdrePro?: string;
+  diplomes?: string;
+  photoPro?: string;
+  photosCabinet?: string;
+  languesParlees?: string;
+  biographie?: string;
+  adresseCabinet?: string;
+  geoGoogleMaps?: string;
+  ville?: string;
+  telephonePro?: string;
+  emailPro?: string;
+  tarifs?: string;
+  actesCouverts?: string;
+  assurancesAcceptees?: string;
+  agendaConnecte?: boolean;
+  disponTeleconsult?: boolean;
+  connexionVideoIntegree?: boolean;
+  profilSEO?: boolean;
+  statsAnalytics?: boolean;
+}
+
+@Controller('medecins')
 @UseGuards(JwtAuthGuard)
-@Controller("medecins")
 export class MedecinsController {
-  constructor(
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
-  ) {}
+  constructor(private readonly medecinsService: MedecinsService) {}
 
-  // ── GET /api/v1/medecins/me ──────────────────────────────────────────────
-  // ⚠️  IMPORTANT : cette route DOIT être déclarée AVANT @Get() sinon
-  //     NestJS interprète "me" comme un paramètre :id
-  @Get("me")
-  @ApiOperation({ summary: "Profil du médecin connecté" })
-  async getMe(@Req() req: any) {
-    const userId = req.user?.sub || req.user?.id || req.user?.userId;
-
-    if (!userId) {
-      return { success: false, data: null, message: "Non authentifié" };
-    }
-
-    const user = await this.userRepository.findOne({
-      where: { id: userId },
-      select: ["id", "firstName", "lastName", "email", "role", "avatarUrl"],
-    });
-
-    if (!user) {
-      return { success: false, data: null, message: "Médecin introuvable" };
-    }
-
-    return {
-      success: true,
-      data: {
-        id:              user.id,
-        userId:          user.id,
-        firstName:       user.firstName,
-        lastName:        user.lastName,
-        email:           user.email,
-        role:            user.role,
-        avatarUrl:       user.avatarUrl,
-        specialite:
-          user.role === UserRole.MEDECIN_GENERALISTE
-            ? "Médecin généraliste"
-            : "Médecin spécialiste",
-        teleconsultation: true,
-        ville:           "Tunis",
-      },
-    };
+  @Put('availability')
+  async updateAvailability(@CurrentUser() user: User, @Body() dto: UpdateAvailabilityDto) {
+    console.log('[availability] body received:', dto);
+    return this.medecinsService.updateAvailability(user.id, dto);
   }
 
-  // ── GET /api/v1/medecins?search=&specialite= ─────────────────────────────
-  @Get()
-  @ApiOperation({ summary: "Rechercher des médecins" })
-  async getMedecins(
-    @Query("search")    search?: string,
-    @Query("specialite") specialite?: string,
+  @Get('availability')
+  async getAvailability(@CurrentUser() user: User) {
+    return this.medecinsService.getAvailability(user.id);
+  }
+
+  // ✅ CORRECTION : Utiliser @CurrentUser() au lieu de @Request()
+  @Patch('appointments/:appointmentId/accept')
+  async acceptAppointment(
+    @CurrentUser() user: User,
+    @Param('appointmentId') appointmentId: string
   ) {
-    const qb = this.userRepository
-      .createQueryBuilder("user")
-      .where("user.role IN (:...roles)", {
-        roles: [UserRole.MEDECIN_GENERALISTE, UserRole.MEDECIN_SPECIALISTE],
-      })
-      .andWhere("user.status = 'ACTIVE'")
-      .andWhere("user.deletedAt IS NULL");
+    console.log(`[Controller] Accepting appointment ${appointmentId} for doctor ${user.id}`);
+    return this.medecinsService.acceptAppointment(user.id, appointmentId);
+  }
 
-    if (search) {
-      qb.andWhere(
-        "(LOWER(user.firstName) LIKE LOWER(:search) OR LOWER(user.lastName) LIKE LOWER(:search))",
-        { search: `%${search}%` },
-      );
-    }
-
-    if (specialite && specialite !== "Toutes spécialités") {
-      if (specialite === "Généraliste") {
-        qb.andWhere("user.role = :role", { role: UserRole.MEDECIN_GENERALISTE });
-      } else {
-        qb.andWhere("user.role = :role", { role: UserRole.MEDECIN_SPECIALISTE });
+  @Get('me')
+  async getMe(@CurrentUser() user: User) {
+    const profile = await this.medecinsService.getProfile(user.id);
+    return {
+      ...user,
+      id: user.id,
+      data: {
+        ...user,
+        id: user.id,
+        profile: profile,
       }
-    }
-
-    const users = await qb.limit(20).getMany();
-
-    return {
-      success: true,
-      data: users.map((u) => ({
-        id:              u.id,
-        userId:          u.id,
-        firstName:       u.firstName,
-        lastName:        u.lastName,
-        specialite:
-          u.role === UserRole.MEDECIN_GENERALISTE
-            ? "Médecin généraliste"
-            : "Médecin spécialiste",
-        ville:           "Tunis",
-        teleconsultation: true,
-        avatarUrl:       u.avatarUrl,
-      })),
     };
   }
 
-  // ── PUT /api/v1/medecins/availability ────────────────────────────────────
-  @Put("availability")
-  @ApiOperation({ summary: "Sauvegarder les disponibilités du médecin" })
-  async updateAvailability(@Req() req: any, @Body() body: any) {
-    const userId = req.user?.sub || req.user?.id || req.user?.userId;
-    // TODO: persister en base dans une table MedecinAvailability
-    console.log(`[Availability] Médecin ${userId}:`, body);
-    return {
-      success: true,
-      message: "Disponibilités enregistrées avec succès.",
-    };
+  @Delete('patients/:patientId')
+  async removePatient(
+    @CurrentUser() user: User,
+    @Param('patientId') patientId: string
+  ) {
+    return this.medecinsService.removePatientFromDoctorList(user.id, patientId);
   }
+
+  @Get('patients/:patientId/check')
+  async checkPatient(
+    @CurrentUser() user: User,
+    @Param('patientId') patientId: string
+  ) {
+    return this.medecinsService.isPatientInDoctorList(user.id, patientId);
+  }
+
+  @Get('profile')
+  async getProfile(@CurrentUser() user: User) {
+    return this.medecinsService.getProfile(user.id);
+  }
+
+  @Put('profile')
+  async updateProfile(@CurrentUser() user: User, @Body() updateDto: UpdateMedecinProfileDto) {
+    return this.medecinsService.updateProfile(user.id, updateDto);
+  }
+
+ @Get()
+async getAllMedecins(@Query() query: SearchMedecinsDto) {
+  return this.medecinsService.getAllMedecinsWithProfiles(query.search, query.specialite, query.ville);
+}
+
+  @Get('my-patients')
+  async getMyPatients(@CurrentUser() user: User) {
+    return this.medecinsService.getMyPatientsFromAppointments(user.id);
+  }
+
+  @Get(':id/availability')
+  async getMedecinAvailabilityById(@Param('id') id: string) {
+    console.log(`[Controller] GET availability for medecin: ${id}`);
+    return this.medecinsService.getMedecinAvailabilityById(id);
+  }
+
+  @Get(':id/slots')
+  async getOccupiedSlots(@Param('id') id: string, @Query() query: GetSlotsQueryDto) {
+    return this.medecinsService.getOccupiedSlots(id, query.startDate, query.endDate);
+  }
+
+  @Get(':id')
+  async getMedecinById(@Param('id') id: string) {
+    return this.medecinsService.getMedecinById(id);
+  }
+  
 }

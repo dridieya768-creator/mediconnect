@@ -102,7 +102,6 @@ var RolesGuard = /** @class */ (function () {
     ], RolesGuard);
     return RolesGuard;
 }());
-// ✅ Juste 'admin' — NestJS ajoute automatiquement le globalPrefix 'api/v1'
 var AdminController = /** @class */ (function () {
     function AdminController(adminService) {
         this.adminService = adminService;
@@ -130,10 +129,18 @@ var AdminController = /** @class */ (function () {
     AdminController.prototype.resetPassword = function (id) {
         return this.adminService.resetPassword(id);
     };
+    // ✅ FIX : endpoint documents — retourne directement le tableau
+    // Le frontend dans loadDoctorDocs() gère les deux formats (array direct ou { data: [] })
     AdminController.prototype.getDoctorDocuments = function (id) {
         return __awaiter(this, void 0, void 0, function () {
+            var docs;
             return __generator(this, function (_a) {
-                return [2 /*return*/, this.adminService.getDoctorDocuments(id)];
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.adminService.getDoctorDocuments(id)];
+                    case 1:
+                        docs = _a.sent();
+                        return [2 /*return*/, docs]; // tableau direct — loadDoctorDocs() dans le frontend gère les deux formats
+                }
             });
         });
     };
@@ -177,7 +184,7 @@ var AdminController = /** @class */ (function () {
     ], AdminController.prototype, "resetPassword");
     __decorate([
         common_1.Get('users/:id/documents'),
-        swagger_1.ApiOperation({ summary: 'Documents soumis par un médecin' }),
+        swagger_1.ApiOperation({ summary: 'Documents soumis par un médecin lors de son inscription' }),
         __param(0, common_1.Param('id'))
     ], AdminController.prototype, "getDoctorDocuments");
     AdminController = __decorate([

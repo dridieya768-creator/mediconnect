@@ -3,34 +3,47 @@ import { Routes } from "@angular/router";
 export const PATIENT_ROUTES: Routes = [
   {
     path: "",
-    loadComponent: () => import("./layout/patient-layout.component")
-      .then((m) => m.PatientLayoutComponent),
+    loadComponent: () =>
+      import("./layout/patient-layout.component").then((m) => m.PatientLayoutComponent),
     children: [
       { path: "", redirectTo: "dashboard", pathMatch: "full" },
       {
         path: "dashboard",
-        loadComponent: () => import("./pages/dashboard/patient-dashboard.component")
-          .then((m) => m.PatientDashboardComponent),
+        loadComponent: () =>
+          import("./pages/dashboard/patient-dashboard.component").then((m) => m.PatientDashboardComponent),
       },
       {
         path: "appointments",
-        loadComponent: () => import("./pages/appointments/patient-appointments.component")
-          .then((m) => (m as any).PatientAppointmentsComponent ?? (m as any).default),
+        loadComponent: () =>
+          import("./pages/appointments/patient-appointments.component").then((m) => m.PatientAppointmentsComponent),
       },
       {
         path: "dossier",
-        loadComponent: () => import("./pages/dossier/patient-dossier.component")
-          .then((m) => m.PatientDossierComponent),
-      },
-      {
-        path: "prescriptions",
-        loadComponent: () => import("./pages/prescriptions/patient-prescriptions.component")
-          .then((m) => m.PatientPrescriptionsComponent),
+        loadComponent: () =>
+          import("./pages/dossier/patient-dossier.component").then((m) => m.PatientDossierComponent),
       },
       {
         path: "notifications",
-        loadComponent: () => import("./pages/notifications/patient-notifications.component")
-          .then((m) => m.PatientNotificationsComponent),
+        loadComponent: () =>
+          import("./pages/notifications/patient-notifications.component").then((m) => m.PatientNotificationsComponent),
+      },
+      // ✅ Nouvelle route recherche médecin
+      {
+        path: "recherche",
+        loadComponent: () =>
+          import("./pages/search/patient-search-medecin.component").then((m) => m.PatientSearchMedecinComponent),
+      },
+      // ✅ Profil patient
+      {
+        path: "profil",
+        loadComponent: () =>
+          import("./pages/profile/patient-profile.component").then((m) => m.PatientProfileComponent),
+      },
+      // ✅ Ordonnances patient
+      {
+        path: "prescriptions",
+        loadComponent: () =>
+          import("./pages/prescriptions/patient-prescriptions.component").then((m) => m.PatientPrescriptionsComponent),
       },
     ],
   },

@@ -1,0 +1,37 @@
+import { User } from '../../users/entities/user.entity';
+export declare class MedecinProfile {
+    id: number;
+    userId: string;
+    user: User;
+    specialite: string;
+    rpps: string;
+    telephone: string;
+    cabinetNom: string;
+    cabinetAdresse: string;
+    cabinetVille: string;
+    cabinetCodePostal: string;
+    cabinetTelephone: string;
+    bio: string;
+    photoUrl: string;
+    photoPro: string;
+    diplomes: string;
+    photosCabinet: string;
+    tarifs: any;
+    actesCouverts: string;
+    assurancesAcceptees: string;
+    titre: string;
+    numeroOrdrePro: string;
+    languesParlees: string;
+    ville: string;
+    adresseCabinet: string;
+    geoGoogleMaps: string;
+    telephonePro: string;
+    emailPro: string;
+    agendaConnecte: boolean;
+    disponTeleconsult: boolean;
+    connexionVideoIntegree: boolean;
+    profilSEO: boolean;
+    statsAnalytics: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+}

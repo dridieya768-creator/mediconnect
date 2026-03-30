@@ -50,7 +50,7 @@ export class QrCodesService {
       iat: Math.floor(Date.now() / 1000),
     };
 
-    const jwtToken = this.jwtService.sign(payload, { expiresIn: "90d" });
+    const jwtToken = this.jwtService.sign(payload);
     await this.qrRepository.save(
       this.qrRepository.create({ qrCode, qrType: QrCodeType.ORDONNANCE, entityId: prescriptionId, jwtToken, expiresAt }),
     );

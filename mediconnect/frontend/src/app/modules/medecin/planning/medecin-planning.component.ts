@@ -409,7 +409,7 @@ type PlanningView = "calendar" | "requests" | "slots";
     .btn-danger   { padding:10px 20px; background:#ef4444; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; }
     .btn-danger:disabled { opacity:.6; cursor:not-allowed; }
     .btn-video    { padding:10px 20px; background:#3b82f6; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; }
-    .btn-complete { padding:10px 20px; background:#0d9488; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; }
+    .btn-complete { padding:10px 20px; background:#1a56db; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; }
 
     .loading-state { display:flex; flex-direction:column; align-items:center; padding:60px; color:#64748b; gap:12px; }
     .spinner { width:40px; height:40px; border:3px solid #e2e8f0; border-top-color:#4f46e5; border-radius:50%; animation:spin .8s linear infinite; }
@@ -503,7 +503,54 @@ export class MedecinPlanningComponent implements OnInit {
   });
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────
-  ngOnInit() { this.loadAppointments(); }
+ngOnInit() { 
+  this.loadAppointments(); 
+  this.loadAvailability();
+}
+
+loadAvailability() {
+  this.http.get<any>('/api/v1/medecins/availability')
+    .pipe(catchError(err => {
+      console.error('[Availability] ERREUR:', err);
+      return of(null);
+    }))
+    .subscribe(res => {
+      console.log('[Availability] réponse brute:', JSON.stringify(res));
+      
+      // Le backend retourne { workDays, defaultDuration, acceptsTeleconsultation }
+      // mais peut-être wrappé dans { data: ... } ou { success: true, data: ... }
+      const raw  = res?.data ?? res;
+// Si workDays encore null, essayer de lire depuis tarifs (fallback)
+const data = (raw?.workDays !== null && raw?.workDays !== undefined)
+  ? raw
+  : (() => {
+      try {
+        const t = typeof raw?.tarifs === 'string' ? JSON.parse(raw.tarifs) : raw?.tarifs;
+        return t?.workDays ? { ...raw, ...t } : raw;
+      } catch { return raw; }
+    })();
+      
+      console.log('[Availability] data extraite:', JSON.stringify(data));
+      
+      if (!data) return;
+
+      if (Array.isArray(data.workDays) && data.workDays.length > 0) {
+        this.workDays = this.workDays.map(defaultDay => {
+          const saved = data.workDays.find((d: any) => d.name === defaultDay.name);
+          return saved ? { ...defaultDay, ...saved } : defaultDay;
+        });
+        console.log('[Availability] workDays restaurés:', this.workDays);
+      }
+
+      if (data.defaultDuration) {
+        this.defaultDuration = data.defaultDuration;
+      }
+
+      if (data.acceptsTeleconsultation !== undefined) {
+        this.acceptsTeleconsultation = data.acceptsTeleconsultation;
+      }
+    });
+}
 
   loadAppointments() {
     this.isLoading.set(true);
@@ -567,22 +614,58 @@ export class MedecinPlanningComponent implements OnInit {
   closeModal()             { this.modalAppt.set(null); }
 
   // ── Accept / Refuse ────────────────────────────────────────────────────────
-  acceptRequest(req: any) {
-    this.processingId.set(req.id);
-    this.http.patch<any>(`/api/v1/appointments/${req.id}/confirm`, {}).subscribe({
-      next: () => {
-        this.appointments.update(list =>
-          list.map(a => a.id === req.id ? { ...a, status: "CONFIRMED" } : a)
-        );
-        this.processingId.set(null);
-        this.showSuccess("Rendez-vous confirmé !");
-      },
-      error: () => {
-        this.processingId.set(null);
-        this.showError("Erreur lors de la confirmation.");
+// Remplacez la méthode acceptRequest par celle-ci :
+
+acceptRequest(req: any) {
+  this.processingId.set(req.id);
+  
+  // ✅ Utiliser le bon endpoint avec PATCH
+  this.http.patch<any>(`/api/v1/medecins/appointments/${req.id}/accept`, {}).subscribe({
+    next: (response) => {
+      console.log('✅ Rendez-vous accepté:', response);
+      
+      // Mettre à jour le statut du rendez-vous
+      this.appointments.update(list =>
+        list.map(a => a.id === req.id ? { ...a, status: "CONFIRMED" } : a)
+      );
+      this.processingId.set(null);
+      this.showSuccess("✅ Rendez-vous confirmé ! Le patient a été ajouté à votre liste.");
+      
+      // Optionnel: recharger la liste des patients dans le composant patients
+      // Vous pouvez émettre un événement ou recharger les données
+    },
+    error: (err) => {
+      this.processingId.set(null);
+      console.error('❌ Erreur lors de l\'acceptation:', err);
+      
+      // Extraire le message d'erreur correctement
+      let errorMessage = "Erreur lors de la confirmation du rendez-vous.";
+      
+      if (err?.error?.message) {
+        const rawMsg = err.error.message;
+        if (typeof rawMsg === 'string') {
+          errorMessage = rawMsg;
+        } else if (Array.isArray(rawMsg)) {
+          errorMessage = rawMsg[0];
+        } else if (typeof rawMsg === 'object') {
+          errorMessage = JSON.stringify(rawMsg);
+        }
+      } else if (err?.message) {
+        errorMessage = err.message;
       }
-    });
-  }
+      
+      // Message personnalisé pour conflit de créneau
+      if (errorMessage.includes('déjà réservé') || 
+          errorMessage.includes('créneau') || 
+          errorMessage.includes('conflict') || 
+          errorMessage.includes('occupé')) {
+        this.showError('⏰ Ce créneau est déjà occupé. Veuillez choisir un autre horaire.');
+      } else {
+        this.showError(errorMessage);
+      }
+    }
+  });
+}
 
   acceptFromModal() {
     const appt = this.modalAppt();
@@ -645,20 +728,23 @@ export class MedecinPlanningComponent implements OnInit {
   }
 
   // ── Save availability ──────────────────────────────────────────────────────
-  saveAvailability() {
-    this.isSavingSlots.set(true);
-    const payload = {
-      workDays:               this.workDays.filter(d => d.active),
-      defaultDuration:        this.defaultDuration,
-      acceptsTeleconsultation: this.acceptsTeleconsultation,
-    };
-    this.http.put<any>("/api/v1/medecins/availability", payload)
-      .pipe(catchError(() => of(null)))
-      .subscribe(() => {
-        this.isSavingSlots.set(false);
-        this.showSuccess("Disponibilités enregistrées !");
-      });
-  }
+// ── Save availability ──────────────────────────────────────────────────────
+saveAvailability() {
+  this.isSavingSlots.set(true);
+  const payload = {
+    workDays:                this.workDays,
+    defaultDuration:         this.defaultDuration,
+    acceptsTeleconsultation: this.acceptsTeleconsultation,
+    disponTeleconsult:       this.acceptsTeleconsultation,
+    connexionVideoIntegree:  this.acceptsTeleconsultation,
+  };
+  this.http.put<any>('/api/v1/medecins/availability', payload)
+    .pipe(catchError(() => of(null)))
+    .subscribe(res => {
+      this.isSavingSlots.set(false);
+      this.showSuccess('Disponibilités enregistrées !');
+    });
+}
 
   // ── Helpers ────────────────────────────────────────────────────────────────
   getPatientName(a: any): string {

@@ -75,11 +75,17 @@ export class RegisterComponent implements OnInit {
     lastName:        ["", Validators.required],
     email:           ["", [Validators.required, Validators.email]],
     phone:           [""],
+    gender:          [""],
     role:            [UserRole.PATIENT, Validators.required],
     specialite:      [""],
     password:        ["", [Validators.required, Validators.minLength(8)]],
     confirmPassword: ["", Validators.required],
+    acceptCgu:       [false],
   });
+
+  setProfessional(): void {
+    this.form.patchValue({ role: UserRole.MEDECIN_GENERALISTE });
+  }
 
   get isMedecinSpecialiste(): boolean {
     return this.form.get('role')?.value === 'MEDECIN_SPECIALISTE';

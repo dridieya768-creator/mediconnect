@@ -31,7 +31,6 @@ class RolesGuard implements CanActivate {
   }
 }
 
-// ✅ Juste 'admin' — NestJS ajoute automatiquement le globalPrefix 'api/v1'
 @ApiTags('Admin')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -87,9 +86,13 @@ export class AdminController {
   resetPassword(@Param('id') id: string) {
     return this.adminService.resetPassword(id);
   }
+
+  // ✅ FIX : endpoint documents — retourne directement le tableau
+  // Le frontend dans loadDoctorDocs() gère les deux formats (array direct ou { data: [] })
   @Get('users/:id/documents')
-@ApiOperation({ summary: 'Documents soumis par un médecin' })
-async getDoctorDocuments(@Param('id') id: string) {
-  return this.adminService.getDoctorDocuments(id);
-}
+  @ApiOperation({ summary: 'Documents soumis par un médecin lors de son inscription' })
+  async getDoctorDocuments(@Param('id') id: string) {
+    const docs = await this.adminService.getDoctorDocuments(id);
+    return docs; // tableau direct — loadDoctorDocs() dans le frontend gère les deux formats
+  }
 }

@@ -35,7 +35,7 @@ export class Prescription {
   @Column({ name: 'qr_code', unique: true })
   qrCode: string; // QR-ORD-UUID-XXXX
 
-  @Column({ name: 'qr_jwt', type: 'text' })
+  @Column({ name: 'qr_jwt', type: 'text', nullable: true })
   qrJwt: string; // JWT signé
 
   @Column({ type: 'enum', enum: PrescriptionStatus, default: PrescriptionStatus.ACTIVE })
@@ -58,6 +58,12 @@ export class Prescription {
 
   @Column({ name: 'pdf_url', nullable: true })
   pdfUrl: string;
+
+  @Column({ name: 'email_sent_at', nullable: true })
+  emailSentAt: Date;
+
+  @Column({ name: 'notes', type: 'text', nullable: true })
+  notes: string;
 
   @Column({ name: 'issued_at', type: 'timestamp' })
   issuedAt: Date;

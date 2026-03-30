@@ -216,7 +216,7 @@ import { of } from "rxjs";
     .state-card h2 { font-size: 22px; color: #0f172a; }
     .state-card p { color: #64748b; }
     .state-card.error h2 { color: #dc2626; }
-    .spinner { width: 48px; height: 48px; border: 3px solid #e2e8f0; border-top-color: #0d9488; border-radius: 50%; animation: spin .8s linear infinite; }
+    .spinner { width: 48px; height: 48px; border: 3px solid #e2e8f0; border-top-color: #1a56db; border-radius: 50%; animation: spin .8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* SECURITY BANNER */
@@ -236,7 +236,7 @@ import { of } from "rxjs";
       flex-wrap: wrap;
     }
     .patient-avatar {
-      width: 72px; height: 72px; background: #0d9488; color: white;
+      width: 72px; height: 72px; background: #1a56db; color: white;
       border-radius: 50%; display: flex; align-items: center;
       justify-content: center; font-size: 24px; font-weight: 700; flex-shrink: 0;
     }
@@ -262,13 +262,13 @@ import { of } from "rxjs";
     .medical-card {
       background: white; border-radius: 14px; padding: 20px;
       box-shadow: 0 2px 8px rgba(0,0,0,.05);
-      border-top: 3px solid #0d9488;
+      border-top: 3px solid #1a56db;
     }
     .medical-card.vital { border-top-color: #dc2626; }
-    .medical-card.allergy { border-top-color: #f59e0b; }
-    .medical-card.chronic { border-top-color: #8b5cf6; }
-    .medical-card.meds { border-top-color: #3b82f6; }
-    .medical-card.emergency { border-top-color: #ef4444; }
+    .medical-card.allergy { border-top-color: #d97706; }
+    .medical-card.chronic { border-top-color: #7c3aed; }
+    .medical-card.meds { border-top-color: #2563eb; }
+    .medical-card.emergency { border-top-color: #dc2626; }
 
     .card-title { font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 14px; }
 

@@ -1,8 +1,12 @@
 import { Injectable, NotFoundException, BadRequestException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository, ObjectLiteral } from "typeorm";
+import { Repository } from "typeorm";
 import { Prescription, PrescriptionStatus } from "./entities/prescription.entity";
 import { QrCodesService } from "../qr-codes/qr-codes.service";
+import { InteractionCheckerService, DrugInteraction } from "./interaction-checker.service";
+import { PdfService } from "./pdf.service";
+import { writeFileSync, mkdirSync, existsSync } from "fs";
+import { join } from "path";
 
 @Injectable()
 export class PrescriptionsService {
@@ -10,37 +14,77 @@ export class PrescriptionsService {
     @InjectRepository(Prescription)
     private repo: Repository<Prescription>,
     private qrCodesService: QrCodesService,
+    private interactionChecker: InteractionCheckerService,
+    private pdfService: PdfService,
   ) {}
 
+  checkInteractions(medications: any[]): DrugInteraction[] {
+    return this.interactionChecker.checkInteractions(medications);
+  }
+
   async create(dto: any): Promise<Prescription> {
-    const expiresAt = new Date();
-    expiresAt.setMonth(expiresAt.getMonth() + 3);
+    try {
+      const now = new Date();
+      const expiresAt = new Date(now);
+      expiresAt.setDate(expiresAt.getDate() + 90);
 
-    const entity = this.repo.create({
-      patientId: dto.patientId,
-      doctorId: dto.doctorId,
-      medications: dto.medications ?? [],
-      appointmentId: dto.appointmentId,
-      issuedAt: new Date(),
-      expiresAt,
-      status: PrescriptionStatus.ACTIVE,
-      qrCode: "PENDING",
-      qrJwt: "PENDING",
-    });
+      const tempCode = `PENDING-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
 
-    // Cast explicitly to avoid TypeORM overload confusion
-    const saved = (await this.repo.save(entity as any)) as unknown as Prescription;
+      const entity = this.repo.create({
+        patientId:   dto.patientId,
+        doctorId:    dto.doctorId,
+        medications: dto.medications ?? [],
+        appointmentId: dto.appointmentId,
+        notes:       dto.notes,
+        issuedAt:    now,
+        expiresAt,
+        status:      PrescriptionStatus.ACTIVE,
+        qrCode:      tempCode,
+        qrJwt:       '',
+      });
 
-    const qrCode = await this.qrCodesService.generateOrdonnanceQr(saved.id, {
-      patientId: dto.patientId ?? "",
-      patientName: dto.patientName ?? "",
-      patientNss: dto.patientNss ?? "",
-      medecinRpps: dto.medecinRpps ?? "",
-      medecinName: dto.medecinName ?? "",
-    });
+      const saved = (await this.repo.save(entity as any)) as unknown as Prescription;
 
-    await this.repo.update(saved.id, { qrCode });
-    return this.findOne(saved.id);
+      try {
+        const qrCode = await this.qrCodesService.generateOrdonnanceQr(saved.id, {
+          patientId:   dto.patientId ?? '',
+          patientName: dto.patientName ?? '',
+          patientNss:  dto.patientNss ?? '',
+          medecinRpps: dto.medecinRpps ?? '',
+          medecinName: dto.medecinName ?? '',
+        });
+        await this.repo.update(saved.id, { qrCode });
+
+        // Générer le PDF
+        try {
+          const prescription = await this.findOne(saved.id);
+          console.log('[PrescriptionsService] Generating PDF for prescription:', saved.id);
+          const pdfBuffer = await this.pdfService.generatePrescriptionPdf(
+            prescription,
+            dto.medecinName || 'Médecin',
+            dto.patientName || 'Patient',
+          );
+          console.log('[PrescriptionsService] PDF generated, size:', pdfBuffer.length, 'bytes');
+          // Sauvegarder le PDF
+          const uploadsDir = join(process.cwd(), 'uploads', 'prescriptions');
+          if (!existsSync(uploadsDir)) mkdirSync(uploadsDir, { recursive: true });
+          const filename = `prescription-${saved.id}.pdf`;
+          writeFileSync(join(uploadsDir, filename), pdfBuffer as unknown as Uint8Array);
+          const pdfUrl = `/uploads/prescriptions/${filename}`;
+          await this.repo.update(saved.id, { pdfUrl });
+          console.log('[PrescriptionsService] PDF saved at:', pdfUrl);
+        } catch (pdfErr: any) {
+          console.error('[PrescriptionsService] PDF generation FAILED:', pdfErr?.message, pdfErr?.stack?.substring(0, 300));
+        }
+      } catch (qrErr: any) {
+        console.warn('[PrescriptionsService] QR generation failed:', qrErr?.message);
+      }
+
+      return this.findOne(saved.id);
+    } catch (err: any) {
+      console.error('[PrescriptionsService] create() error:', err?.message, err?.detail);
+      throw err;
+    }
   }
 
   async findOne(id: string): Promise<Prescription> {
@@ -49,8 +93,23 @@ export class PrescriptionsService {
     return p;
   }
 
+  async findByQrCode(qrCode: string): Promise<Prescription> {
+    const p = await this.repo.findOne({ where: { qrCode } });
+    if (!p) throw new NotFoundException("Ordonnance introuvable");
+    return p;
+  }
+
   async findByPatient(patientId: string): Promise<Prescription[]> {
-    return this.repo.find({ where: { patientId }, order: { createdAt: "DESC" } });
+    try {
+      return await this.repo.find({
+        where: { patientId },
+        order: { createdAt: 'DESC' },
+        relations: [], // pas de jointures eager pour éviter les erreurs
+      });
+    } catch (err: any) {
+      console.warn('[PrescriptionsService] findByPatient error:', err?.message);
+      return [];
+    }
   }
 
   async scanAtPharmacy(qrCode: string, dispensedQuantities: Record<string, number>): Promise<Prescription> {

@@ -6,34 +6,58 @@ import { NestFactory } from "@nestjs/core";
 import { ValidationPipe } from "@nestjs/common";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { ConfigService } from "@nestjs/config";
+import { NestExpressApplication } from "@nestjs/platform-express";
 import helmet from "helmet";
 import { AppModule } from "./app.module";
 import { HttpExceptionFilter } from "./common/filters/http-exception.filter";
 import { TransformInterceptor } from "./common/interceptors/transform.interceptor";
+import { join } from 'path';
+import * as fs from 'fs';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     cors: {
-      origin: ["http://localhost:4200", "http://localhost:3000"],
+      origin: ["http://localhost:4200", "http://localhost:3001"],
       credentials: true,
     },
     logger: ["log", "error", "warn"],
   });
+  app.useStaticAssets(join(__dirname, '..', 'uploads'), { prefix: '/uploads' });
 
   const configService = app.get(ConfigService);
 
-  // ✅ CORRECTION : Augmenter la limite payload pour les PDF en base64
-  // Doit être AVANT helmet et les autres middlewares
-  app.use(require('express').json({ limit: '50mb' }));
-  app.use(require('express').urlencoded({ limit: '50mb', extended: true }));
+  // ✅ Augmenter la limite payload pour les PDF en base64
+  const expressApp = app.getHttpAdapter().getInstance();
+  expressApp.use(require('express').json({ limit: '50mb' }));
+  expressApp.use(require('express').urlencoded({ limit: '50mb', extended: true }));
 
-  app.use(helmet({ crossOriginEmbedderPolicy: false }));
+  // ✅ FIX : utiliser process.cwd() — même chemin que dans upload.service.ts
+  const uploadsPath = join(process.cwd(), 'uploads');
+
+  // Créer le dossier uploads s'il n'existe pas
+  if (!fs.existsSync(uploadsPath)) {
+    fs.mkdirSync(uploadsPath, { recursive: true });
+    console.log(`[Static] Dossier uploads créé : ${uploadsPath}`);
+  }
+
+  console.log(`[Static] Servir les fichiers depuis : ${uploadsPath}`);
+
+  // ✅ Servir les fichiers statiques depuis process.cwd()/uploads
+  app.useStaticAssets(uploadsPath, {
+    prefix: '/uploads/',
+  });
+
+  // ✅ Helmet avec configuration appropriée
+  app.use(helmet({
+    crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+  }));
 
   app.setGlobalPrefix("api/v1");
 
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true,
+      whitelist: false,
       forbidNonWhitelisted: false,
       transform: true,
     }),
@@ -59,15 +83,23 @@ async function bootstrap() {
     swaggerOptions: { persistAuthorization: true },
   });
 
-  const port = configService.get<number>("PORT", 3000);
-  await app.listen(port);
+  const port = configService.get<number>("PORT", 3001);
 
-  console.log("\n╔══════════════════════════════════════════════╗");
-  console.log("║   🏥  MediConnect API — Démarré !            ║");
-  console.log("╠══════════════════════════════════════════════╣");
-  console.log(`║   API:     http://localhost:${port}/api/v1/auth/login  ║`);
-  console.log(`║   Swagger: http://localhost:${port}/api/docs           ║`);
-  console.log("╚══════════════════════════════════════════════╝\n");
+  try {
+    await app.listen(port);
+    console.log("\n╔══════════════════════════════════════════════╗");
+    console.log("║   🏥  MediConnect API — Démarré !            ║");
+    console.log("╠══════════════════════════════════════════════╣");
+    console.log(`║   API:     http://localhost:${port}/api/v1/auth/login  ║`);
+    console.log(`║   Swagger: http://localhost:${port}/api/docs           ║`);
+    console.log("╚══════════════════════════════════════════════╝\n");
+  } catch (err) {
+    if (err.code === 'EADDRINUSE') {
+      console.error(`❌ Port ${port} occupé — exécutez: taskkill /IM node.exe /F`);
+      process.exit(1);
+    }
+    throw err;
+  }
 }
 
 bootstrap().catch((err) => {

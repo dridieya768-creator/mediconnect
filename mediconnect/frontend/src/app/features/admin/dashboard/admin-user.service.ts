@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators'; // ✅ import map
 
 export type UserRole =
   | 'PATIENT'
@@ -20,7 +21,6 @@ export type UserRole =
   | 'ADMIN_SYSTEM'
   | 'SUPPORT';
 
-// ✅ PENDING et PENDING_VERIFICATION ajoutés
 export type UserStatus =
   | 'ACTIVE'
   | 'INACTIVE'
@@ -59,9 +59,11 @@ export interface UpdateUserDto {
 
 export interface DoctorDocument {
   id: string;
+  userId?: string;
   type: string;
   filename: string;
-  originalName: string;
+  originalName: string;  // ✅ camelCase — correspond à l'alias SQL "originalName"
+  filePath?: string;     // ✅ camelCase — correspond à l'alias SQL "filePath"
   base64?: string;
   status: string;
   createdAt: string;
@@ -125,8 +127,14 @@ export class AdminUserService {
     return this.http.get<AdminStats>('/api/v1/admin/stats');
   }
 
-  // ✅ getDoctorDocs DANS la classe (accolade fermante après)
+  // ✅ FIX : utilise map() pour normaliser la réponse (array direct ou { data: [] })
   getDoctorDocs(userId: string): Observable<DoctorDocument[]> {
-    return this.http.get<DoctorDocument[]>(`${API}/${userId}/documents`);
+    return this.http.get<any>(`${API}/${userId}/documents`).pipe(
+      map((res: any) => {
+        if (Array.isArray(res))       return res as DoctorDocument[];
+        if (Array.isArray(res?.data)) return res.data as DoctorDocument[];
+        return [] as DoctorDocument[];
+      })
+    );
   }
 }

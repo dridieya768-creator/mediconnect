@@ -2,8 +2,7 @@ import { Component, OnInit, inject, signal, computed } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { HttpClient } from "@angular/common/http";
-import { catchError, debounceTime, distinctUntilChanged, Subject, switchMap } from "rxjs";
-import { of } from "rxjs";
+import { catchError, debounceTime, distinctUntilChanged, Subject, switchMap, of } from "rxjs";
 
 type ViewMode = "list" | "new" | "detail" | "cancel" | "rate";
 type FilterTab = "upcoming" | "past" | "all";
@@ -168,7 +167,17 @@ type FilterTab = "upcoming" | "past" | "all";
               </div>
             </div>
           </div>
-
+          <!-- Message créneau occupé — centré dans l'étape 2 -->
+<div class="slot-taken-overlay" *ngIf="slotTakenError()">
+  <div class="slot-taken-box">
+    <div class="slot-taken-icon">⏰</div>
+    <div class="slot-taken-title">Ce créneau est déjà occupé</div>
+    <div class="slot-taken-sub">Veuillez choisir un autre horaire disponible</div>
+    <button class="slot-taken-btn" (click)="slotTakenError.set(false); selectedSlot.set(null)">
+      Choisir un autre créneau
+    </button>
+  </div>
+</div>
           <!-- Étape 3 : Confirmation -->
           <div class="step-block" *ngIf="selectedDoctor() && selectedSlot()">
             <div class="step-label"><span class="step-num">3</span> Confirmer le rendez-vous</div>
@@ -302,7 +311,7 @@ type FilterTab = "upcoming" | "past" | "all";
             <div>
               <strong>Vous êtes sur le point d'annuler votre RDV</strong><br>
               Dr. {{ getDoctorName(selectedAppt()!) }} — {{ formatFullDate(selectedAppt()!.appointmentDate) }}<br>
-              <span style="color:#ef4444; font-size:13px;">Un délai minimum de 24h est requis pour annuler.</span>
+              <span style="color:#ef4444; font-size:13px;">Cette action est irréversible.</span>
             </div>
           </div>
           <div class="form-group" style="margin-top:20px;">
@@ -374,6 +383,26 @@ type FilterTab = "upcoming" | "past" | "all";
     </div>
   `,
   styles: [`
+     .slot-taken-overlay {
+  display:flex; justify-content:center; margin-top:16px;
+}
+.slot-taken-box {
+  background:#fff7ed; border:2px solid #fed7aa;
+  border-radius:14px; padding:24px 32px;
+  text-align:center; max-width:340px;
+  box-shadow:0 4px 20px rgba(234,88,12,.12);
+  animation:fadeIn .25s ease;
+}
+@keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+.slot-taken-icon  { font-size:36px; margin-bottom:8px; }
+.slot-taken-title { font-size:16px; font-weight:700; color:#c2410c; margin-bottom:4px; }
+.slot-taken-sub   { font-size:13px; color:#9a3412; margin-bottom:16px; }
+.slot-taken-btn {
+  padding:9px 20px; background:#ea580c; color:white;
+  border:none; border-radius:8px; font-size:13px;
+  font-weight:600; cursor:pointer;
+}
+.slot-taken-btn:hover { background:#c2410c; }
     .appt-page { padding: 0; }
     .page-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; }
     .page-title { font-size:26px; font-weight:700; color:#0f172a; margin:0 0 4px; }
@@ -384,19 +413,19 @@ type FilterTab = "upcoming" | "past" | "all";
 
     .tabs-bar { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
     .tab-btn { padding:8px 18px; border:1.5px solid #e2e8f0; border-radius:24px; background:white; font-size:13px; cursor:pointer; color:#64748b; display:flex; align-items:center; gap:6px; transition:all .15s; }
-    .tab-btn.active { border-color:#0d9488; color:#0d9488; background:#f0fdfa; font-weight:600; }
+    .tab-btn.active { border-color:#1a56db; color:#1a56db; background:#eff6ff; font-weight:600; }
     .tab-count { background:#e2e8f0; color:#64748b; border-radius:10px; padding:1px 7px; font-size:11px; }
-    .tab-btn.active .tab-count { background:#0d9488; color:white; }
+    .tab-btn.active .tab-count { background:#1a56db; color:white; }
 
     .loading-state { display:flex; flex-direction:column; align-items:center; padding:60px; color:#64748b; gap:12px; }
-    .spinner { width:40px; height:40px; border:3px solid #e2e8f0; border-top-color:#0d9488; border-radius:50%; animation:spin .8s linear infinite; }
+    .spinner { width:40px; height:40px; border:3px solid #e2e8f0; border-top-color:#1a56db; border-radius:50%; animation:spin .8s linear infinite; }
     @keyframes spin { to { transform:rotate(360deg); } }
 
     .appt-list { display:flex; flex-direction:column; gap:12px; }
     .appt-card { display:flex; background:white; border-radius:14px; border:1.5px solid #e2e8f0; overflow:hidden; cursor:pointer; transition:all .2s; }
-    .appt-card:hover { border-color:#0d9488; box-shadow:0 4px 16px rgba(13,148,136,.12); transform:translateY(-1px); }
-    .appt-date-block { min-width:72px; background:#0d9488; color:white; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:16px 8px; }
-    .appt-date-block.date-video { background:#3b82f6; }
+    .appt-card:hover { border-color:#1a56db; box-shadow:0 4px 16px rgba(26,86,219,.1); transform:translateY(-1px); }
+    .appt-date-block { min-width:72px; background:#1a56db; color:white; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:16px 8px; }
+    .appt-date-block.date-video { background:#7c3aed; }
     .date-day   { font-size:26px; font-weight:700; line-height:1; }
     .date-month { font-size:11px; text-transform:uppercase; opacity:.85; margin-top:2px; }
     .date-year  { font-size:10px; opacity:.7; }
@@ -414,21 +443,21 @@ type FilterTab = "upcoming" | "past" | "all";
     .status-cancelled  { background:#fef2f2; color:#dc2626; }
     .status-completed  { background:#f8fafc; color:#64748b; }
 
-    .btn-primary  { padding:10px 20px; background:#0d9488; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; transition:background .15s; }
-    .btn-primary:hover { background:#0f766e; }
+    .btn-primary  { padding:10px 20px; background:#1a56db; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; transition:background .15s; }
+    .btn-primary:hover { background:#1447c0; }
     .btn-primary:disabled { opacity:.6; cursor:not-allowed; }
-    .btn-outline  { padding:10px 20px; background:white; color:#0d9488; border:2px solid #0d9488; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; }
-    .btn-danger   { padding:10px 20px; background:#ef4444; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; }
+    .btn-outline  { padding:10px 20px; background:white; color:#1a56db; border:2px solid #1a56db; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; }
+    .btn-danger   { padding:10px 20px; background:#dc2626; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; }
     .btn-danger:disabled { opacity:.6; cursor:not-allowed; }
-    .btn-video    { padding:10px 20px; background:#3b82f6; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; }
-    .btn-rate     { padding:10px 20px; background:#f59e0b; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; }
-    .btn-back     { background:none; border:none; color:#0d9488; cursor:pointer; font-size:14px; font-weight:600; padding:0; }
+    .btn-video    { padding:10px 20px; background:#7c3aed; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; }
+    .btn-rate     { padding:10px 20px; background:#d97706; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; }
+    .btn-back     { background:none; border:none; color:#1a56db; cursor:pointer; font-size:14px; font-weight:600; padding:0; }
     .btn-full     { width:100%; }
     .btn-nav      { background:white; border:1.5px solid #e2e8f0; border-radius:8px; padding:8px 14px; cursor:pointer; font-size:16px; }
     .btn-sm       { padding:5px 12px; border:none; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; }
-    .btn-sm.btn-danger { background:#ef4444; color:white; }
-    .btn-sm.btn-video  { background:#3b82f6; color:white; }
-    .btn-sm.btn-rate   { background:#f59e0b; color:white; }
+    .btn-sm.btn-danger { background:#dc2626; color:white; }
+    .btn-sm.btn-video  { background:#7c3aed; color:white; }
+    .btn-sm.btn-rate   { background:#d97706; color:white; }
     .flex-1 { flex:1; }
 
     .form-card    { background:white; border-radius:16px; padding:28px; box-shadow:0 2px 16px rgba(0,0,0,.06); max-width:800px; }
@@ -437,22 +466,22 @@ type FilterTab = "upcoming" | "past" | "all";
 
     .step-block  { margin-bottom:28px; padding:20px; background:#f8fafc; border-radius:12px; border:1px solid #e2e8f0; }
     .step-label  { display:flex; align-items:center; gap:10px; font-size:15px; font-weight:700; color:#0f172a; margin-bottom:16px; }
-    .step-num    { width:28px; height:28px; background:#0d9488; color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; flex-shrink:0; }
+    .step-num    { width:28px; height:28px; background:#1a56db; color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; flex-shrink:0; }
 
     .search-bar  { display:flex; gap:10px; margin-bottom:16px; }
     .search-hint { text-align:center; color:#94a3b8; font-size:13px; padding:20px; }
     .doctors-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:12px; }
     .doctor-card  { background:white; border:1.5px solid #e2e8f0; border-radius:10px; padding:14px; cursor:pointer; display:flex; align-items:flex-start; gap:12px; transition:all .15s; position:relative; }
-    .doctor-card:hover  { border-color:#0d9488; }
-    .doctor-card.selected { border-color:#0d9488; background:#f0fdfa; }
-    .doc-avatar   { width:40px; height:40px; background:#0d9488; color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; flex-shrink:0; }
+    .doctor-card:hover  { border-color:#1a56db; }
+    .doctor-card.selected { border-color:#1a56db; background:#eff6ff; }
+    .doc-avatar   { width:40px; height:40px; background:#1a56db; color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; flex-shrink:0; }
     .doc-info     { flex:1; min-width:0; }
     .doc-name     { font-size:13px; font-weight:700; color:#0f172a; }
     .doc-spec     { font-size:11px; color:#64748b; margin:2px 0; }
     .doc-meta     { display:flex; flex-wrap:wrap; gap:6px; margin-top:4px; }
     .doc-badge    { font-size:10px; padding:2px 6px; border-radius:6px; font-weight:600; }
-    .doc-badge.video { background:#eff6ff; color:#3b82f6; }
-    .doc-check    { position:absolute; top:10px; right:10px; color:#0d9488; font-size:16px; font-weight:700; }
+    .doc-badge.video { background:#eff6ff; color:#1a56db; }
+    .doc-check    { position:absolute; top:10px; right:10px; color:#1a56db; font-size:16px; font-weight:700; }
 
     .slot-picker       { overflow-x:auto; }
     .slot-date-nav     { display:flex; align-items:flex-start; gap:8px; }
@@ -461,14 +490,14 @@ type FilterTab = "upcoming" | "past" | "all";
     .slot-day-label    { font-size:11px; color:#64748b; text-align:center; font-weight:600; text-transform:uppercase; }
     .slot-day-date     { font-size:16px; font-weight:700; color:#0f172a; text-align:center; margin:4px 0 8px; }
     .slot-time         { background:white; border:1.5px solid #e2e8f0; border-radius:6px; padding:6px; text-align:center; font-size:12px; cursor:pointer; margin-bottom:4px; transition:all .15s; }
-    .slot-time:hover:not(.taken) { border-color:#0d9488; color:#0d9488; }
-    .slot-time.selected { background:#0d9488; color:white; border-color:#0d9488; }
+    .slot-time:hover:not(.taken) { border-color:#1a56db; color:#1a56db; }
+    .slot-time.selected { background:#1a56db; color:white; border-color:#1a56db; }
     .slot-time.taken   { background:#f1f5f9; color:#cbd5e1; cursor:not-allowed; text-decoration:line-through; }
     .slot-empty        { text-align:center; color:#cbd5e1; font-size:20px; padding:10px; }
 
     .confirm-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:20px; }
-    .recap-box    { background:#f0fdfa; border:1px solid #99f6e4; border-radius:10px; padding:16px; margin-bottom:20px; }
-    .recap-row    { display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid #ccfbf1; font-size:13px; }
+    .recap-box    { background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:16px; margin-bottom:20px; }
+    .recap-row    { display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid #dbeafe; font-size:13px; }
     .recap-row:last-child { border:none; }
     .recap-row span { color:#64748b; }
 
@@ -482,7 +511,7 @@ type FilterTab = "upcoming" | "past" | "all";
 
     .stars-row    { display:flex; justify-content:center; gap:8px; margin:8px 0 4px; }
     .star         { font-size:40px; cursor:pointer; transition:transform .1s; color:#e2e8f0; position:relative; z-index:1; }
-    .star.filled  { color:#f59e0b; }
+    .star.filled  { color:#d97706; }
     .star:hover   { transform:scale(1.15); }
     .rating-label { text-align:center; color:#64748b; font-size:14px; margin-bottom:8px; min-height:24px; }
 
@@ -490,9 +519,9 @@ type FilterTab = "upcoming" | "past" | "all";
     .form-group-full { grid-column:1/-1; display:flex; flex-direction:column; gap:6px; }
     .form-label      { font-size:12px; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:.04em; }
     .form-input      { padding:10px 12px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:14px; color:#0f172a; outline:none; width:100%; box-sizing:border-box; resize:vertical; font-family:inherit; }
-    .form-input:focus { border-color:#0d9488; }
+    .form-input:focus { border-color:#1a56db; }
     .form-select     { padding:10px 12px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:14px; color:#0f172a; outline:none; background:white; width:100%; font-family:inherit; }
-    .form-select:focus { border-color:#0d9488; }
+    .form-select:focus { border-color:#1a56db; }
 
     .empty-state { text-align:center; padding:60px 20px; color:#94a3b8; display:flex; flex-direction:column; align-items:center; gap:16px; background:white; border-radius:14px; }
 
@@ -506,7 +535,7 @@ type FilterTab = "upcoming" | "past" | "all";
 })
 export class PatientAppointmentsComponent implements OnInit {
   private http = inject(HttpClient);
-
+  slotTakenError = signal(false);
   view         = signal<ViewMode>("list");
   filterTab    = signal<FilterTab>("upcoming");
   isLoading    = signal(true);
@@ -569,21 +598,35 @@ export class PatientAppointmentsComponent implements OnInit {
 
   ngOnInit() {
     this.loadPatient();
+    // FIX: Correct pipe implementation without nested pipe
     this.searchSubject.pipe(
       debounceTime(300),
       distinctUntilChanged(),
       switchMap(q => {
-        if (!q && !this.searchSpecialty) { this.doctors.set([]); return of(null); }
+        if (!q && !this.searchSpecialty) {
+          this.doctors.set([]);
+          return of(null);
+        }
         this.searchLoading.set(true);
         const params: any = {};
         if (q) params["search"] = q;
         if (this.searchSpecialty) params["specialite"] = this.searchSpecialty;
-        return this.http.get<any>("/api/v1/medecins", { params }).pipe(catchError(() => of({ data: [] })));
+        return this.http.get<any>("/api/v1/medecins", { params })
+          .pipe(catchError(() => of({ data: [] })));
       })
     ).subscribe(res => {
       if (res) {
         const list: any[] = res?.data?.data ?? res?.data ?? (Array.isArray(res) ? res : []);
-        this.doctors.set(list);
+        const normalized = list.map((doc: any) => ({
+          ...doc,
+          firstName:       doc.firstName   || doc.first_name  || '',
+          lastName:        doc.lastName    || doc.last_name   || '',
+          ville:           doc.profile?.ville       || doc.ville       || '',
+          specialite:      doc.profile?.specialite  || doc.specialite  || '',
+          teleconsultation: doc.profile?.disponTeleconsult ?? doc.teleconsultation ?? false,
+          avatarUrl:       doc.profile?.photoPro    || doc.avatarUrl   || null,
+        }));
+        this.doctors.set(normalized);
       }
       this.searchLoading.set(false);
     });
@@ -729,11 +772,23 @@ export class PatientAppointmentsComponent implements OnInit {
         this.showView("list");
         setTimeout(() => this.successMsg.set(null), 4000);
       },
-      error: (err) => {
-        this.isCreating.set(false);
-        this.errorMsg.set(err?.error?.message || "Erreur lors de la création du RDV.");
-        setTimeout(() => this.errorMsg.set(null), 5000);
-      }
+       error: (err: any) => {
+  this.isCreating.set(false);
+  const raw = err?.error?.message;
+  const msg = typeof raw === 'string' ? raw
+            : Array.isArray(raw)      ? raw[0]
+            : err?.message            || '';
+  const isSlotTaken = msg.toLowerCase().includes('conflict')
+                   || msg.toLowerCase().includes('créneau')
+                   || msg.toLowerCase().includes('déjà')
+                   || msg.toLowerCase().includes('taken')
+                   || err?.status === 409;
+  this.slotTakenError.set(isSlotTaken);
+  if (!isSlotTaken) {
+    this.errorMsg.set(msg || "Erreur lors de la création du RDV.");
+    setTimeout(() => this.errorMsg.set(null), 5000);
+  }
+}
     });
   }
 
@@ -788,8 +843,7 @@ export class PatientAppointmentsComponent implements OnInit {
     return new Date(a.appointmentDate) > new Date() && a.status !== "CANCELLED";
   }
   canCancel(a: any): boolean {
-    const diff = new Date(a.appointmentDate).getTime() - Date.now();
-    return (a.status === "CONFIRMED" || a.status === "REQUESTED") && diff >= 24 * 60 * 60 * 1000;
+    return a.status === "CONFIRMED" || a.status === "REQUESTED";
   }
   isVideo(a: any): boolean { return a.consultationType === "TELECONSULTATION"; }
 

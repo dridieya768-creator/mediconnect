@@ -28,6 +28,8 @@ export declare class Prescription {
     }[];
     appointmentId: string;
     pdfUrl: string;
+    emailSentAt: Date;
+    notes: string;
     issuedAt: Date;
     expiresAt: Date;
     signedAt: Date;

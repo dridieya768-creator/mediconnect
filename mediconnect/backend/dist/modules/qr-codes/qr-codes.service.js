@@ -56,7 +56,7 @@ let QrCodesService = class QrCodesService {
             exp: Math.floor(expiresAt.getTime() / 1000),
             iat: Math.floor(Date.now() / 1000),
         };
-        const jwtToken = this.jwtService.sign(payload, { expiresIn: "90d" });
+        const jwtToken = this.jwtService.sign(payload);
         await this.qrRepository.save(this.qrRepository.create({ qrCode, qrType: qr_code_entity_1.QrCodeType.ORDONNANCE, entityId: prescriptionId, jwtToken, expiresAt }));
         return qrCode;
     }

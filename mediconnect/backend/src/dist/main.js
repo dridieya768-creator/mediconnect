@@ -48,29 +48,46 @@ var helmet_1 = require("helmet");
 var app_module_1 = require("./app.module");
 var http_exception_filter_1 = require("./common/filters/http-exception.filter");
 var transform_interceptor_1 = require("./common/interceptors/transform.interceptor");
+var path_1 = require("path");
+var fs = require("fs");
 function bootstrap() {
     return __awaiter(this, void 0, void 0, function () {
-        var app, configService, config, document, port;
+        var app, configService, expressApp, uploadsPath, config, document, port, err_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0: return [4 /*yield*/, core_1.NestFactory.create(app_module_1.AppModule, {
                         cors: {
-                            origin: ["http://localhost:4200", "http://localhost:3000"],
+                            origin: ["http://localhost:4200", "http://localhost:3001"],
                             credentials: true
                         },
                         logger: ["log", "error", "warn"]
                     })];
                 case 1:
                     app = _a.sent();
+                    app.useStaticAssets(path_1.join(__dirname, '..', 'uploads'), { prefix: '/uploads' });
                     configService = app.get(config_1.ConfigService);
-                    // ✅ CORRECTION : Augmenter la limite payload pour les PDF en base64
-                    // Doit être AVANT helmet et les autres middlewares
-                    app.use(require('express').json({ limit: '50mb' }));
-                    app.use(require('express').urlencoded({ limit: '50mb', extended: true }));
-                    app.use(helmet_1["default"]({ crossOriginEmbedderPolicy: false }));
+                    expressApp = app.getHttpAdapter().getInstance();
+                    expressApp.use(require('express').json({ limit: '50mb' }));
+                    expressApp.use(require('express').urlencoded({ limit: '50mb', extended: true }));
+                    uploadsPath = path_1.join(process.cwd(), 'uploads');
+                    // Créer le dossier uploads s'il n'existe pas
+                    if (!fs.existsSync(uploadsPath)) {
+                        fs.mkdirSync(uploadsPath, { recursive: true });
+                        console.log("[Static] Dossier uploads cr\u00E9\u00E9 : " + uploadsPath);
+                    }
+                    console.log("[Static] Servir les fichiers depuis : " + uploadsPath);
+                    // ✅ Servir les fichiers statiques depuis process.cwd()/uploads
+                    app.useStaticAssets(uploadsPath, {
+                        prefix: '/uploads/'
+                    });
+                    // ✅ Helmet avec configuration appropriée
+                    app.use(helmet_1["default"]({
+                        crossOriginEmbedderPolicy: false,
+                        crossOriginResourcePolicy: { policy: "cross-origin" }
+                    }));
                     app.setGlobalPrefix("api/v1");
                     app.useGlobalPipes(new common_1.ValidationPipe({
-                        whitelist: true,
+                        whitelist: false,
                         forbidNonWhitelisted: false,
                         transform: true
                     }));
@@ -91,9 +108,12 @@ function bootstrap() {
                     swagger_1.SwaggerModule.setup("api/docs", app, document, {
                         swaggerOptions: { persistAuthorization: true }
                     });
-                    port = configService.get("PORT", 3000);
-                    return [4 /*yield*/, app.listen(port)];
+                    port = configService.get("PORT", 3001);
+                    _a.label = 2;
                 case 2:
+                    _a.trys.push([2, 4, , 5]);
+                    return [4 /*yield*/, app.listen(port)];
+                case 3:
                     _a.sent();
                     console.log("\n╔══════════════════════════════════════════════╗");
                     console.log("║   🏥  MediConnect API — Démarré !            ║");
@@ -101,7 +121,15 @@ function bootstrap() {
                     console.log("\u2551   API:     http://localhost:" + port + "/api/v1/auth/login  \u2551");
                     console.log("\u2551   Swagger: http://localhost:" + port + "/api/docs           \u2551");
                     console.log("╚══════════════════════════════════════════════╝\n");
-                    return [2 /*return*/];
+                    return [3 /*break*/, 5];
+                case 4:
+                    err_1 = _a.sent();
+                    if (err_1.code === 'EADDRINUSE') {
+                        console.error("\u274C Port " + port + " occup\u00E9 \u2014 ex\u00E9cutez: taskkill /IM node.exe /F");
+                        process.exit(1);
+                    }
+                    throw err_1;
+                case 5: return [2 /*return*/];
             }
         });
     });

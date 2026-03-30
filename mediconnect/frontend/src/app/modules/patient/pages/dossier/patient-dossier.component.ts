@@ -245,28 +245,28 @@ import { HttpClient } from "@angular/common/http";
     .dossier-page { padding: 0; }
     .page-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:12px; }
     .header-left { display:flex; align-items:flex-start; gap:16px; }
-    .back-btn { color:#0d9488; text-decoration:none; font-size:13px; font-weight:500; margin-top:4px; }
+    .back-btn { color:#1a56db; text-decoration:none; font-size:13px; font-weight:500; margin-top:4px; }
     .page-title { font-size:24px; font-weight:700; color:#0f172a; margin:0 0 4px; }
     .page-subtitle { font-size:14px; color:#64748b; margin:0; }
     .header-actions { display:flex; gap:8px; align-items:center; }
-    .btn-edit { padding:9px 20px; background:#f0fdfa; color:#0d9488; border:2px solid #0d9488; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; }
-    .btn-save { padding:9px 20px; background:#0d9488; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; }
+    .btn-edit { padding:9px 20px; background:#eff6ff; color:#1a56db; border:2px solid #1a56db; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; }
+    .btn-save { padding:9px 20px; background:#1a56db; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; }
     .btn-save:disabled { opacity:.6; cursor:not-allowed; }
     .btn-cancel { padding:9px 16px; background:#f8fafc; color:#64748b; border:1.5px solid #e2e8f0; border-radius:8px; font-size:14px; cursor:pointer; }
     .alert-success { background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; border-radius:10px; padding:12px 16px; margin-bottom:16px; font-size:14px; }
     .alert-error { background:#fef2f2; color:#dc2626; border:1px solid #fecaca; border-radius:10px; padding:12px 16px; margin-bottom:16px; font-size:14px; }
     .loading-state { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:80px; color:#64748b; gap:12px; }
-    .spinner { width:40px; height:40px; border:3px solid #e2e8f0; border-top-color:#0d9488; border-radius:50%; animation:spin .8s linear infinite; }
+    .spinner { width:40px; height:40px; border:3px solid #e2e8f0; border-top-color:#1a56db; border-radius:50%; animation:spin .8s linear infinite; }
     @keyframes spin { to { transform:rotate(360deg); } }
     .dossier-grid { display:grid; grid-template-columns:380px 1fr; gap:24px; align-items:start; }
     .mc-card { background:white; border-radius:16px; padding:24px; box-shadow:0 2px 12px rgba(0,0,0,.06); }
     .card-title { font-size:16px; font-weight:700; color:#0f172a; margin-bottom:20px; padding-bottom:12px; border-bottom:1px solid #f1f5f9; display:flex; align-items:center; gap:8px; }
-    .count-badge { background:#0d9488; color:white; border-radius:12px; padding:2px 8px; font-size:12px; font-weight:600; }
+    .count-badge { background:#1a56db; color:white; border-radius:12px; padding:2px 8px; font-size:12px; font-weight:600; }
     .identity-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px; }
     .identity-item { background:#f8fafc; border-radius:10px; padding:12px; display:flex; flex-direction:column; gap:4px; }
     .identity-label { font-size:11px; color:#94a3b8; text-transform:uppercase; letter-spacing:.5px; }
     .identity-value { font-size:14px; font-weight:700; color:#0f172a; }
-    .blood-type { color:#ef4444; font-size:20px; }
+    .blood-type { color:#dc2626; font-size:20px; }
     .section-block { margin-bottom:16px; }
     .section-label { font-size:12px; font-weight:600; color:#64748b; margin-bottom:8px; }
     .tags-list { display:flex; flex-wrap:wrap; gap:6px; min-height:28px; }
@@ -281,24 +281,24 @@ import { HttpClient } from "@angular/common/http";
     .form-group-full { display:flex; flex-direction:column; gap:6px; }
     .form-label { font-size:12px; font-weight:600; color:#64748b; }
     .form-input { padding:9px 12px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:14px; color:#0f172a; outline:none; transition:border-color .15s; width:100%; box-sizing:border-box; }
-    .form-input:focus { border-color:#0d9488; }
+    .form-input:focus { border-color:#1a56db; }
     .form-input.small { flex:1; }
     .form-select { padding:9px 12px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:14px; color:#0f172a; outline:none; background:white; width:100%; }
-    .form-select:focus { border-color:#0d9488; }
+    .form-select:focus { border-color:#1a56db; }
     .tag-input-area { background:#f8fafc; border-radius:10px; padding:12px; border:1.5px solid #e2e8f0; }
     .editable-tag { cursor:default; }
     .tag-remove { background:none; border:none; cursor:pointer; font-size:14px; color:inherit; padding:0 0 0 4px; opacity:.7; }
     .tag-remove:hover { opacity:1; }
     .add-tag-row { display:flex; gap:8px; margin-top:8px; }
-    .btn-add-tag { padding:8px 14px; background:#0d9488; color:white; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap; }
-    .btn-add-tag:hover { background:#0f766e; }
+    .btn-add-tag { padding:8px 14px; background:#1a56db; color:white; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap; }
+    .btn-add-tag:hover { background:#1447c0; }
     .filters-bar { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
     .filter-btn { padding:6px 14px; border:1.5px solid #e2e8f0; border-radius:20px; background:white; font-size:13px; cursor:pointer; color:#64748b; transition:all .15s; }
-    .filter-btn.active, .filter-btn:hover { border-color:#0d9488; color:#0d9488; background:#f0fdfa; }
+    .filter-btn.active, .filter-btn:hover { border-color:#1a56db; color:#1a56db; background:#eff6ff; }
     .consultations-list { display:flex; flex-direction:column; gap:12px; }
     .consultation-item { display:flex; gap:16px; padding:16px; border-radius:12px; border:1px solid #f1f5f9; background:#fafafa; transition:all .15s; }
-    .consultation-item:hover { border-color:#0d9488; background:#f0fdfa; }
-    .consult-date { min-width:48px; text-align:center; background:#0d9488; color:white; border-radius:10px; padding:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+    .consultation-item:hover { border-color:#1a56db; background:#eff6ff; }
+    .consult-date { min-width:48px; text-align:center; background:#1a56db; color:white; border-radius:10px; padding:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; }
     .consult-day { font-size:20px; font-weight:700; line-height:1; }
     .consult-month { font-size:11px; text-transform:uppercase; opacity:.85; }
     .consult-year { font-size:10px; opacity:.7; }
@@ -315,7 +315,7 @@ import { HttpClient } from "@angular/common/http";
     .badge-danger { background:#fef2f2; color:#dc2626; }
     .badge-muted { background:#f8fafc; color:#64748b; }
     .empty-state { text-align:center; padding:60px 20px; color:#94a3b8; display:flex; flex-direction:column; align-items:center; gap:12px; }
-    .btn-outline { padding:8px 20px; border:2px solid #0d9488; color:#0d9488; border-radius:8px; text-decoration:none; font-size:14px; font-weight:600; }
+    .btn-outline { padding:8px 20px; border:2px solid #1a56db; color:#1a56db; border-radius:8px; text-decoration:none; font-size:14px; font-weight:600; }
     @media (max-width:900px) { .dossier-grid { grid-template-columns:1fr; } .form-grid { grid-template-columns:1fr; } }
   `]
 })
@@ -348,7 +348,9 @@ export class PatientDossierComponent implements OnInit {
     this.isLoading.set(true);
     this.http.get<any>('/api/v1/patients/me').subscribe({
       next: (response) => {
-        const patient = response?.data ?? response;
+        // TransformInterceptor wraps: { data: { success, id, data: {...} }, timestamp }
+        const outer = response?.data ?? response;
+        const patient = outer?.data ?? outer;
         console.log('✅ Patient reçu:', patient);
         console.log('✅ Patient ID:', patient?.id);
 
@@ -406,19 +408,51 @@ export class PatientDossierComponent implements OnInit {
     this.saveError.set(null);
     const patientId = this.patient().id;
 
-    this.http.patch<any>(`/api/v1/patients/${patientId}`, this.editData).subscribe({
-      next: () => {
-        // Mettre à jour les données locales
-        this.patient.set({ ...this.patient(), ...this.editData });
-        this.allergies.set([...this.editData.allergies]);
-        this.maladies.set([...this.editData.maladiesChroniques]);
-        this.medicaments.set([...this.editData.medicamentsActuels]);
-        this.isSaving.set(false);
-        this.isEditing.set(false);
-        this.successMsg.set('Dossier médical mis à jour avec succès !');
-        setTimeout(() => this.successMsg.set(null), 4000);
+    // Ne pas envoyer les champs vides/null — évite les erreurs TypeORM sur enum/date
+    const payload: any = {
+      allergies:          this.editData.allergies          || [],
+      maladiesChroniques: this.editData.maladiesChroniques || [],
+      medicamentsActuels: this.editData.medicamentsActuels || [],
+    };
+    if (this.editData.groupeSanguin)  payload.groupeSanguin  = this.editData.groupeSanguin;
+    if (this.editData.dateNaissance)  payload.dateNaissance  = this.editData.dateNaissance;
+    if (this.editData.sexe)           payload.sexe           = this.editData.sexe;
+    if (this.editData.ville)          payload.ville          = this.editData.ville;
+    if (this.editData.telephone)      payload.telephone      = this.editData.telephone;
+    if (this.editData.nss)            payload.nss            = this.editData.nss;
+
+    this.http.patch<any>(`/api/v1/patients/${patientId}`, payload).subscribe({
+      next: (res) => {
+        console.log('[dossier saveChanges] PATCH response:', res);
+        // Recharger depuis le backend pour avoir les données persistées
+        this.http.get<any>('/api/v1/patients/me').subscribe({
+          next: (response) => {
+            const outer = response?.data ?? response;
+            const patient = outer?.data ?? outer;
+            this.patient.set(patient);
+            this.allergies.set(this.parseJsonb(patient.allergies));
+            this.maladies.set(this.parseJsonb(patient.maladiesChroniques || patient.maladies_chroniques));
+            this.medicaments.set(this.parseJsonb(patient.medicamentsActuels || patient.medicaments_actuels));
+            this.isSaving.set(false);
+            this.isEditing.set(false);
+            this.successMsg.set('Dossier médical mis à jour avec succès !');
+            setTimeout(() => this.successMsg.set(null), 4000);
+          },
+          error: () => {
+            // Fallback: mise à jour locale
+            this.patient.set({ ...this.patient(), ...this.editData });
+            this.allergies.set([...this.editData.allergies]);
+            this.maladies.set([...this.editData.maladiesChroniques]);
+            this.medicaments.set([...this.editData.medicamentsActuels]);
+            this.isSaving.set(false);
+            this.isEditing.set(false);
+            this.successMsg.set('Dossier médical mis à jour avec succès !');
+            setTimeout(() => this.successMsg.set(null), 4000);
+          }
+        });
       },
-      error: () => {
+      error: (err) => {
+        console.error('[dossier saveChanges] PATCH error:', err);
         this.isSaving.set(false);
         this.saveError.set('Erreur lors de la sauvegarde. Veuillez réessayer.');
       }

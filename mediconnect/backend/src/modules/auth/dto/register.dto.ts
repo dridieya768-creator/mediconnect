@@ -1,7 +1,21 @@
-import { IsEmail, IsString, IsEnum, IsOptional, MinLength } from 'class-validator';
+import { IsEmail, IsString, IsEnum, IsOptional, MinLength, IsArray, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { UserRole } from '../../users/entities/user.entity';
 
+// ── DTO pour chaque document PDF ──────────────────────────────
+export class DoctorDocumentDto {
+  @IsString()
+  type: string;        // ex: 'DIPLOME', 'CIN', etc.
+
+  @IsString()
+  filename: string;    // nom original du fichier
+
+  @IsString()
+  base64: string;      // contenu base64 du PDF
+}
+
+// ── DTO principal d'inscription ───────────────────────────────
 export class RegisterDto {
   @ApiProperty({ example: 'ahmed.mansouri@email.com' })
   @IsEmail()
@@ -28,4 +42,12 @@ export class RegisterDto {
   @ApiProperty({ enum: UserRole, example: UserRole.PATIENT })
   @IsEnum(UserRole)
   role: UserRole;
+
+  // ✅ Champ documents — optionnel, uniquement pour les médecins
+  @ApiProperty({ required: false, type: [DoctorDocumentDto] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => DoctorDocumentDto)
+  documents?: DoctorDocumentDto[];
 }

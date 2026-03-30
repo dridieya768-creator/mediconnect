@@ -104,7 +104,7 @@ __decorate([
     __metadata("design:type", Date)
 ], User.prototype, "lastLoginAt", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: "avatar_url", nullable: true }),
+    (0, typeorm_1.Column)({ name: "avatar_url", nullable: true, type: "text" }),
     __metadata("design:type", String)
 ], User.prototype, "avatarUrl", void 0);
 __decorate([

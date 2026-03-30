@@ -16,10 +16,22 @@ export class PrescriptionsController {
     return this.prescriptionsService.create(dto);
   }
 
+  @Post("check-interactions")
+  @ApiOperation({ summary: "Vérifier les interactions médicamenteuses" })
+  checkInteractions(@Body() body: { medications: any[] }) {
+    return this.prescriptionsService.checkInteractions(body.medications ?? []);
+  }
+
   @Get("patient/:patientId")
   @ApiOperation({ summary: "Ordonnances d\'un patient" })
   findByPatient(@Param("patientId") patientId: string) {
     return this.prescriptionsService.findByPatient(patientId);
+  }
+
+  @Get("qr/:qrCode")
+  @ApiOperation({ summary: "Trouver une ordonnance par QR code" })
+  findByQrCode(@Param("qrCode") qrCode: string) {
+    return this.prescriptionsService.findByQrCode(qrCode);
   }
 
   @Get(":id")

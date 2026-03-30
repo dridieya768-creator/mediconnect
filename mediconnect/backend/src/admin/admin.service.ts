@@ -158,16 +158,26 @@ export class AdminService {
     return { message: `Mot de passe réinitialisé pour ${user.email}` };
   }
 
-  // ✅ Requête fixe — colonnes confirmées dans les logs
+  // ✅ FIX : aliases camelCase pour correspondre exactement à l'interface DoctorDocument du frontend
   async getDoctorDocuments(userId: string) {
     try {
       const docs = await this.userRepository.query(
-        `SELECT id, user_id, type, filename, original_name, file_path, base64, status, created_at
+        `SELECT
+           id,
+           user_id        AS "userId",
+           type,
+           filename,
+           original_name  AS "originalName",
+           file_path      AS "filePath",
+           base64,
+           status,
+           created_at     AS "createdAt"
          FROM doctor_documents
          WHERE user_id = $1
          ORDER BY created_at ASC`,
         [userId],
       );
+      console.log(`[Admin] getDoctorDocuments: ${docs.length} doc(s) pour userId=${userId}`);
       return docs;
     } catch (err) {
       console.error('[Admin] getDoctorDocuments error:', err.message);

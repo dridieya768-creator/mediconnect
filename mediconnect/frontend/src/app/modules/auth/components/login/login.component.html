@@ -1,114 +1,92 @@
-<div class="login-page">
+<div class="auth-page">
 
-  <!-- GAUCHE : branding -->
-  <div class="login-left">
-    <div class="brand-area">
-      <div class="brand-logo">
-        <span class="logo-icon">🏥</span>
-        <span class="logo-text">MediConnect</span>
+  <!-- Illustration gauche -->
+  <div class="auth-left">
+    <div class="illustration-circle">
+      <div class="floating-icon" style="top:10%;left:15%">💊</div>
+      <div class="floating-icon" style="top:8%;right:18%">👨‍⚕️</div>
+      <div class="floating-icon" style="bottom:20%;left:10%">📋</div>
+      <div class="floating-icon" style="bottom:15%;right:12%">❓</div>
+      <div class="doctors-svg">
+        <svg viewBox="0 0 260 320" fill="none" xmlns="http://www.w3.org/2000/svg" width="260">
+          <!-- Doctor 1 body -->
+          <ellipse cx="90" cy="310" rx="40" ry="8" fill="#e2eaf5"/>
+          <rect x="65" y="200" width="50" height="110" rx="10" fill="#1a56db"/>
+          <circle cx="90" cy="175" r="30" fill="#fcd9bd"/>
+          <rect x="72" y="155" width="36" height="20" rx="10" fill="#1e3a5f"/>
+          <!-- stethoscope -->
+          <path d="M85 205 Q75 220 80 235" stroke="white" stroke-width="2.5" fill="none"/>
+          <circle cx="80" cy="237" r="5" fill="white"/>
+          <!-- Doctor 2 body -->
+          <ellipse cx="175" cy="310" rx="40" ry="8" fill="#e2eaf5"/>
+          <rect x="150" y="200" width="50" height="110" rx="10" fill="#0ea5e9"/>
+          <circle cx="175" cy="175" r="30" fill="#fcd9bd"/>
+          <rect x="158" y="155" width="34" height="18" rx="9" fill="#7c3aed"/>
+          <!-- clipboard -->
+          <rect x="185" y="210" width="22" height="28" rx="3" fill="white" stroke="#cbd5e1" stroke-width="1"/>
+          <rect x="189" y="207" width="14" height="6" rx="3" fill="#94a3b8"/>
+          <line x1="189" y1="220" x2="203" y2="220" stroke="#94a3b8" stroke-width="1.5"/>
+          <line x1="189" y1="226" x2="203" y2="226" stroke="#94a3b8" stroke-width="1.5"/>
+          <line x1="189" y1="232" x2="198" y2="232" stroke="#94a3b8" stroke-width="1.5"/>
+        </svg>
       </div>
-      <p class="brand-subtitle">Plateforme e-Santé SaaS · Tunisie</p>
     </div>
-   <div class="alert-info" *ngIf="infoMsg">{{ infoMsg }}</div>
-    <div class="portal-list">
-      <div class="portal-item" *ngFor="let p of portals">
-        <span class="portal-icon">{{ p.icon }}</span>
-        <div>
-          <div class="portal-name">{{ p.name }}</div>
-          <div class="portal-desc">{{ p.desc }}</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="brand-footer">
-      <span class="security-badge">🔒 Données chiffrées AES-256</span>
-      <span class="security-badge">✅ Conforme RGPD</span>
+    <div class="auth-left-text">
+      <h1>Vous avez déjà utilisé <span class="brand-name">MediConnect</span> ?</h1>
     </div>
   </div>
 
-  <!-- DROITE : formulaire -->
-  <div class="login-right">
-    <div class="login-card">
+  <!-- Formulaire droite -->
+  <div class="auth-right">
+    <div class="auth-card">
 
-      <div class="card-header">
-        <h2>Connexion</h2>
-        <p>Accédez à votre espace santé sécurisé</p>
+      <!-- Tabs -->
+      <div class="auth-tabs">
+        <button class="tab-btn active" routerLink="/auth/login">Connexion</button>
+        <button class="tab-btn" routerLink="/auth/register">Inscription</button>
       </div>
 
-      <!-- Erreur globale -->
-      <div class="alert-error" *ngIf="error">
-        <span>⚠️</span> {{ error }}
-      </div>
+      <!-- Message info -->
+      <div class="alert-info" *ngIf="infoMsg">{{ infoMsg }}</div>
+      <div class="alert-error" *ngIf="error">⚠️ {{ error }}</div>
 
-      <!-- US3 : SSO -->
-      <div class="sso-group">
+      <!-- SSO -->
+      <button class="sso-btn facebook" (click)="loginWithFacebook()" [disabled]="isSsoLoading">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+        Se connecter avec Facebook
+      </button>
 
-        <!-- Vrai bouton Google GSI (rendu par google-auth.service) -->
-        <div id="google-signin-btn" style="width:100%; min-height:44px;"></div>
+      <div id="google-signin-btn" class="google-btn-wrap"></div>
 
-        <!-- Facebook -->
-        <button class="sso-btn" (click)="loginWithFacebook()" [disabled]="isSsoLoading">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="#1877F2">
-            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-          </svg>
-          {{ isSsoLoading ? "Connexion..." : "Continuer avec Facebook" }}
-        </button>
+      <div class="divider"><span>OU</span></div>
 
-      </div>
-
-      <div class="divider">
-        <span>ou</span>
-      </div>
-
-      <!-- US2 : Login email/password -->
+      <!-- Form -->
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-
-        <div class="field-group">
-          <label>Adresse email</label>
-          <div class="input-wrap">
-            <span class="input-icon">✉️</span>
-            <input type="email" formControlName="email"
-              placeholder="votre@email.com" autocomplete="email">
-          </div>
+        <div class="field">
+          <input type="email" formControlName="email" placeholder="Adresse email" autocomplete="email">
         </div>
-
-        <div class="field-group">
-          <div class="label-row">
-            <label>Mot de passe</label>
-            <!-- US5 : Mot de passe oublié -->
-            <a routerLink="/auth/forgot-password" class="forgot-link">Mot de passe oublié ?</a>
-          </div>
-          <div class="input-wrap">
-            <span class="input-icon">🔑</span>
-            <input [type]="showPassword ? 'text' : 'password'" formControlName="password"
-              placeholder="••••••••" autocomplete="current-password">
-            <button type="button" class="toggle-pw" (click)="showPassword = !showPassword">
-              {{ showPassword ? "🙈" : "👁️" }}
-            </button>
-          </div>
+        <div class="field">
+          <input [type]="showPassword ? 'text' : 'password'" formControlName="password"
+            placeholder="Mot de passe" autocomplete="current-password">
+          <button type="button" class="eye-btn" (click)="showPassword = !showPassword">
+            {{ showPassword ? '🙈' : '👁️' }}
+          </button>
         </div>
 
         <button type="submit" class="submit-btn" [disabled]="isLoading || loginForm.invalid">
-          <span *ngIf="!isLoading">Se connecter →</span>
-          <span *ngIf="isLoading" class="spinner">⏳</span>
+          <span *ngIf="!isLoading">Se connecter</span>
+          <span *ngIf="isLoading" class="spinner"></span>
         </button>
-
       </form>
 
-      <p class="register-link">
-        Pas encore de compte ? <a routerLink="/auth/register">Créer un compte</a>
-      </p>
+      <a routerLink="/auth/forgot-password" class="forgot-link">Vous avez perdu votre mot de passe ?</a>
 
-      <!-- Comptes de test -->
+      <!-- Test accounts -->
       <div class="test-zone">
-        <div class="test-header">⚡ Comptes de test (cliquer pour remplir)</div>
+        <div class="test-header">⚡ Comptes de test</div>
         <div class="test-grid">
           <button class="test-btn" *ngFor="let t of testAccounts" (click)="fillTest(t.email)">
-            <span>{{ t.icon }}</span>
-            <div>
-              <div class="test-role">{{ t.role }}</div>
-              <div class="test-email">{{ t.email }}</div>
-            </div>
+            {{ t.icon }} {{ t.role }}
           </button>
         </div>
         <div class="test-pw">Mot de passe : <code>Test1234!</code></div>

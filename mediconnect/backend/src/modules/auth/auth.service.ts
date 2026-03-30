@@ -18,10 +18,11 @@ import * as bcrypt from "bcryptjs";
 import * as crypto from "crypto";
 import { v4 as uuidv4 } from "uuid";
 import * as nodemailer from 'nodemailer';
-import { NotificationsService } from '../notifications/notifications.service'; // ✅
-import { NotificationType } from '../notifications/notification.entity';       // ✅
+import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationType } from '../notifications/notification.entity';
 import * as fs from "fs";
 import { join } from "path";
+
 function generateTotpSecret(): string {
   return crypto.randomBytes(20).toString("hex").toUpperCase();
 }
@@ -49,7 +50,7 @@ export class AuthService {
     private patientRepository: Repository<Patient>,
     private jwtService: JwtService,
     private configService: ConfigService,
-    private notificationsService: NotificationsService, // ✅
+    private notificationsService: NotificationsService,
   ) {}
 
   async validateUser(email: string, password: string): Promise<User | null> {
@@ -64,90 +65,94 @@ export class AuthService {
     return isValid ? user : null;
   }
 
- async register(registerDto: RegisterDto) {
-  // ✅ Cherche aussi dans les comptes soft-deleted
-  const existing = await this.userRepository
-    .createQueryBuilder("user")
-    .withDeleted()
-    .where("user.email = :email", { email: registerDto.email })
-    .getOne();
+  async register(registerDto: RegisterDto) {
+    const existing = await this.userRepository
+      .createQueryBuilder("user")
+      .withDeleted()
+      .where("user.email = :email", { email: registerDto.email })
+      .getOne();
 
-  if (existing) {
-    if (existing.deletedAt) {
-      // ✅ Compte supprimé → restaurer et mettre à jour
-      const hashedPassword = await bcrypt.hash(registerDto.password, 12);
-      await this.userRepository.restore(existing.id);
-      await this.userRepository.update(existing.id, {
-        firstName: registerDto.firstName,
-        lastName:  registerDto.lastName,
-        phone:     registerDto.phone,
-        role:      registerDto.role as UserRole,
-        password:  hashedPassword,
-        status:    UserStatus.ACTIVE,
-      });
-      const restored = await this.userRepository.findOne({ where: { id: existing.id } });
-      const tokens = await this.generateTokens(restored!);
-      return { user: this.sanitizeUser(restored!), ...tokens };
-    }
-    throw new ConflictException("Email deja utilise");
-  }
-
-  const hashedPassword = await bcrypt.hash(registerDto.password, 12);
-
-  const isMedecin = [
-    UserRole.MEDECIN_GENERALISTE,
-    UserRole.MEDECIN_SPECIALISTE,
-    UserRole.MEDECIN_CHEF_SERVICE,
-  ].includes(registerDto.role as UserRole);
-
-  const user = this.userRepository.create({
-    ...registerDto,
-    password: hashedPassword,
-    status: isMedecin ? UserStatus.PENDING_VERIFICATION : UserStatus.ACTIVE,
-  });
-  const savedUser = await this.userRepository.save(user);
-
-  if (savedUser.role === UserRole.PATIENT) {
-    await this.createPatientProfile(savedUser);
-  }
-
-  if (isMedecin) {
-    try {
-      const admins = await this.userRepository.find({
-        where: { role: UserRole.ADMIN_SYSTEM },
-      });
-      for (const admin of admins) {
-        await this.notificationsService.create({
-          userId:    admin.id,
-          type:      NotificationType.DOCTOR_PENDING_APPROVAL,
-          title:     '🩺 Nouvelle inscription médecin',
-          message:   `Dr. ${savedUser.firstName} ${savedUser.lastName} a créé un compte et attend votre validation.`,
-          relatedId: savedUser.id,
+    if (existing) {
+      if (existing.deletedAt) {
+        const hashedPassword = await bcrypt.hash(registerDto.password, 12);
+        await this.userRepository.restore(existing.id);
+        await this.userRepository.update(existing.id, {
+          firstName: registerDto.firstName,
+          lastName:  registerDto.lastName,
+          phone:     registerDto.phone,
+          role:      registerDto.role as UserRole,
+          password:  hashedPassword,
+          status:    UserStatus.ACTIVE,
         });
+        const restored = await this.userRepository.findOne({ where: { id: existing.id } });
+        const tokens = await this.generateTokens(restored!);
+        return { user: this.sanitizeUser(restored!), ...tokens };
       }
-      console.log(`[Auth] ${admins.length} admin(s) notifié(s) pour médecin ${savedUser.email}`);
-    } catch (e) {
-      console.warn('[Auth] Impossible de notifier les admins:', e.message);
+      throw new ConflictException("Email deja utilise");
     }
-  }
 
-  const tokens = await this.generateTokens(savedUser);
-  return {
-    user: this.sanitizeUser(savedUser),
-    ...tokens,
-    ...(isMedecin ? {
-      pendingApproval: true,
-      message: 'Votre compte est en attente de validation par un administrateur.',
-    } : {}),
-  };
-}
+    const hashedPassword = await bcrypt.hash(registerDto.password, 12);
+
+    const isMedecin = [
+      UserRole.MEDECIN_GENERALISTE,
+      UserRole.MEDECIN_SPECIALISTE,
+      UserRole.MEDECIN_CHEF_SERVICE,
+    ].includes(registerDto.role as UserRole);
+
+    const user = this.userRepository.create({
+      ...registerDto,
+      password: hashedPassword,
+      status: isMedecin ? UserStatus.PENDING_VERIFICATION : UserStatus.ACTIVE,
+    });
+    const savedUser = await this.userRepository.save(user);
+
+    // ── Sauvegarder les documents du médecin ──────────────
+    if (isMedecin && (registerDto as any).documents?.length) {
+      await this.saveDoctorDocuments(savedUser.id, (registerDto as any).documents);
+      console.log(`[Auth] ${(registerDto as any).documents.length} document(s) sauvegardé(s) pour ${savedUser.email}`);
+    }
+
+    if (savedUser.role === UserRole.PATIENT) {
+      await this.createPatientProfile(savedUser);
+    }
+
+    if (isMedecin) {
+      try {
+        const admins = await this.userRepository.find({
+          where: { role: UserRole.ADMIN_SYSTEM },
+        });
+        for (const admin of admins) {
+          await this.notificationsService.create({
+            userId:    admin.id,
+            type:      NotificationType.DOCTOR_PENDING_APPROVAL,
+            title:     '🩺 Nouvelle inscription médecin',
+            message:   `Dr. ${savedUser.firstName} ${savedUser.lastName} a créé un compte et attend votre validation.`,
+            relatedId: savedUser.id,
+          });
+        }
+        console.log(`[Auth] ${admins.length} admin(s) notifié(s) pour médecin ${savedUser.email}`);
+      } catch (e) {
+        console.warn('[Auth] Impossible de notifier les admins:', e.message);
+      }
+    }
+
+    const tokens = await this.generateTokens(savedUser);
+    return {
+      user: this.sanitizeUser(savedUser),
+      ...tokens,
+      ...(isMedecin ? {
+        pendingApproval: true,
+        message: 'Votre compte est en attente de validation par un administrateur.',
+      } : {}),
+    };
+  }
 
   async login(loginDto: LoginDto) {
     const user = await this.validateUser(loginDto.email, loginDto.password);
     if (!user) throw new UnauthorizedException("Email ou mot de passe incorrect");
     if (user.status === UserStatus.SUSPENDED) throw new UnauthorizedException("Compte suspendu");
-   if (user.status === UserStatus.PENDING_VERIFICATION)
-  throw new UnauthorizedException("Votre compte est en attente de validation par un administrateur.");
+    if (user.status === UserStatus.PENDING_VERIFICATION)
+      throw new UnauthorizedException("Votre compte est en attente de validation par un administrateur.");
 
     if (user.mfaEnabled) {
       return { requires2fa: true, userId: user.id, message: "Code 2FA requis" };
@@ -330,6 +335,33 @@ export class AuthService {
       notification: {},
     });
     return this.patientRepository.save(patient);
+  }
+
+  // ── Sauvegarder les documents du médecin sur disque + BDD ──────────────────
+  private async saveDoctorDocuments(
+    userId: string,
+    documents: Array<{ type: string; filename: string; base64: string }>
+  ): Promise<void> {
+    try {
+      const dir = join(process.cwd(), "uploads", "doctor-docs", userId);
+      fs.mkdirSync(dir, { recursive: true });
+
+      for (const doc of documents) {
+        const buffer   = Buffer.from(doc.base64, "base64");
+        const filename = `${doc.type}_${Date.now()}.pdf`;
+        const filepath = join(dir, filename);
+        fs.writeFileSync(filepath, buffer);
+
+        await this.userRepository.query(
+          `INSERT INTO doctor_documents(id, user_id, type, filename, original_name, base64, file_path, status, created_at)
+           VALUES(uuid_generate_v4(), $1, $2, $3, $4, $5, $6, 'PENDING', now())`,
+          [userId, doc.type, filename, doc.filename, doc.base64, filepath]
+        );
+        console.log(`[Auth] Document sauvegardé: ${doc.type} pour ${userId}`);
+      }
+    } catch (e) {
+      console.warn("[Auth] Erreur sauvegarde documents:", e.message);
+    }
   }
 
   async generateTokens(user: User) {

@@ -26,32 +26,18 @@ let PatientsController = class PatientsController {
         this.patientRepo = patientRepo;
     }
     async getMe(req) {
-        const userId = req.user?.sub
-            || req.user?.id
-            || req.user?.userId;
-        console.log("[PatientsController] req.user:", req.user);
-        console.log("[PatientsController] userId extrait:", userId);
-        if (!userId) {
+        const userId = req.user?.sub || req.user?.id || req.user?.userId;
+        if (!userId)
             return { success: false, data: null, message: "Non authentifié" };
-        }
         const user = await this.userRepo.findOne({
             where: { id: userId },
-            select: ["id", "firstName", "lastName", "email", "role", "avatarUrl"],
+            select: ["id", "firstName", "lastName", "email", "role", "avatarUrl", "mfaEnabled"],
         });
-        if (!user) {
+        if (!user)
             return { success: false, data: null, message: "Utilisateur introuvable" };
-        }
-        const patient = await this.patientRepo.findOne({
-            where: { userId },
-        });
-        console.log("[PatientsController] patient trouvé:", patient?.id);
-        if (!patient) {
-            return {
-                success: false,
-                data: null,
-                message: "Profil patient introuvable — veuillez compléter votre inscription",
-            };
-        }
+        const patient = await this.patientRepo.findOne({ where: { userId } });
+        if (!patient)
+            return { success: false, data: null, message: "Profil patient introuvable" };
         return {
             success: true,
             id: patient.id,
@@ -63,19 +49,97 @@ let PatientsController = class PatientsController {
                 email: user.email,
                 role: user.role,
                 avatarUrl: user.avatarUrl,
+                mfaEnabled: user.mfaEnabled,
+                telephone: patient.telephone,
+                dateNaissance: patient.dateNaissance,
+                sexe: patient.sexe,
+                ville: patient.ville,
+                languePreferee: patient.languePreferee,
+                groupeSanguin: patient.groupeSanguin,
+                nss: patient.nss,
+                qrCode: patient.qrCode,
+                allergies: patient.allergies,
+                maladiesChroniques: patient.maladiesChroniques,
+                medicamentsActuels: patient.medicamentsActuels,
             },
         };
+    }
+    async updateAvatar(body, req) {
+        const userId = req.user?.sub || req.user?.id || req.user?.userId;
+        if (!userId)
+            return { success: false, message: "Non authentifié" };
+        if (!body.avatarUrl)
+            return { success: false, message: "avatarUrl requis" };
+        if (body.avatarUrl.length > 3000000) {
+            return { success: false, message: "Image trop grande (max 2 Mo)" };
+        }
+        try {
+            await this.userRepo.update(userId, { avatarUrl: body.avatarUrl });
+            return { success: true };
+        }
+        catch (err) {
+            console.error("[PATCH /patients/avatar] error:", err?.message);
+            return { success: false, message: "Erreur lors de la mise à jour de l'avatar" };
+        }
+    }
+    async updateProfile(id, body, req) {
+        const userId = req.user?.sub || req.user?.id || req.user?.userId;
+        console.log("[PATCH /patients/:id] id:", id, "userId:", userId, "body:", body);
+        const patient = await this.patientRepo.findOne({ where: { id } });
+        console.log("[PATCH /patients/:id] patient trouvé:", patient?.id, "patient.userId:", patient?.userId);
+        if (!patient)
+            return { success: false, message: "Patient introuvable" };
+        if (patient.userId !== userId)
+            return { success: false, message: "Non autorisé" };
+        const allowed = ['telephone', 'dateNaissance', 'sexe', 'ville', 'languePreferee',
+            'groupeSanguin', 'allergies', 'maladiesChroniques', 'medicamentsActuels',
+            'rappelsAuto', 'nom', 'prenom'];
+        const updateData = {};
+        for (const key of allowed) {
+            const val = body[key];
+            if (Array.isArray(val)) {
+                updateData[key] = val;
+            }
+            else if (val !== undefined && val !== null && val !== '') {
+                updateData[key] = val;
+            }
+        }
+        if (body.nss && body.nss.trim())
+            updateData.nss = body.nss.trim();
+        console.log("[PATCH /patients/:id] updateData:", updateData);
+        await this.patientRepo.update(id, updateData);
+        const updated = await this.patientRepo.findOne({ where: { id } });
+        return { success: true, data: updated };
     }
 };
 exports.PatientsController = PatientsController;
 __decorate([
     (0, common_1.Get)("me"),
-    (0, swagger_1.ApiOperation)({ summary: "Profil du patient connecté" }),
+    (0, swagger_1.ApiOperation)({ summary: "Profil complet du patient connecté" }),
     __param(0, (0, common_1.Req)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], PatientsController.prototype, "getMe", null);
+__decorate([
+    (0, common_1.Patch)("avatar"),
+    (0, swagger_1.ApiOperation)({ summary: "Mettre à jour la photo de profil" }),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], PatientsController.prototype, "updateAvatar", null);
+__decorate([
+    (0, common_1.Patch)(":id"),
+    (0, swagger_1.ApiOperation)({ summary: "Mettre à jour le profil patient" }),
+    __param(0, (0, common_1.Param)("id")),
+    __param(1, (0, common_1.Body)()),
+    __param(2, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object, Object]),
+    __metadata("design:returntype", Promise)
+], PatientsController.prototype, "updateProfile", null);
 exports.PatientsController = PatientsController = __decorate([
     (0, swagger_1.ApiTags)("patients"),
     (0, swagger_1.ApiBearerAuth)(),

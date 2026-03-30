@@ -12,6 +12,11 @@ export const PHARMACIE_ROUTES: Routes = [
         loadComponent: () =>
           import("./pages/dashboard/pharmacie-dashboard.component").then((m) => m.PharmacieDashboardComponent),
       },
+      {
+        path: "scan",
+        loadComponent: () =>
+          import("./pages/scanner/scanner-pharmacie.component").then((m) => m.ScannerPharmacieComponent),
+      },
     ],
   },
 ];

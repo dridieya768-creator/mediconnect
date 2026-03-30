@@ -145,6 +145,14 @@ loginWithFacebook(fbToken: string): Observable<any> {
     this.router.navigate(["/auth/login"]);
   }
 
+  updateAvatar(avatarUrl: string): void {
+    const user = this._currentUser();
+    if (!user) return;
+    const updated = { ...user, avatarUrl };
+    localStorage.setItem("current_user", JSON.stringify(updated));
+    this._currentUser.set(updated);
+  }
+
   getRedirectPath(role: string): string {
     const routes: Record<string, string> = {
       PATIENT: "/patient/dashboard",

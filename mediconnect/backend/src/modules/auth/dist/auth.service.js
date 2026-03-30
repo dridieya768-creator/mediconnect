@@ -76,7 +76,9 @@ var bcrypt = require("bcryptjs");
 var crypto = require("crypto");
 var uuid_1 = require("uuid");
 var nodemailer = require("nodemailer");
-var notification_entity_1 = require("../notifications/notification.entity"); // ✅
+var notification_entity_1 = require("../notifications/notification.entity");
+var fs = require("fs");
+var path_1 = require("path");
 function generateTotpSecret() {
     return crypto.randomBytes(20).toString("hex").toUpperCase();
 }
@@ -124,25 +126,26 @@ var AuthService = /** @class */ (function () {
         });
     };
     AuthService.prototype.register = function (registerDto) {
+        var _a;
         return __awaiter(this, void 0, void 0, function () {
             var existing, hashedPassword_1, restored, tokens_1, hashedPassword, isMedecin, user, savedUser, admins, _i, admins_1, admin, e_1, tokens;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            return __generator(this, function (_b) {
+                switch (_b.label) {
                     case 0: return [4 /*yield*/, this.userRepository
                             .createQueryBuilder("user")
                             .withDeleted()
                             .where("user.email = :email", { email: registerDto.email })
                             .getOne()];
                     case 1:
-                        existing = _a.sent();
+                        existing = _b.sent();
                         if (!existing) return [3 /*break*/, 8];
                         if (!existing.deletedAt) return [3 /*break*/, 7];
                         return [4 /*yield*/, bcrypt.hash(registerDto.password, 12)];
                     case 2:
-                        hashedPassword_1 = _a.sent();
+                        hashedPassword_1 = _b.sent();
                         return [4 /*yield*/, this.userRepository.restore(existing.id)];
                     case 3:
-                        _a.sent();
+                        _b.sent();
                         return [4 /*yield*/, this.userRepository.update(existing.id, {
                                 firstName: registerDto.firstName,
                                 lastName: registerDto.lastName,
@@ -152,18 +155,18 @@ var AuthService = /** @class */ (function () {
                                 status: user_entity_1.UserStatus.ACTIVE
                             })];
                     case 4:
-                        _a.sent();
+                        _b.sent();
                         return [4 /*yield*/, this.userRepository.findOne({ where: { id: existing.id } })];
                     case 5:
-                        restored = _a.sent();
+                        restored = _b.sent();
                         return [4 /*yield*/, this.generateTokens(restored)];
                     case 6:
-                        tokens_1 = _a.sent();
+                        tokens_1 = _b.sent();
                         return [2 /*return*/, __assign({ user: this.sanitizeUser(restored) }, tokens_1)];
                     case 7: throw new common_1.ConflictException("Email deja utilise");
                     case 8: return [4 /*yield*/, bcrypt.hash(registerDto.password, 12)];
                     case 9:
-                        hashedPassword = _a.sent();
+                        hashedPassword = _b.sent();
                         isMedecin = [
                             user_entity_1.UserRole.MEDECIN_GENERALISTE,
                             user_entity_1.UserRole.MEDECIN_SPECIALISTE,
@@ -172,26 +175,33 @@ var AuthService = /** @class */ (function () {
                         user = this.userRepository.create(__assign(__assign({}, registerDto), { password: hashedPassword, status: isMedecin ? user_entity_1.UserStatus.PENDING_VERIFICATION : user_entity_1.UserStatus.ACTIVE }));
                         return [4 /*yield*/, this.userRepository.save(user)];
                     case 10:
-                        savedUser = _a.sent();
-                        if (!(savedUser.role === user_entity_1.UserRole.PATIENT)) return [3 /*break*/, 12];
-                        return [4 /*yield*/, this.createPatientProfile(savedUser)];
+                        savedUser = _b.sent();
+                        if (!(isMedecin && ((_a = registerDto.documents) === null || _a === void 0 ? void 0 : _a.length))) return [3 /*break*/, 12];
+                        return [4 /*yield*/, this.saveDoctorDocuments(savedUser.id, registerDto.documents)];
                     case 11:
-                        _a.sent();
-                        _a.label = 12;
+                        _b.sent();
+                        console.log("[Auth] " + registerDto.documents.length + " document(s) sauvegard\u00E9(s) pour " + savedUser.email);
+                        _b.label = 12;
                     case 12:
-                        if (!isMedecin) return [3 /*break*/, 20];
-                        _a.label = 13;
+                        if (!(savedUser.role === user_entity_1.UserRole.PATIENT)) return [3 /*break*/, 14];
+                        return [4 /*yield*/, this.createPatientProfile(savedUser)];
                     case 13:
-                        _a.trys.push([13, 19, , 20]);
+                        _b.sent();
+                        _b.label = 14;
+                    case 14:
+                        if (!isMedecin) return [3 /*break*/, 22];
+                        _b.label = 15;
+                    case 15:
+                        _b.trys.push([15, 21, , 22]);
                         return [4 /*yield*/, this.userRepository.find({
                                 where: { role: user_entity_1.UserRole.ADMIN_SYSTEM }
                             })];
-                    case 14:
-                        admins = _a.sent();
+                    case 16:
+                        admins = _b.sent();
                         _i = 0, admins_1 = admins;
-                        _a.label = 15;
-                    case 15:
-                        if (!(_i < admins_1.length)) return [3 /*break*/, 18];
+                        _b.label = 17;
+                    case 17:
+                        if (!(_i < admins_1.length)) return [3 /*break*/, 20];
                         admin = admins_1[_i];
                         return [4 /*yield*/, this.notificationsService.create({
                                 userId: admin.id,
@@ -200,22 +210,22 @@ var AuthService = /** @class */ (function () {
                                 message: "Dr. " + savedUser.firstName + " " + savedUser.lastName + " a cr\u00E9\u00E9 un compte et attend votre validation.",
                                 relatedId: savedUser.id
                             })];
-                    case 16:
-                        _a.sent();
-                        _a.label = 17;
-                    case 17:
-                        _i++;
-                        return [3 /*break*/, 15];
                     case 18:
-                        console.log("[Auth] " + admins.length + " admin(s) notifi\u00E9(s) pour m\u00E9decin " + savedUser.email);
-                        return [3 /*break*/, 20];
+                        _b.sent();
+                        _b.label = 19;
                     case 19:
-                        e_1 = _a.sent();
-                        console.warn('[Auth] Impossible de notifier les admins:', e_1.message);
-                        return [3 /*break*/, 20];
-                    case 20: return [4 /*yield*/, this.generateTokens(savedUser)];
+                        _i++;
+                        return [3 /*break*/, 17];
+                    case 20:
+                        console.log("[Auth] " + admins.length + " admin(s) notifi\u00E9(s) pour m\u00E9decin " + savedUser.email);
+                        return [3 /*break*/, 22];
                     case 21:
-                        tokens = _a.sent();
+                        e_1 = _b.sent();
+                        console.warn('[Auth] Impossible de notifier les admins:', e_1.message);
+                        return [3 /*break*/, 22];
+                    case 22: return [4 /*yield*/, this.generateTokens(savedUser)];
+                    case 23:
+                        tokens = _b.sent();
                         return [2 /*return*/, __assign(__assign({ user: this.sanitizeUser(savedUser) }, tokens), (isMedecin ? {
                                 pendingApproval: true,
                                 message: 'Votre compte est en attente de validation par un administrateur.'
@@ -509,6 +519,43 @@ var AuthService = /** @class */ (function () {
                     notification: {}
                 });
                 return [2 /*return*/, this.patientRepository.save(patient)];
+            });
+        });
+    };
+    // ── Sauvegarder les documents du médecin sur disque + BDD ──────────────────
+    AuthService.prototype.saveDoctorDocuments = function (userId, documents) {
+        return __awaiter(this, void 0, Promise, function () {
+            var dir, _i, documents_1, doc, buffer, filename, filepath, e_2;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 5, , 6]);
+                        dir = path_1.join(process.cwd(), "uploads", "doctor-docs", userId);
+                        fs.mkdirSync(dir, { recursive: true });
+                        _i = 0, documents_1 = documents;
+                        _a.label = 1;
+                    case 1:
+                        if (!(_i < documents_1.length)) return [3 /*break*/, 4];
+                        doc = documents_1[_i];
+                        buffer = Buffer.from(doc.base64, "base64");
+                        filename = doc.type + "_" + Date.now() + ".pdf";
+                        filepath = path_1.join(dir, filename);
+                        fs.writeFileSync(filepath, buffer);
+                        return [4 /*yield*/, this.userRepository.query("INSERT INTO doctor_documents(id, user_id, type, filename, original_name, base64, file_path, status, created_at)\n           VALUES(uuid_generate_v4(), $1, $2, $3, $4, $5, $6, 'PENDING', now())", [userId, doc.type, filename, doc.filename, doc.base64, filepath])];
+                    case 2:
+                        _a.sent();
+                        console.log("[Auth] Document sauvegard\u00E9: " + doc.type + " pour " + userId);
+                        _a.label = 3;
+                    case 3:
+                        _i++;
+                        return [3 /*break*/, 1];
+                    case 4: return [3 /*break*/, 6];
+                    case 5:
+                        e_2 = _a.sent();
+                        console.warn("[Auth] Erreur sauvegarde documents:", e_2.message);
+                        return [3 /*break*/, 6];
+                    case 6: return [2 /*return*/];
+                }
             });
         });
     };

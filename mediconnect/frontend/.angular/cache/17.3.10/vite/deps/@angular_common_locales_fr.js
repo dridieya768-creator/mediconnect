@@ -1,4 +1,4 @@
-import "./chunk-J4B6MK7R.js";
+import "./chunk-ASLTLD6L.js";
 
 // node_modules/@angular/common/locales/fr.mjs
 var u = void 0;

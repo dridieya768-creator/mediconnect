@@ -12,125 +12,175 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MedecinsController = void 0;
+exports.MedecinsController = exports.UpdateMedecinProfileDto = void 0;
 const common_1 = require("@nestjs/common");
-const swagger_1 = require("@nestjs/swagger");
-const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
-const typeorm_1 = require("@nestjs/typeorm");
-const typeorm_2 = require("typeorm");
+const medecins_service_1 = require("./medecins.service");
+const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const user_entity_1 = require("../users/entities/user.entity");
+const current_user_decorator_1 = require("../../common/decorators/current-user.decorator");
+const update_availability_dto_1 = require("./update-availability.dto");
+const search_medecins_dto_1 = require("./dto/search-medecins.dto");
+const get_slots_query_dto_1 = require("./dto/get-slots-query.dto");
+class UpdateMedecinProfileDto {
+}
+exports.UpdateMedecinProfileDto = UpdateMedecinProfileDto;
 let MedecinsController = class MedecinsController {
-    constructor(userRepository) {
-        this.userRepository = userRepository;
+    constructor(medecinsService) {
+        this.medecinsService = medecinsService;
     }
-    async getMe(req) {
-        const userId = req.user?.sub || req.user?.id || req.user?.userId;
-        if (!userId) {
-            return { success: false, data: null, message: "Non authentifié" };
-        }
-        const user = await this.userRepository.findOne({
-            where: { id: userId },
-            select: ["id", "firstName", "lastName", "email", "role", "avatarUrl"],
-        });
-        if (!user) {
-            return { success: false, data: null, message: "Médecin introuvable" };
-        }
+    async updateAvailability(user, dto) {
+        console.log('[availability] body received:', dto);
+        return this.medecinsService.updateAvailability(user.id, dto);
+    }
+    async getAvailability(user) {
+        return this.medecinsService.getAvailability(user.id);
+    }
+    async acceptAppointment(user, appointmentId) {
+        console.log(`[Controller] Accepting appointment ${appointmentId} for doctor ${user.id}`);
+        return this.medecinsService.acceptAppointment(user.id, appointmentId);
+    }
+    async getMe(user) {
+        const profile = await this.medecinsService.getProfile(user.id);
         return {
-            success: true,
+            ...user,
+            id: user.id,
             data: {
+                ...user,
                 id: user.id,
-                userId: user.id,
-                firstName: user.firstName,
-                lastName: user.lastName,
-                email: user.email,
-                role: user.role,
-                avatarUrl: user.avatarUrl,
-                specialite: user.role === user_entity_1.UserRole.MEDECIN_GENERALISTE
-                    ? "Médecin généraliste"
-                    : "Médecin spécialiste",
-                teleconsultation: true,
-                ville: "Tunis",
-            },
+                profile: profile,
+            }
         };
     }
-    async getMedecins(search, specialite) {
-        const qb = this.userRepository
-            .createQueryBuilder("user")
-            .where("user.role IN (:...roles)", {
-            roles: [user_entity_1.UserRole.MEDECIN_GENERALISTE, user_entity_1.UserRole.MEDECIN_SPECIALISTE],
-        })
-            .andWhere("user.status = 'ACTIVE'")
-            .andWhere("user.deletedAt IS NULL");
-        if (search) {
-            qb.andWhere("(LOWER(user.firstName) LIKE LOWER(:search) OR LOWER(user.lastName) LIKE LOWER(:search))", { search: `%${search}%` });
-        }
-        if (specialite && specialite !== "Toutes spécialités") {
-            if (specialite === "Généraliste") {
-                qb.andWhere("user.role = :role", { role: user_entity_1.UserRole.MEDECIN_GENERALISTE });
-            }
-            else {
-                qb.andWhere("user.role = :role", { role: user_entity_1.UserRole.MEDECIN_SPECIALISTE });
-            }
-        }
-        const users = await qb.limit(20).getMany();
-        return {
-            success: true,
-            data: users.map((u) => ({
-                id: u.id,
-                userId: u.id,
-                firstName: u.firstName,
-                lastName: u.lastName,
-                specialite: u.role === user_entity_1.UserRole.MEDECIN_GENERALISTE
-                    ? "Médecin généraliste"
-                    : "Médecin spécialiste",
-                ville: "Tunis",
-                teleconsultation: true,
-                avatarUrl: u.avatarUrl,
-            })),
-        };
+    async removePatient(user, patientId) {
+        return this.medecinsService.removePatientFromDoctorList(user.id, patientId);
     }
-    async updateAvailability(req, body) {
-        const userId = req.user?.sub || req.user?.id || req.user?.userId;
-        console.log(`[Availability] Médecin ${userId}:`, body);
-        return {
-            success: true,
-            message: "Disponibilités enregistrées avec succès.",
-        };
+    async checkPatient(user, patientId) {
+        return this.medecinsService.isPatientInDoctorList(user.id, patientId);
+    }
+    async getProfile(user) {
+        return this.medecinsService.getProfile(user.id);
+    }
+    async updateProfile(user, updateDto) {
+        return this.medecinsService.updateProfile(user.id, updateDto);
+    }
+    async getAllMedecins(query) {
+        return this.medecinsService.getAllMedecinsWithProfiles(query.search, query.specialite, query.ville);
+    }
+    async getMyPatients(user) {
+        return this.medecinsService.getMyPatientsFromAppointments(user.id);
+    }
+    async getMedecinAvailabilityById(id) {
+        console.log(`[Controller] GET availability for medecin: ${id}`);
+        return this.medecinsService.getMedecinAvailabilityById(id);
+    }
+    async getOccupiedSlots(id, query) {
+        return this.medecinsService.getOccupiedSlots(id, query.startDate, query.endDate);
+    }
+    async getMedecinById(id) {
+        return this.medecinsService.getMedecinById(id);
     }
 };
 exports.MedecinsController = MedecinsController;
 __decorate([
-    (0, common_1.Get)("me"),
-    (0, swagger_1.ApiOperation)({ summary: "Profil du médecin connecté" }),
-    __param(0, (0, common_1.Req)()),
+    (0, common_1.Put)('availability'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [user_entity_1.User, update_availability_dto_1.UpdateAvailabilityDto]),
+    __metadata("design:returntype", Promise)
+], MedecinsController.prototype, "updateAvailability", null);
+__decorate([
+    (0, common_1.Get)('availability'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [user_entity_1.User]),
+    __metadata("design:returntype", Promise)
+], MedecinsController.prototype, "getAvailability", null);
+__decorate([
+    (0, common_1.Patch)('appointments/:appointmentId/accept'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('appointmentId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [user_entity_1.User, String]),
+    __metadata("design:returntype", Promise)
+], MedecinsController.prototype, "acceptAppointment", null);
+__decorate([
+    (0, common_1.Get)('me'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [user_entity_1.User]),
     __metadata("design:returntype", Promise)
 ], MedecinsController.prototype, "getMe", null);
 __decorate([
-    (0, common_1.Get)(),
-    (0, swagger_1.ApiOperation)({ summary: "Rechercher des médecins" }),
-    __param(0, (0, common_1.Query)("search")),
-    __param(1, (0, common_1.Query)("specialite")),
+    (0, common_1.Delete)('patients/:patientId'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('patientId')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:paramtypes", [user_entity_1.User, String]),
     __metadata("design:returntype", Promise)
-], MedecinsController.prototype, "getMedecins", null);
+], MedecinsController.prototype, "removePatient", null);
 __decorate([
-    (0, common_1.Put)("availability"),
-    (0, swagger_1.ApiOperation)({ summary: "Sauvegarder les disponibilités du médecin" }),
-    __param(0, (0, common_1.Req)()),
+    (0, common_1.Get)('patients/:patientId/check'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('patientId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [user_entity_1.User, String]),
+    __metadata("design:returntype", Promise)
+], MedecinsController.prototype, "checkPatient", null);
+__decorate([
+    (0, common_1.Get)('profile'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [user_entity_1.User]),
+    __metadata("design:returntype", Promise)
+], MedecinsController.prototype, "getProfile", null);
+__decorate([
+    (0, common_1.Put)('profile'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:paramtypes", [user_entity_1.User, UpdateMedecinProfileDto]),
     __metadata("design:returntype", Promise)
-], MedecinsController.prototype, "updateAvailability", null);
+], MedecinsController.prototype, "updateProfile", null);
+__decorate([
+    (0, common_1.Get)(),
+    __param(0, (0, common_1.Query)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [search_medecins_dto_1.SearchMedecinsDto]),
+    __metadata("design:returntype", Promise)
+], MedecinsController.prototype, "getAllMedecins", null);
+__decorate([
+    (0, common_1.Get)('my-patients'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [user_entity_1.User]),
+    __metadata("design:returntype", Promise)
+], MedecinsController.prototype, "getMyPatients", null);
+__decorate([
+    (0, common_1.Get)(':id/availability'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], MedecinsController.prototype, "getMedecinAvailabilityById", null);
+__decorate([
+    (0, common_1.Get)(':id/slots'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Query)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, get_slots_query_dto_1.GetSlotsQueryDto]),
+    __metadata("design:returntype", Promise)
+], MedecinsController.prototype, "getOccupiedSlots", null);
+__decorate([
+    (0, common_1.Get)(':id'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], MedecinsController.prototype, "getMedecinById", null);
 exports.MedecinsController = MedecinsController = __decorate([
-    (0, swagger_1.ApiTags)("medecins"),
-    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.Controller)('medecins'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    (0, common_1.Controller)("medecins"),
-    __param(0, (0, typeorm_1.InjectRepository)(user_entity_1.User)),
-    __metadata("design:paramtypes", [typeorm_2.Repository])
+    __metadata("design:paramtypes", [medecins_service_1.MedecinsService])
 ], MedecinsController);
 //# sourceMappingURL=medecins.controller.js.map

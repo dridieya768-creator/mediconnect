@@ -137,10 +137,20 @@ let AdminService = class AdminService {
     }
     async getDoctorDocuments(userId) {
         try {
-            const docs = await this.userRepository.query(`SELECT id, user_id, type, filename, original_name, file_path, base64, status, created_at
+            const docs = await this.userRepository.query(`SELECT
+           id,
+           user_id        AS "userId",
+           type,
+           filename,
+           original_name  AS "originalName",
+           file_path      AS "filePath",
+           base64,
+           status,
+           created_at     AS "createdAt"
          FROM doctor_documents
          WHERE user_id = $1
          ORDER BY created_at ASC`, [userId]);
+            console.log(`[Admin] getDoctorDocuments: ${docs.length} doc(s) pour userId=${userId}`);
             return docs;
         }
         catch (err) {

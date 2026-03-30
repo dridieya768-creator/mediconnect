@@ -84,6 +84,7 @@ export declare class AuthService {
         user: any;
     }>;
     private createPatientProfile;
+    private saveDoctorDocuments;
     generateTokens(user: User): Promise<{
         access_token: string;
         refresh_token: string;

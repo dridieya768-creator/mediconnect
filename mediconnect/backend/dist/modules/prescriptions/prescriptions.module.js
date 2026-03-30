@@ -13,6 +13,8 @@ const prescriptions_controller_1 = require("./prescriptions.controller");
 const prescriptions_service_1 = require("./prescriptions.service");
 const prescription_entity_1 = require("./entities/prescription.entity");
 const qr_codes_module_1 = require("../qr-codes/qr-codes.module");
+const interaction_checker_service_1 = require("./interaction-checker.service");
+const pdf_service_1 = require("./pdf.service");
 let PrescriptionsModule = class PrescriptionsModule {
 };
 exports.PrescriptionsModule = PrescriptionsModule;
@@ -20,7 +22,7 @@ exports.PrescriptionsModule = PrescriptionsModule = __decorate([
     (0, common_1.Module)({
         imports: [typeorm_1.TypeOrmModule.forFeature([prescription_entity_1.Prescription]), qr_codes_module_1.QrCodesModule],
         controllers: [prescriptions_controller_1.PrescriptionsController],
-        providers: [prescriptions_service_1.PrescriptionsService],
+        providers: [prescriptions_service_1.PrescriptionsService, interaction_checker_service_1.InteractionCheckerService, pdf_service_1.PdfService],
         exports: [prescriptions_service_1.PrescriptionsService],
     })
 ], PrescriptionsModule);

@@ -10,15 +10,20 @@
     <span class="role-badge">{{ portalName }}</span>
   </div>
 
-  <div class="user-profile" *ngIf="currentUser() as user">
+  <!-- ✅ FIX : user-profile cliquable → redirige vers le profil -->
+  <a class="user-profile" *ngIf="currentUser() as user"
+     [routerLink]="profileRoute"
+     routerLinkActive="user-profile--active"
+     style="text-decoration: none; cursor: pointer;">
     <div class="user-avatar">
-      {{ user.firstName[0] }}{{ user.lastName[0] }}
+      <img *ngIf="user.avatarUrl" [src]="user.avatarUrl" class="user-avatar-img" alt="Photo profil"/>
+      <span *ngIf="!user.avatarUrl">{{ user.firstName[0] }}{{ user.lastName[0] }}</span>
     </div>
     <div>
       <div class="user-name">{{ user.firstName }} {{ user.lastName }}</div>
       <div class="user-role">{{ user.role }}</div>
     </div>
-  </div>
+  </a>
 
   <nav class="sidebar-nav">
     <ng-container *ngFor="let section of navSections">

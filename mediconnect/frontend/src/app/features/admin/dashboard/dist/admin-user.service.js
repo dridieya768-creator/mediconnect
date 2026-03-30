@@ -9,6 +9,7 @@ exports.__esModule = true;
 exports.AdminUserService = void 0;
 var core_1 = require("@angular/core");
 var http_1 = require("@angular/common/http");
+var operators_1 = require("rxjs/operators"); // ✅ import map
 var API = '/api/v1/admin/users';
 var AdminUserService = /** @class */ (function () {
     function AdminUserService() {
@@ -49,9 +50,15 @@ var AdminUserService = /** @class */ (function () {
     AdminUserService.prototype.getStats = function () {
         return this.http.get('/api/v1/admin/stats');
     };
-    // ✅ getDoctorDocs DANS la classe (accolade fermante après)
+    // ✅ FIX : utilise map() pour normaliser la réponse (array direct ou { data: [] })
     AdminUserService.prototype.getDoctorDocs = function (userId) {
-        return this.http.get(API + "/" + userId + "/documents");
+        return this.http.get(API + "/" + userId + "/documents").pipe(operators_1.map(function (res) {
+            if (Array.isArray(res))
+                return res;
+            if (Array.isArray(res === null || res === void 0 ? void 0 : res.data))
+                return res.data;
+            return [];
+        }));
     };
     AdminUserService = __decorate([
         core_1.Injectable({ providedIn: 'root' })

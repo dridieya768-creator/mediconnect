@@ -1,4 +1,4 @@
-.auth-page { min-height:100vh; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#f0fdfa,#f8fafc); }
+.auth-page { min-height:100vh; display:flex; align-items:center; justify-content:center; background: #f0f5ff; }
 .auth-card { background:white; border-radius:20px; padding:48px 40px; width:100%; max-width:420px; box-shadow:0 20px 60px rgba(0,0,0,.08); text-align:center; }
 .shield-icon { font-size:56px; margin-bottom:16px; }
 h2 { font-size:24px; font-weight:700; color:#0f172a; margin:0 0 8px; }
@@ -6,7 +6,7 @@ p { font-size:14px; color:#64748b; margin:0 0 20px; line-height:1.6; }
 .apps-row { display:flex; gap:10px; justify-content:center; margin-bottom:24px; }
 .app-badge { padding:8px 14px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; font-size:13px; color:#374151; }
 .error-box { background:#fef2f2; border:1px solid #fecaca; border-radius:10px; padding:12px 16px; color:#dc2626; font-size:13px; margin-bottom:20px; text-align:left; }
-.code-field { margin:0 auto 12px; input { display:block; width:200px; margin:0 auto; padding:18px; text-align:center; font-size:36px; font-weight:800; letter-spacing:12px; border:2px solid #0d9488; border-radius:14px; outline:none; color:#0f172a; &:focus { box-shadow:0 0 0 4px rgba(13,148,136,.15); } } }
-.dev-note { font-size:12px; color:#78716c; background:#fef9c3; padding:8px 16px; border-radius:8px; margin-bottom:20px; code { font-weight:700; color:#0d9488; } }
-button { width:100%; padding:13px; background:linear-gradient(135deg,#0d9488,#14b8a6); color:white; border:none; border-radius:10px; font-size:15px; font-weight:700; cursor:pointer; &:disabled { opacity:.6; cursor:not-allowed; } }
-.back-link { display:block; margin-top:20px; font-size:13px; color:#64748b; text-decoration:none; &:hover { color:#0d9488; } }
+.code-field { margin:0 auto 12px; input { display:block; width:200px; margin:0 auto; padding:18px; text-align:center; font-size:36px; font-weight:800; letter-spacing:12px; border:2px solid #1a56db; border-radius:14px; outline:none; color:#0f172a; &:focus { box-shadow:0 0 0 4px rgba(26,86,219,.15); } } }
+.dev-note { font-size:12px; color:#78716c; background:#eff6ff; padding:8px 16px; border-radius:8px; margin-bottom:20px; code { font-weight:700; color:#1a56db; } }
+button { width:100%; padding:13px; background:#1a56db; color:white; border:none; border-radius:10px; font-size:15px; font-weight:700; cursor:pointer; &:hover { background:#1447c0; } &:disabled { opacity:.6; cursor:not-allowed; } }
+.back-link { display:block; margin-top:20px; font-size:13px; color:#64748b; text-decoration:none; &:hover { color:#1a56db; } }

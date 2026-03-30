@@ -51,7 +51,7 @@ __decorate([
     __metadata("design:type", String)
 ], Prescription.prototype, "qrCode", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'qr_jwt', type: 'text' }),
+    (0, typeorm_1.Column)({ name: 'qr_jwt', type: 'text', nullable: true }),
     __metadata("design:type", String)
 ], Prescription.prototype, "qrJwt", void 0);
 __decorate([
@@ -70,6 +70,14 @@ __decorate([
     (0, typeorm_1.Column)({ name: 'pdf_url', nullable: true }),
     __metadata("design:type", String)
 ], Prescription.prototype, "pdfUrl", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'email_sent_at', nullable: true }),
+    __metadata("design:type", Date)
+], Prescription.prototype, "emailSentAt", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'notes', type: 'text', nullable: true }),
+    __metadata("design:type", String)
+], Prescription.prototype, "notes", void 0);
 __decorate([
     (0, typeorm_1.Column)({ name: 'issued_at', type: 'timestamp' }),
     __metadata("design:type", Date)

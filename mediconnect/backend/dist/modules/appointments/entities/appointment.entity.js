@@ -34,7 +34,7 @@ __decorate([
     __metadata("design:type", String)
 ], Appointment.prototype, "id", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: "patient_id" }),
+    (0, typeorm_1.Column)({ name: "patient_id", type: "uuid", nullable: false }),
     __metadata("design:type", String)
 ], Appointment.prototype, "patientId", void 0);
 __decorate([

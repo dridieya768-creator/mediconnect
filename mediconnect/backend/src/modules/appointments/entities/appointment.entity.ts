@@ -28,7 +28,7 @@ export class Appointment {
   id: string;
 
   // ── Relations ──────────────────────────────────────────────────────────────
-  @Column({ name: "patient_id" })
+    @Column({ name: "patient_id", type: "uuid", nullable: false })
   patientId: string;
 
   @ManyToOne(() => User, { eager: false })

@@ -26,9 +26,12 @@ export interface NavSection {
 export class SidebarComponent {
   @Input() portalName = "Portail";
   @Input() portalIcon = "🏥";
-  @Input() brandColor = "#0d9488";
+  @Input() brandColor = "#1a56db";
   @Input() navSections: NavSection[] = [];
   @Input() establishmentName?: string;
+
+  // ✅ Route du profil — chaque portail passe sa propre route
+  @Input() profileRoute = "/medecin/profil";
 
   private authService = inject(AuthService);
   currentUser = this.authService.currentUser;
