@@ -24,4 +24,19 @@ export class UploadController {
     }
     return this.uploadService.uploadFile(file, 'photos');
   }
+
+  @Post('document')
+  @UseInterceptors(FileInterceptor('file', {
+    limits: { fileSize: 10 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+      if (!file.originalname.match(/\.(pdf)$/i)) {
+        return cb(new BadRequestException('Seuls les fichiers PDF sont acceptés'), false);
+      }
+      cb(null, true);
+    },
+  }))
+  async uploadDocument(@UploadedFile() file: Express.Multer.File) {
+    if (!file) throw new BadRequestException('Aucun fichier fourni');
+    return this.uploadService.uploadFile(file, 'documents');
+  }
 }

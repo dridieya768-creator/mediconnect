@@ -54,6 +54,52 @@ export class PatientDashboardComponent implements OnInit {
 
   today = new Date();
 
+  topSpecialites = [
+    { value: 'CARDIOLOGUE',          label: 'Cardiologie',          desc: 'Soins du cœur.',           image: 'assets/images/cardio.jpg' },
+    { value: 'GYNECOLOGUE',          label: 'Gynécologie',          desc: 'Santé reproductive.',       image: 'assets/images/gyneco.jpg' },
+    { value: 'PEDIATRE',             label: 'Pédiatrie',            desc: 'Soins des enfants.',        image: 'assets/images/pediatrie.jpg' },
+    { value: 'NEUROLOGUE',           label: 'Neurologie',           desc: 'Système nerveux.',          image: 'assets/images/neuro.jpg' },
+    { value: 'OPHTALMOLOGUE',        label: 'Ophtalmologie',        desc: 'Soins des yeux.',           image: 'assets/images/ophtalmo.jpg' },
+    { value: 'DERMATOLOGUE',         label: 'Dermatologie',         desc: 'Soins de la peau.',         image: 'assets/images/dermato.jpg' },
+    { value: 'CHIRURGIEN_PLASTICIEN',label: 'Chirurgie Plastique',  desc: 'Chirurgie esthétique.',     image: 'assets/images/plastique.jpg' },
+    { value: 'DENTISTE',             label: 'Dentisterie',          desc: 'Soins dentaires.',          image: 'assets/images/dentiste.jpg' },
+    { value: 'URGENTISTE',           label: 'Urgences',             desc: 'Soins d\'urgence.',         image: 'assets/images/urgences.jpg' },
+    { value: 'MEDECIN_FAMILLE',      label: 'Médecin de famille',   desc: 'Médecine générale.',        image: 'assets/images/famille.jpg' },
+    { value: 'ORL',                  label: 'ORL',                  desc: 'Oreille, nez, gorge.',      image: 'assets/images/orl.jpg' },
+    { value: 'PSYCHIATRE',           label: 'Psychiatrie',          desc: 'Santé mentale.',            image: 'assets/images/psychiatrie.jpg' },
+    { value: 'RADIOLOGUE_SPEC',      label: 'Radiologie',           desc: 'Imagerie médicale.',        image: 'assets/images/radio.jpg' },
+    { value: 'RHUMATOLOGUE',         label: 'Rhumatologie',         desc: 'Articulations et os.',      image: 'assets/images/rhumato.jpg' },
+    { value: 'UROLOGUE',             label: 'Urologie',             desc: 'Voies urinaires.',          image: 'assets/images/urologie.jpg' },
+    { value: 'CHIRURGIEN',           label: 'Chirurgie',            desc: 'Interventions chirurgicales.', image: 'assets/images/chirurgie.jpg' },
+    { value: 'ANESTHESISTE',         label: 'Anesthésie',           desc: 'Anesthésie et réanimation.', image: 'assets/images/anesthesie.jpg' },
+    { value: 'ENDOCRINOLOGUE',       label: 'Endocrinologie',       desc: 'Hormones et métabolisme.',  image: 'assets/images/endocrino.jpg' },
+    { value: 'GASTROLOGUE',          label: 'Gastro-entérologie',   desc: 'Système digestif.',         image: 'assets/images/gastro.jpg' },
+    { value: 'NEPHROLOGUE',          label: 'Néphrologie',          desc: 'Soins des reins.',          image: 'assets/images/nephro.jpg' },
+    { value: 'ONCOLOGUE',            label: 'Oncologie',            desc: 'Traitement du cancer.',     image: 'assets/images/onco.jpg' },
+    { value: 'PNEUMOLOGUE',          label: 'Pneumologie',          desc: 'Poumons et respiration.',   image: 'assets/images/pneumo.jpg' },
+  ];
+
+  topProcedures = [
+    { label: 'Liposuccion',              desc: 'Chirurgie pour éliminer les graisses localisées.',          image: 'assets/images/proc/liposuccion.jpg' },
+    { label: 'Augmentation Mammaire',    desc: 'Chirurgie pour augmenter le volume des seins.',             image: 'assets/images/proc/mammaire.jpg' },
+    { label: 'Rhinoplastie',             desc: 'Chirurgie de correction du nez.',                           image: 'assets/images/proc/rhinoplastie.jpg' },
+    { label: 'Abdominoplastie',          desc: 'Chirurgie pour retendre la paroi abdominale.',              image: 'assets/images/proc/abdominoplastie.jpg' },
+    { label: 'Blépharoplastie',          desc: 'Chirurgie des paupières pour un regard rajeuni.',           image: 'assets/images/proc/blepharoplastie.jpg' },
+  ];
+
+  allServices = [
+    { label: 'Chirurgie Plastique', icon: '✂️', desc: 'Chirurgie esthétique et reconstructrice.', color: '#fef3c7', image: 'assets/images/service-plastique.jpg' },
+    { label: 'Fertilité/FIV', icon: '🤰', desc: 'Traitement de l\'infertilité et procréation.', color: '#fce7f3', image: 'assets/images/service-fiv.jpg' },
+    { label: 'Greffe de Cheveux', icon: '💇', desc: 'Techniques FUE, DHI, Saphir FUE.', color: '#dbeafe', image: 'assets/images/service-cheveux.jpg' },
+    { label: 'Chirurgie Orthopédique', icon: '🦴', desc: 'Prothèse de hanche, genou, colonne.', color: '#d1fae5', image: 'assets/images/service-ortho.jpg' },
+    { label: 'Dentisterie', icon: '🦷', desc: 'Soins dentaires et implants.', color: '#ede9fe', image: 'assets/images/service-dentiste.jpg' },
+    { label: 'Traitement du Cancer', icon: '🎗️', desc: 'Oncologie et soins palliatifs.', color: '#fee2e2', image: 'assets/images/service-cancer.jpg' },
+    { label: 'Chirurgie Bariatrique', icon: '⚖️', desc: 'Sleeve, bypass gastrique.', color: '#fef3c7', image: 'assets/images/service-baria.jpg' },
+    { label: 'Neurologie', icon: '🧠', desc: 'Traitement des maladies neurologiques.', color: '#ede9fe', image: 'assets/images/service-neuro.jpg' },
+    { label: 'Cardiologie', icon: '❤️', desc: 'Chirurgie cardiaque et coronaire.', color: '#fee2e2', image: 'assets/images/service-cardio.jpg' },
+    { label: 'Greffe d\'Organe', icon: '🫀', desc: 'Transplantation rénale, hépatique.', color: '#d1fae5', image: 'assets/images/service-greffe.jpg' },
+  ];
+
   ngOnInit() {
     this.loadDashboard();
   }

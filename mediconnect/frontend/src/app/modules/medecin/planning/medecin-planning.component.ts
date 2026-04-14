@@ -2,10 +2,11 @@ import { Component, OnInit, inject, signal, computed } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { HttpClient } from "@angular/common/http";
+import { Router } from "@angular/router";
 import { catchError } from "rxjs/operators";
 import { of } from "rxjs";
 
-type PlanningView = "calendar" | "requests" | "slots";
+type PlanningView = "calendar" | "requests" | "slots" | "conges";
 
 @Component({
   selector: "app-medecin-planning",
@@ -45,6 +46,10 @@ type PlanningView = "calendar" | "requests" | "slots";
         </button>
         <button class="tab-btn" [class.active]="activeView() === 'slots'" (click)="activeView.set('slots')">
           🕐 Disponibilités
+        </button>
+        <button class="tab-btn" [class.active]="activeView() === 'conges'" (click)="activeView.set('conges')">
+          🏖️ Congés
+          <span class="tab-count" *ngIf="conges().length > 0">{{ conges().length }}</span>
         </button>
       </div>
 
@@ -301,6 +306,79 @@ type PlanningView = "calendar" | "requests" | "slots";
         </div>
       </ng-container>
 
+      <!-- ══════════════════════════════════════════
+           VUE CONGÉS
+           ══════════════════════════════════════════ -->
+      <ng-container *ngIf="activeView() === 'conges'">
+        <div class="form-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <div>
+              <h2 class="section-title" style="margin:0;">🏖️ Gestion des Congés</h2>
+              <p style="color:#64748b; font-size:14px; margin:4px 0 0;">Bloquez des périodes d'indisponibilité. Les patients ne pourront pas réserver pendant ces dates.</p>
+            </div>
+            <button class="btn-primary" (click)="addConge()">+ Ajouter une période</button>
+          </div>
+
+          <!-- Liste des congés -->
+          <div class="conges-list" *ngIf="conges().length > 0">
+            <div class="conge-item" *ngFor="let c of conges(); let i = index">
+              <div class="conge-icon">🏖️</div>
+              <div class="conge-info">
+                <div class="conge-label">{{ c.label || 'Congé' }}</div>
+                <div class="conge-dates">
+                  Du <strong>{{ formatDateFr(c.startDate) }}</strong>
+                  au <strong>{{ formatDateFr(c.endDate) }}</strong>
+                  <span class="conge-days">({{ getDays(c.startDate, c.endDate) }} jour(s))</span>
+                </div>
+                <div class="conge-msg" *ngIf="c.message">
+                  Message aux patients : <em>{{ c.message }}</em>
+                </div>
+              </div>
+              <div class="conge-status" [class.active]="isCongeActive(c)" [class.upcoming]="isCongeUpcoming(c)">
+                {{ isCongeActive(c) ? 'En cours' : isCongeUpcoming(c) ? 'À venir' : 'Passé' }}
+              </div>
+              <button class="btn-rm-conge" (click)="removeConge(i)" title="Supprimer">✕</button>
+            </div>
+          </div>
+
+          <div class="empty-state" *ngIf="conges().length === 0" style="background:#f8fafc; border-radius:12px; padding:40px; text-align:center; color:#94a3b8;">
+            <div style="font-size:48px; margin-bottom:12px;">🏖️</div>
+            <p>Aucune période de congé définie</p>
+          </div>
+
+          <!-- Formulaire ajout congé -->
+          <div class="conge-form" *ngIf="showCongeForm()">
+            <div class="conge-form-title">Nouvelle période de congé</div>
+            <div class="conge-form-grid">
+              <div class="form-group">
+                <label class="form-label">Libellé</label>
+                <input class="form-input" [(ngModel)]="newConge.label" placeholder="Ex: Vacances d'été, Congrès médical..." />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Date de début *</label>
+                <input class="form-input" type="date" [(ngModel)]="newConge.startDate" [min]="today()" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Date de fin *</label>
+                <input class="form-input" type="date" [(ngModel)]="newConge.endDate" [min]="newConge.startDate || today()" />
+              </div>
+              <div class="form-group" style="grid-column:1/-1;">
+                <label class="form-label">Message aux patients (optionnel)</label>
+                <textarea class="form-input" rows="2" [(ngModel)]="newConge.message"
+                          placeholder="Ex: Je serai absent du cabinet. Pour urgences, contactez le Dr..."></textarea>
+              </div>
+            </div>
+            <div style="display:flex; gap:12px; margin-top:16px;">
+              <button class="btn-outline" (click)="showCongeForm.set(false)">Annuler</button>
+              <button class="btn-primary" (click)="saveConge()"
+                      [disabled]="!newConge.startDate || !newConge.endDate || isSavingConge()">
+                {{ isSavingConge() ? '⏳ Enregistrement...' : '✅ Confirmer le congé' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
     </div>
   `,
   styles: [`
@@ -429,10 +507,30 @@ type PlanningView = "calendar" | "requests" | "slots";
       .req-actions { flex-direction:column; }
       .request-card { flex-direction:column; }
     }
+
+    /* ── Congés ─────────────────────────────────────────────── */
+    .conges-list { display:flex; flex-direction:column; gap:12px; margin-bottom:20px; }
+    .conge-item { display:flex; align-items:flex-start; gap:14px; background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:12px; padding:16px; transition:border-color .15s; }
+    .conge-item:hover { border-color:#4f46e5; }
+    .conge-icon { font-size:24px; flex-shrink:0; }
+    .conge-info { flex:1; }
+    .conge-label { font-size:15px; font-weight:700; color:#0f172a; margin-bottom:4px; }
+    .conge-dates { font-size:13px; color:#475569; }
+    .conge-days { background:#eff6ff; color:#1a56db; padding:2px 8px; border-radius:6px; font-size:11px; font-weight:600; margin-left:8px; }
+    .conge-msg { font-size:12px; color:#64748b; margin-top:4px; font-style:italic; }
+    .conge-status { padding:4px 12px; border-radius:20px; font-size:11px; font-weight:600; flex-shrink:0; }
+    .conge-status.active { background:#fef9c3; color:#854d0e; }
+    .conge-status.upcoming { background:#f0fdf4; color:#16a34a; }
+    .conge-status:not(.active):not(.upcoming) { background:#f1f5f9; color:#94a3b8; }
+    .btn-rm-conge { background:none; border:none; color:#dc2626; cursor:pointer; font-size:18px; padding:0; flex-shrink:0; }
+    .conge-form { background:#f0f7ff; border:1.5px solid #bfdbfe; border-radius:12px; padding:20px; margin-top:20px; }
+    .conge-form-title { font-size:15px; font-weight:700; color:#0f172a; margin-bottom:16px; }
+    .conge-form-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
   `]
 })
 export class MedecinPlanningComponent implements OnInit {
-  private http = inject(HttpClient);
+  private http   = inject(HttpClient);
+  private router = inject(Router);
 
   activeView     = signal<PlanningView>("calendar");
   isLoading      = signal(true);
@@ -468,6 +566,12 @@ export class MedecinPlanningComponent implements OnInit {
 
   morningTimes   = ["07:00","07:30","08:00","08:30","09:00","09:30","10:00","10:30","11:00","11:30","12:00","12:30","13:00"];
   afternoonTimes = ["12:00","12:30","13:00","13:30","14:00","14:30","15:00","15:30","16:00","16:30","17:00","17:30","18:00","18:30","19:00"];
+
+  // ── Congés ────────────────────────────────────────────────────────────────
+  conges         = signal<any[]>([]);
+  showCongeForm  = signal(false);
+  isSavingConge  = signal(false);
+  newConge: any  = { label: '', startDate: '', endDate: '', message: '' };
 
   // ── Computed ──────────────────────────────────────────────────────────────
   pendingAppointments = computed(() =>
@@ -548,6 +652,11 @@ const data = (raw?.workDays !== null && raw?.workDays !== undefined)
 
       if (data.acceptsTeleconsultation !== undefined) {
         this.acceptsTeleconsultation = data.acceptsTeleconsultation;
+      }
+
+      // Charger les congés
+      if (Array.isArray(data.conges)) {
+        this.conges.set(data.conges);
       }
     });
 }
@@ -723,8 +832,7 @@ acceptRequest(req: any) {
 
   // ── Join video ─────────────────────────────────────────────────────────────
   joinVideo(appt: any) {
-    const roomId = appt.videoRoomId || `mediconnect-${appt.id}`;
-    window.open(`https://meet.jit.si/${roomId}`, "_blank");
+    this.router.navigate(['/medecin/video', appt.id]);
   }
 
   // ── Save availability ──────────────────────────────────────────────────────
@@ -798,8 +906,71 @@ saveAvailability() {
     return date;
   }
 
-  showSuccess(msg: string) {
-    this.successMsg.set(msg);
+  // ── Congés ────────────────────────────────────────────────────────────────
+  addConge() {
+    this.newConge = { label: '', startDate: '', endDate: '', message: '' };
+    this.showCongeForm.set(true);
+  }
+
+  saveConge() {
+    if (!this.newConge.startDate || !this.newConge.endDate) return;
+    if (new Date(this.newConge.endDate) < new Date(this.newConge.startDate)) {
+      this.showError('La date de fin doit être après la date de début.');
+      return;
+    }
+    this.isSavingConge.set(true);
+    const updated = [...this.conges(), { ...this.newConge }];
+    this.http.put<any>('/api/v1/medecins/availability', {
+      workDays: this.workDays,
+      defaultDuration: this.defaultDuration,
+      acceptsTeleconsultation: this.acceptsTeleconsultation,
+      conges: updated,
+    }).pipe(catchError(() => of(null))).subscribe(() => {
+      this.conges.set(updated);
+      this.showCongeForm.set(false);
+      this.isSavingConge.set(false);
+      this.showSuccess(`Congé du ${this.formatDateFr(this.newConge.startDate)} au ${this.formatDateFr(this.newConge.endDate)} enregistré.`);
+    });
+  }
+
+  removeConge(i: number) {
+    const updated = this.conges().filter((_, idx) => idx !== i);
+    this.http.put<any>('/api/v1/medecins/availability', {
+      workDays: this.workDays,
+      defaultDuration: this.defaultDuration,
+      acceptsTeleconsultation: this.acceptsTeleconsultation,
+      conges: updated,
+    }).pipe(catchError(() => of(null))).subscribe(() => {
+      this.conges.set(updated);
+      this.showSuccess('Période de congé supprimée.');
+    });
+  }
+
+  isCongeActive(c: any): boolean {
+    const now = new Date(); now.setHours(0,0,0,0);
+    return new Date(c.startDate) <= now && new Date(c.endDate) >= now;
+  }
+
+  isCongeUpcoming(c: any): boolean {
+    const now = new Date(); now.setHours(0,0,0,0);
+    return new Date(c.startDate) > now;
+  }
+
+  getDays(start: string, end: string): number {
+    const diff = new Date(end).getTime() - new Date(start).getTime();
+    return Math.max(1, Math.round(diff / 86400000) + 1);
+  }
+
+  formatDateFr(d: string): string {
+    if (!d) return '—';
+    return new Date(d).toLocaleDateString('fr-FR', { day:'2-digit', month:'long', year:'numeric' });
+  }
+
+  today(): string {
+    return new Date().toISOString().split('T')[0];
+  }
+
+  showSuccess(msg: string) {    this.successMsg.set(msg);
     setTimeout(() => this.successMsg.set(null), 4000);
   }
   showError(msg: string) {

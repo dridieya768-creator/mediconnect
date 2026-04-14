@@ -1,60 +1,58 @@
-<div class="page-header">
-  <h1 class="page-title">Bonjour, {{ currentUser()?.firstName }} 👋</h1>
-  <p class="page-subtitle">Votre tableau de bord santé — {{ today | date:'EEEE d MMMM yyyy':'':'fr' }}</p>
-</div>
-
-<!-- LOADING -->
-<div *ngIf="isLoading()" style="display:flex; justify-content:center; padding:60px;">
-  <div style="text-align:center; color:#64748b;">
-    <div style="font-size:40px; margin-bottom:12px;">⏳</div>
-    <p>Chargement de votre tableau de bord...</p>
+<!-- HERO PLEIN ECRAN -->
+<div class="hero-banner">
+  <img src="assets/images/Homepage-Hero.jpg.webp" class="hero-img" onerror="this.style.display='none'">
+  <div class="hero-img-placeholder"></div>
+  <div class="hero-overlay">
+    <div class="hero-top-info" *ngIf="!isLoading()">
+      <span>Bonjour, {{ currentUser()?.firstName }}</span>
+      <div class="stats-mini-hero">
+        <span class="stat-h"><b>{{ stats().appointments }}</b> RDV</span>
+        <span class="stat-h"><b>{{ stats().prescriptions }}</b> Ordonnances</span>
+      </div>
+    </div>
+    <h2>Trouvez le meilleur medecin</h2>
+    <p>Des soins de qualite, partout en Tunisie</p>
+    <div class="hero-search">
+      <input type="text" placeholder="Rechercher un traitement, medecin..." class="hero-input"/>
+      <button class="hero-search-btn">Rechercher</button>
+    </div>
   </div>
 </div>
 
-<ng-container *ngIf="!isLoading()">
+<div *ngIf="!isLoading()">
+  <div class="dash-container">
+    <div class="promo-section">
+      <div class="promo-text">
+        <h2>MediConnect<br>Des mains de confiance derriere vos soins</h2>
+        <p class="promo-lead">Acces aux meilleurs medecins sans frais de service.</p>
+        <p>Nos experts sont a vos cotes tout au long de votre parcours de soins.</p>
+        <a routerLink="/patient/recherche" class="promo-btn">Prendre RDV</a>
+      </div>
+      <div class="promo-image">
+        <video class="promo-video" autoplay muted loop playsinline>
+          <source src="assets/images/Communitysection.mp4" type="video/mp4">
+        </video>
+      </div>
+    </div>
+  </div>
 
-  <!-- ALERT anomalie (affiché seulement si données anormales - à connecter plus tard) -->
-  <!-- <div class="mc-alert warning" style="margin-bottom: 24px;">
-    <span>⚠️</span>
-    <div><strong>Résultat anormal détecté</strong><br>Glycémie à jeun légèrement élevée — Consultez votre médecin</div>
-  </div> -->
-
-  <!-- STATS -->
-  <div class="stats-grid">
-    <div class="stat-card">
-      <div class="stat-icon" style="background: #f0fdfa; font-size: 24px;">📅</div>
-      <div class="stat-value" style="color: #0d9488;">{{ stats().appointments }}</div>
-      <div class="stat-label">Rendez-vous à venir</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon" style="background: #eff6ff; font-size: 24px;">💊</div>
-      <div class="stat-value" style="color: #3b82f6;">{{ stats().prescriptions }}</div>
-      <div class="stat-label">Ordonnances actives</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon" style="background: #f0fdf4; font-size: 24px;">🧪</div>
-      <div class="stat-value" style="color: #10b981;">{{ stats().analyses }}</div>
-      <div class="stat-label">Analyses disponibles</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon" style="background: #fffbeb; font-size: 24px;">📄</div>
-      <div class="stat-value" style="color: #f59e0b;">{{ stats().documents }}</div>
-      <div class="stat-label">Documents médicaux</div>
+  <div class="welcome-banner">
+    <img src="assets/images/section11-background.jpg.webp" alt="Bienvenue" class="welcome-bg">
+    <div class="welcome-overlay">
+      <div class="welcome-content">
+        <h2>Bienvenue sur notre plateforme medicale !</h2>
+        <p>Nous collaborons avec les meilleurs medecins en Tunisie pour vous accompagner.</p>
+        <a routerLink="/patient/guide-medecin" class="welcome-btn">Trouver mon medecin</a>
+      </div>
     </div>
   </div>
 
   <div class="dashboard-grid">
-
-    <!-- APPOINTMENTS -->
     <div class="mc-card">
       <div class="mc-card-header">
-        <h3 class="mc-card-title">📅 Prochains rendez-vous confirmés</h3>
-        <a routerLink="/patient/appointments" class="btn-mc outline" style="font-size: 12px; padding: 6px 12px;">
-          Voir tous
-        </a>
+        <h3 class="mc-card-title">Prochains rendez-vous</h3>
+        <a routerLink="/patient/appointments" class="btn-mc outline" style="font-size:12px;padding:6px 12px;">Voir tous</a>
       </div>
-
-      <!-- RDV confirmés -->
       <div class="appointment-list" *ngIf="upcomingAppointments().length > 0">
         <div class="appt-item" *ngFor="let appt of upcomingAppointments()">
           <div class="appt-date">
@@ -63,85 +61,31 @@
           </div>
           <div class="appt-info">
             <div class="appt-doctor">Dr. {{ getDoctorName(appt) }}</div>
-            <div class="appt-spec">
-              {{ getSpecialty(appt) }}
-              <span *ngIf="isVideo(appt)"> — Téléconsultation</span>
-            </div>
-            <div class="appt-time">
-              {{ isVideo(appt) ? '💻' : '🕙' }} {{ formatTime(appt.appointmentDate) }}
-              <span *ngIf="appt.durationMinutes"> — {{ appt.durationMinutes }} min</span>
-            </div>
+            <div class="appt-spec">{{ getSpecialty(appt) }}</div>
+            <div class="appt-time">{{ formatTime(appt.appointmentDate) }}</div>
           </div>
-          <span class="badge" [ngClass]="getStatusClass(appt.status)">
-            {{ getStatusLabel(appt.status) }}
-          </span>
+          <span class="badge" [ngClass]="getStatusClass(appt.status)">{{ getStatusLabel(appt.status) }}</span>
         </div>
       </div>
-
-      <!-- Aucun RDV confirmé -->
-      <div *ngIf="upcomingAppointments().length === 0"
-           style="text-align:center; padding:40px 20px; color:#94a3b8;">
-        <div style="font-size:48px; margin-bottom:12px;">📭</div>
-        <p style="margin:0;">Aucun rendez-vous confirmé à venir</p>
+      <div *ngIf="upcomingAppointments().length === 0" class="empty-state">
+        <p>Aucun rendez-vous a venir</p>
       </div>
     </div>
 
-    <!-- QR CODE -->
     <div class="qr-section">
-      <div class="qr-card">
-        <div class="qr-title">🔐 Mon QR Code Patient</div>
-        <div class="qr-sub">Présentez ce code lors de vos consultations</div>
-
+      <div class="qr-card qr-card-small">
+        <div class="qr-title">Mon QR Code</div>
+        <div class="qr-sub">Presentez ce code lors de vos consultations</div>
         <div class="qr-display">
-          @if (qrCodeImage()) {
-            <img [src]="qrCodeImage()" alt="QR Code Patient" style="width:200px; height:200px; border-radius:8px;" />
-            <div style="font-size:11px; color:#64748b; margin-top:8px; letter-spacing:1px;">
-              {{ qrDisplayId() }}
-            </div>
-          } @else {
-            <div class="qr-placeholder">
-              <div style="font-size: 80px; margin-bottom: 8px;">📲</div>
-              <div style="font-size: 12px; color: #475569;">Chargement...</div>
-            </div>
-          }
+          <img *ngIf="qrCodeImage()" [src]="qrCodeImage()" alt="QR Code" style="width:140px;height:140px;border-radius:8px;"/>
+          <div *ngIf="qrCodeImage()" style="font-size:10px;color:rgba(255,255,255,0.6);margin-top:6px;">{{ qrDisplayId() }}</div>
+          <div *ngIf="!qrCodeImage()" class="qr-placeholder"><div style="font-size:48px;">QR</div></div>
         </div>
-
         <div class="qr-actions">
-          <button class="btn-mc primary" style="flex:1; justify-content:center;"
-                  (click)="downloadPdf()" [disabled]="!qrCodeImage()">
-            ⬇ Télécharger PDF
-          </button>
-          <button class="btn-mc outline" style="flex:1; justify-content:center;"
-                  (click)="printQr()" [disabled]="!qrCodeImage()">
-            🖨 Imprimer
-          </button>
+          <button class="btn-mc primary" style="flex:1;justify-content:center;font-size:12px;padding:8px;" (click)="downloadPdf()" [disabled]="!qrCodeImage()">PDF</button>
+          <button class="btn-mc outline" style="flex:1;justify-content:center;font-size:12px;padding:8px;" (click)="printQr()" [disabled]="!qrCodeImage()">Imprimer</button>
         </div>
       </div>
-
-      <!-- Ordonnances actives -->
-      <div class="mc-card" style="margin-top:16px;" *ngIf="activePrescriptions().length > 0">
-        <div class="mc-card-header">
-          <h3 class="mc-card-title">💊 Ordonnances actives</h3>
-        </div>
-        <div *ngFor="let rx of activePrescriptions()"
-             style="display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid #f1f5f9;">
-          <span style="font-size:20px;">💊</span>
-          <div style="flex:1;">
-            <div style="font-size:13px; font-weight:600; color:#0f172a;">
-              {{ rx.medicationName || rx.medication || 'Médicament' }}
-            </div>
-            <div style="font-size:11px; color:#94a3b8;">
-              {{ rx.dosage || '' }}
-              <span *ngIf="rx.expiresAt"> — expire {{ rx.expiresAt | date:'dd MMM yyyy':'':'fr' }}</span>
-            </div>
-          </div>
-          <span style="padding:3px 10px; border-radius:20px; font-size:11px; font-weight:500; background:#f0fdf4; color:#10b981;">
-            Active
-          </span>
-        </div>
-      </div>
-
     </div>
   </div>
-
-</ng-container>
+</div>

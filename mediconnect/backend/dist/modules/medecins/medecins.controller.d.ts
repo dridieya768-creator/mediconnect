@@ -34,6 +34,7 @@ export declare class MedecinsController {
         workDays: any;
         defaultDuration: any;
         acceptsTeleconsultation: any;
+        conges: any;
         disponTeleconsult: boolean;
         connexionVideoIntegree: boolean;
     }>;
@@ -129,6 +130,7 @@ export declare class MedecinsController {
         workDays: any;
         defaultDuration: any;
         acceptsTeleconsultation: any;
+        conges: any;
         disponTeleconsult: boolean;
     }>;
     getOccupiedSlots(id: string, query: GetSlotsQueryDto): Promise<{

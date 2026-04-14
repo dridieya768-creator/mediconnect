@@ -1,92 +1,74 @@
-<div class="auth-page">
+﻿<div class="auth-wrapper">
 
-  <!-- Illustration gauche -->
+  <!-- GAUCHE : Formulaire -->
   <div class="auth-left">
-    <div class="illustration-circle">
-      <div class="floating-icon" style="top:10%;left:15%">💊</div>
-      <div class="floating-icon" style="top:8%;right:18%">👨‍⚕️</div>
-      <div class="floating-icon" style="bottom:20%;left:10%">📋</div>
-      <div class="floating-icon" style="bottom:15%;right:12%">❓</div>
-      <div class="doctors-svg">
-        <svg viewBox="0 0 260 320" fill="none" xmlns="http://www.w3.org/2000/svg" width="260">
-          <!-- Doctor 1 body -->
-          <ellipse cx="90" cy="310" rx="40" ry="8" fill="#e2eaf5"/>
-          <rect x="65" y="200" width="50" height="110" rx="10" fill="#1a56db"/>
-          <circle cx="90" cy="175" r="30" fill="#fcd9bd"/>
-          <rect x="72" y="155" width="36" height="20" rx="10" fill="#1e3a5f"/>
-          <!-- stethoscope -->
-          <path d="M85 205 Q75 220 80 235" stroke="white" stroke-width="2.5" fill="none"/>
-          <circle cx="80" cy="237" r="5" fill="white"/>
-          <!-- Doctor 2 body -->
-          <ellipse cx="175" cy="310" rx="40" ry="8" fill="#e2eaf5"/>
-          <rect x="150" y="200" width="50" height="110" rx="10" fill="#0ea5e9"/>
-          <circle cx="175" cy="175" r="30" fill="#fcd9bd"/>
-          <rect x="158" y="155" width="34" height="18" rx="9" fill="#7c3aed"/>
-          <!-- clipboard -->
-          <rect x="185" y="210" width="22" height="28" rx="3" fill="white" stroke="#cbd5e1" stroke-width="1"/>
-          <rect x="189" y="207" width="14" height="6" rx="3" fill="#94a3b8"/>
-          <line x1="189" y1="220" x2="203" y2="220" stroke="#94a3b8" stroke-width="1.5"/>
-          <line x1="189" y1="226" x2="203" y2="226" stroke="#94a3b8" stroke-width="1.5"/>
-          <line x1="189" y1="232" x2="198" y2="232" stroke="#94a3b8" stroke-width="1.5"/>
-        </svg>
-      </div>
-    </div>
-    <div class="auth-left-text">
-      <h1>Vous avez déjà utilisé <span class="brand-name">MediConnect</span> ?</h1>
-    </div>
-  </div>
-
-  <!-- Formulaire droite -->
-  <div class="auth-right">
     <div class="auth-card">
 
-      <!-- Tabs -->
+      <div class="brand">
+        <div class="brand-icon">
+          <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
+            <rect width="32" height="32" rx="8" fill="#1a56db"/>
+            <path d="M16 7v18M7 16h18" stroke="white" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <span class="brand-name">MediConnect</span>
+      </div>
+
       <div class="auth-tabs">
         <button class="tab-btn active" routerLink="/auth/login">Connexion</button>
         <button class="tab-btn" routerLink="/auth/register">Inscription</button>
       </div>
 
-      <!-- Message info -->
-      <div class="alert-info" *ngIf="infoMsg">{{ infoMsg }}</div>
-      <div class="alert-error" *ngIf="error">⚠️ {{ error }}</div>
+      <h2 class="card-title">Bon retour</h2>
+      <p class="card-sub">Connectez-vous a votre espace sante</p>
 
-      <!-- SSO -->
-      <button class="sso-btn facebook" (click)="loginWithFacebook()" [disabled]="isSsoLoading">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-        Se connecter avec Facebook
-      </button>
+      <div class="alert-info" *ngIf="infoMsg"><span>i</span> {{ infoMsg }}</div>
+      <div class="alert-error" *ngIf="error"><span>!</span> {{ error }}</div>
 
-      <div id="google-signin-btn" class="google-btn-wrap"></div>
+      <div class="sso-group">
+        <button class="sso-btn facebook" (click)="loginWithFacebook()" [disabled]="isSsoLoading">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          Facebook
+        </button>
+        <button class="sso-btn google" (click)="loginWithGoogle()" [disabled]="isSsoLoading">
+          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#fff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#fff" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#fff" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#fff" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Google
+        </button>
+      </div>
 
-      <div class="divider"><span>OU</span></div>
+      <div class="divider"><span>ou continuer avec email</span></div>
 
-      <!-- Form -->
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-        <div class="field">
-          <input type="email" formControlName="email" placeholder="Adresse email" autocomplete="email">
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+        <div class="field-group">
+          <label class="field-label">Adresse email</label>
+          <div class="field-wrap">
+            <span class="field-icon"></span>
+            <input class="field-input" type="email" formControlName="email" placeholder="votre@email.com" autocomplete="email"/>
+          </div>
         </div>
-        <div class="field">
-          <input [type]="showPassword ? 'text' : 'password'" formControlName="password"
-            placeholder="Mot de passe" autocomplete="current-password">
-          <button type="button" class="eye-btn" (click)="showPassword = !showPassword">
-            {{ showPassword ? '🙈' : '👁️' }}
-          </button>
+        <div class="field-group">
+          <div class="field-label-row">
+            <label class="field-label">Mot de passe</label>
+            <a routerLink="/auth/forgot-password" class="forgot-link">Oublie ?</a>
+          </div>
+          <div class="field-wrap">
+            <span class="field-icon"></span>
+            <input class="field-input" [type]="showPassword ? 'text' : 'password'" formControlName="password" placeholder="••••••••" autocomplete="current-password"/>
+            <button type="button" class="eye-btn" (click)="showPassword = !showPassword">{{ showPassword ? '🙈' : '👁️' }}</button>
+          </div>
         </div>
-
         <button type="submit" class="submit-btn" [disabled]="isLoading || loginForm.invalid">
-          <span *ngIf="!isLoading">Se connecter</span>
+          <span *ngIf="!isLoading" class="btn-content"><span>Se connecter</span><span class="btn-arrow">→</span></span>
           <span *ngIf="isLoading" class="spinner"></span>
         </button>
       </form>
 
-      <a routerLink="/auth/forgot-password" class="forgot-link">Vous avez perdu votre mot de passe ?</a>
-
-      <!-- Test accounts -->
       <div class="test-zone">
-        <div class="test-header">⚡ Comptes de test</div>
+        <div class="test-header">Acces rapide (demo)</div>
         <div class="test-grid">
           <button class="test-btn" *ngFor="let t of testAccounts" (click)="fillTest(t.email)">
-            {{ t.icon }} {{ t.role }}
+            <span class="test-icon">{{ t.icon }}</span>
+            <span>{{ t.role }}</span>
           </button>
         </div>
         <div class="test-pw">Mot de passe : <code>Test1234!</code></div>
@@ -94,4 +76,14 @@
 
     </div>
   </div>
+
+  <!-- DROITE : Photo -->
+  <div class="auth-right">
+    <img src="assets/images/téléconsultation.jpg" alt="MediConnect" class="login-photo">
+    <div class="photo-overlay">
+      <h2>Votre sante, notre priorite</h2>
+      <p>La plateforme e-sante qui connecte patients et professionnels de sante en Tunisie.</p>
+    </div>
+  </div>
+
 </div>

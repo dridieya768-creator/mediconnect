@@ -13,9 +13,9 @@ import { RouterLink } from "@angular/router";
     <div class="profile-view-container">
       <div class="profile-header">
         <div class="header-content">
-          <h1 class="page-title">👨‍⚕️ Mon Profil Professionnel</h1>
+          <h1 class="page-title"> Mon Profil Professionnel</h1>
           <button class="btn-edit" routerLink="/medecin/profil/edit">
-            ✏️ Modifier mon profil
+             Modifier mon profil
           </button>
         </div>
         <p class="page-subtitle">Consultez et gérez vos informations professionnelles</p>
@@ -29,7 +29,7 @@ import { RouterLink } from "@angular/router";
       <div class="profile-content" *ngIf="!isLoading() && profile()">
         <div class="profile-section">
           <div class="section-header">
-            <span class="section-icon">🪪</span>
+            <span class="section-icon"></span>
             <h2>Identité Professionnelle</h2>
           </div>
           <div class="section-body">
@@ -83,7 +83,7 @@ import { RouterLink } from "@angular/router";
 
         <div class="profile-section" *ngIf="profile()?.telephonePro || profile()?.emailPro">
           <div class="section-header">
-            <span class="section-icon">📞</span>
+            <span class="section-icon"></span>
             <h2>Contact Professionnel</h2>
           </div>
           <div class="section-body">

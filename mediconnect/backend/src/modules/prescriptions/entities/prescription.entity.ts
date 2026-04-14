@@ -77,6 +77,17 @@ export class Prescription {
   @Column({ name: 'electronic_signature', nullable: true, type: 'text' })
   electronicSignature: string;
 
+  @Column({ name: 'signature_image', nullable: true, type: 'text' })
+  signatureImage: string; // base64 PNG de la signature manuscrite
+
+  @Column({ name: 'imaging_requests', type: 'jsonb', nullable: true })
+  imagingRequests: {
+    type: string;
+    region: string;
+    clinicalReason: string;
+    urgency: string;
+  }[];
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

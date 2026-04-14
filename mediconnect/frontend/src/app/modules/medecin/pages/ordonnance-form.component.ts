@@ -11,14 +11,14 @@ import { AuthService } from '../../../core/services/auth.service';
   imports: [CommonModule, ReactiveFormsModule],
   template: `
     <div class="page-header">
-      <h1 class="page-title">💊 Nouvelle Ordonnance</h1>
+      <h1 class="page-title"> Nouvelle Ordonnance</h1>
       <p class="page-subtitle">Rédigez une prescription médicale pour votre patient</p>
     </div>
-    <div class="alert-success" *ngIf="successMsg()">✅ {{ successMsg() }}</div>
+    <div class="alert-success" *ngIf="successMsg()"> {{ successMsg() }}</div>
     <div class="alert-error" *ngIf="errorMsg()">❌ {{ errorMsg() }}</div>
     <form [formGroup]="form" (ngSubmit)="submit()" class="rx-form">
       <div class="rx-card">
-        <h3 class="card-title">👤 Patient</h3>
+        <h3 class="card-title"> Patient</h3>
         <div class="fg">
           <label class="fl">Sélectionner un patient *</label>
           <select class="fi" formControlName="patientId">
@@ -27,7 +27,7 @@ import { AuthService } from '../../../core/services/auth.service';
               {{ p.firstName }} {{ p.lastName }} ({{ p.email }})
             </option>
           </select>
-          <span class="hint" *ngIf="loadingPatients()">⏳ Chargement des patients...</span>
+          <span class="hint" *ngIf="loadingPatients()"> Chargement des patients...</span>
           <span class="hint" *ngIf="!loadingPatients() && patients().length === 0">
             Aucun patient trouvé — les patients apparaissent après un RDV confirmé
           </span>
@@ -37,7 +37,7 @@ import { AuthService } from '../../../core/services/auth.service';
       </div>
       <div class="rx-card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-          <h3 class="card-title" style="margin:0">💊 Médicaments</h3>
+          <h3 class="card-title" style="margin:0"> Médicaments</h3>
           <button type="button" class="btn-add" (click)="addMed()">+ Ajouter</button>
         </div>
         <div formArrayName="medications">
@@ -56,7 +56,7 @@ import { AuthService } from '../../../core/services/auth.service';
       <div style="display:flex;gap:12px;justify-content:flex-end">
         <button type="button" class="btn-cancel" (click)="router.navigate(['/medecin/dashboard'])">Annuler</button>
         <button type="submit" class="btn-submit" [disabled]="form.invalid||saving()">
-          {{ saving() ? '⏳...' : "✅ Créer l'ordonnance" }}</button>
+          {{ saving() ? '...' : " Créer l'ordonnance" }}</button>
       </div>
     </form>
   `,

@@ -1,0 +1,333 @@
+<div class="search-page">
+
+  <!-- HEADER HERO -->
+  <div class="search-hero-banner">
+    <img src="assets/images/hemato-oncology-adults.jpg.webp" class="search-hero-img" alt="Trouver un médecin" />
+    <div class="search-hero-overlay">
+      <h1 class="search-hero-title">Trouver un Médecin</h1>
+      <p class="search-hero-sub">Recherchez parmi nos médecins disponibles</p>
+    </div>
+  </div>
+
+  <!-- BARRE DE RECHERCHE -->
+  <div class="search-hero">
+    <div class="search-bar-main">
+      <div class="search-input-wrap">
+        <span class="search-icon">🔍</span>
+        <input class="search-input" type="text"
+          [(ngModel)]="searchQuery"
+          (ngModelChange)="onSearchChange($event)"
+          placeholder="Nom du médecin, spécialité..." />
+      </div>
+      <div class="search-select-wrap">
+        <span class="search-icon">📍</span>
+        <select class="search-select" [(ngModel)]="filterVille" (change)="applyFilters()">
+          <option value="">Toutes les villes</option>
+          <option *ngFor="let v of villes" [value]="v">{{ v }}</option>
+        </select>
+      </div>
+      <div class="search-select-wrap">
+        <span class="search-icon">🩺</span>
+        <select class="search-select" [(ngModel)]="filterSpecialite" (change)="applyFilters()">
+          <option value="">Toutes spécialités</option>
+          <option *ngFor="let s of specialites" [value]="s">{{ s }}</option>
+        </select>
+      </div>
+      <button class="btn-search" (click)="applyFilters()">Rechercher</button>
+    </div>
+
+    <!-- FILTRES RAPIDES -->
+    <div class="quick-filters">
+      <button class="quick-btn" [class.active]="filterTeleconsult"
+        (click)="filterTeleconsult = !filterTeleconsult; applyFilters()">
+        💻 Téléconsultation
+      </button>
+      <button class="quick-btn" [class.active]="filterDisponible"
+        (click)="filterDisponible = !filterDisponible; applyFilters()">
+        ✅ Disponible aujourd'hui
+      </button>
+      <button *ngFor="let s of topSpecialites" class="quick-btn"
+        [class.active]="filterSpecialite === s"
+        (click)="filterSpecialite = filterSpecialite === s ? '' : s; applyFilters()">
+        {{ s }}
+      </button>
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading-state" *ngIf="isLoading()">
+    <div class="spinner"></div>
+    <p>Recherche en cours...</p>
+  </div>
+
+  <!-- RÉSULTATS -->
+  <div *ngIf="!isLoading()">
+    <div class="results-header">
+      <span class="results-count">{{ filteredDoctors().length }} médecin(s) trouvé(s)</span>
+      <div class="view-sort-bar">
+        <div class="view-toggle">
+          <button class="view-btn" [class.active]="viewMode === 'list'" (click)="setView('list')">☰ Liste</button>
+          <button class="view-btn" [class.active]="viewMode === 'map'" (click)="setView('map')">🗺️ Carte</button>
+        </div>
+        <select class="sort-select" [(ngModel)]="sortBy" (change)="sortDoctors()">
+          <option value="nom">Trier par nom</option>
+          <option value="specialite">Trier par spécialité</option>
+          <option value="ville">Trier par ville</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- VUE CARTE -->
+    <div class="map-container" *ngIf="viewMode === 'map'">
+      <div id="medecin-map" class="leaflet-map"></div>
+      <div class="map-legend">
+        <span class="legend-dot"></span> Médecin disponible
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- CAROUSEL MÉDECINS                                       -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="carousel-section" *ngIf="filteredDoctors().length > 0 && viewMode === 'list'">
+
+      <div class="carousel-wrapper">
+        <!-- Flèche gauche -->
+        <button class="carousel-arrow carousel-arrow--left"
+          (click)="prevSlide()"
+          [disabled]="!canPrev"
+          aria-label="Précédent">
+          &#8249;
+        </button>
+
+        <!-- Piste de défilement -->
+        <div class="carousel-viewport">
+          <div class="carousel-track"
+            [style.transform]="'translateX(-' + carouselOffset + 'px)'">
+            <div class="doctor-card"
+              *ngFor="let doc of filteredDoctors()"
+              (click)="openProfile(doc)">
+
+              <!-- Avatar + Badge -->
+              <div class="card-top">
+                <div class="doc-avatar">
+                  <img *ngIf="doc.profile?.photoPro"
+                    [src]="doc.profile.photoPro"
+                    [alt]="getFullName(doc)"
+                    class="avatar-img" />
+                  <span *ngIf="!doc.profile?.photoPro" class="avatar-initials">
+                    {{ getInitials(doc) }}
+                  </span>
+                </div>
+                <div class="doc-badges">
+                  <span class="badge-teleconsult" *ngIf="doc.profile?.disponTeleconsult">
+                    💻 Téléconsult.
+                  </span>
+                  <span class="badge-disponible">✅ Disponible</span>
+                </div>
+              </div>
+
+              <!-- Infos principales -->
+              <div class="card-body">
+                <h3 class="doc-name">
+                  {{ doc.profile?.titre || 'Dr.' }} {{ getFullName(doc) }}
+                </h3>
+                <p class="doc-spec">
+                  {{ doc.profile?.specialite || getRoleLabel(doc.role) }}
+                </p>
+
+                <div class="doc-meta">
+                  <span *ngIf="doc.profile?.ville">
+                    <span class="meta-icon">📍</span> {{ doc.profile.ville }}
+                  </span>
+                  <span *ngIf="doc.profile?.languesParlees">
+                    <span class="meta-icon">🗣️</span> {{ doc.profile.languesParlees }}
+                  </span>
+                  <span *ngIf="doc.profile?.telephonePro">
+                    <span class="meta-icon">📞</span> {{ doc.profile.telephonePro }}
+                  </span>
+                </div>
+
+                <p class="doc-bio" *ngIf="doc.profile?.biographie">
+                  {{ doc.profile.biographie | slice:0:120 }}{{ doc.profile.biographie?.length > 120 ? '...' : '' }}
+                </p>
+
+                <!-- Tarifs -->
+                <div class="doc-tarifs" *ngIf="getTarif(doc.profile?.tarifs) as tarif">
+                  <span class="tarif-label">💰</span>
+                  <span class="tarif-text">{{ tarif }}</span>
+                </div>
+
+                <!-- Assurances -->
+                <div class="doc-assurances" *ngIf="doc.profile?.assurancesAcceptees">
+                  <span class="assur-label">🛡️ Assurances :</span>
+                  <span class="assur-text">{{ doc.profile.assurancesAcceptees }}</span>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div class="card-actions">
+                <button class="btn-profile"
+                  (click)="$event.stopPropagation(); openProfile(doc)">
+                  👁️ Voir profil
+                </button>
+                <button class="btn-rdv"
+                  (click)="$event.stopPropagation(); takeAppointment(doc)">
+                  📅 Prendre RDV
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Flèche droite -->
+        <button class="carousel-arrow carousel-arrow--right"
+          (click)="nextSlide()"
+          [disabled]="!canNext"
+          aria-label="Suivant">
+          &#8250;
+        </button>
+      </div>
+
+      <!-- Indicateurs dots -->
+      <div class="carousel-dots">
+        <button
+          *ngFor="let dot of getCarouselDots()"
+          class="carousel-dot"
+          [class.active]="dot === carouselIndex"
+          (click)="goToSlide(dot)"
+          [attr.aria-label]="'Aller au groupe ' + (dot + 1)">
+        </button>
+      </div>
+
+      <!-- Compteur -->
+      <p class="carousel-counter">
+        Page {{ carouselIndex + 1 }} sur {{ getCarouselDots().length }}
+        &nbsp;·&nbsp; {{ filteredDoctors().length }} médecin(s) au total
+      </p>
+    </div>
+
+    <!-- EMPTY STATE -->
+    <div class="empty-state" *ngIf="filteredDoctors().length === 0 && viewMode === 'list'">
+      <div class="empty-icon">🔍</div>
+      <p>Aucun médecin trouvé pour votre recherche</p>
+      <button class="btn-reset" (click)="resetFilters()">Réinitialiser les filtres</button>
+    </div>
+  </div>
+
+  <!-- PANNEAU PRISE DE RDV -->
+  <app-book-appointment-panel
+    [medecin]="bookingDoctor()"
+    (closed)="bookingDoctor.set(null)"
+    (booked)="onBooked()">
+  </app-book-appointment-panel>
+
+  <!-- MODAL PROFIL MÉDECIN -->
+  <div class="modal-overlay" *ngIf="selectedDoc()" (click)="selectedDoc.set(null)">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Profil du Médecin</h2>
+        <button class="btn-close" (click)="selectedDoc.set(null)">✕</button>
+      </div>
+      <div class="modal-body" *ngIf="selectedDoc()">
+        <!-- En-tête profil -->
+        <div class="profile-hero">
+          <div class="profile-avatar">
+            <img *ngIf="selectedDoc()!.profile?.photoPro"
+              [src]="selectedDoc()!.profile.photoPro"
+              class="avatar-img-lg" />
+            <span *ngIf="!selectedDoc()!.profile?.photoPro" class="avatar-initials-lg">
+              {{ getInitials(selectedDoc()!) }}
+            </span>
+          </div>
+          <div class="profile-intro">
+            <h3>{{ selectedDoc()!.profile?.titre || 'Dr.' }} {{ getFullName(selectedDoc()!) }}</h3>
+            <p class="profile-spec">
+              {{ selectedDoc()!.profile?.specialite || getRoleLabel(selectedDoc()!.role) }}
+            </p>
+            <div class="profile-badges">
+              <span class="badge-teleconsult" *ngIf="selectedDoc()!.profile?.disponTeleconsult">
+                💻 Téléconsultation
+              </span>
+              <span class="badge-video" *ngIf="selectedDoc()!.profile?.connexionVideoIntegree">
+                📹 Vidéo intégrée
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Infos détaillées -->
+        <div class="profile-sections">
+          <div class="profile-section" *ngIf="selectedDoc()!.profile?.biographie">
+            <h4>📋 Biographie</h4>
+            <p>{{ selectedDoc()!.profile.biographie }}</p>
+          </div>
+
+          <div class="profile-section" *ngIf="selectedDoc()!.profile?.diplomes">
+            <h4>🎓 Diplômes et Formations</h4>
+            <p>{{ selectedDoc()!.profile.diplomes }}</p>
+          </div>
+
+          <div class="profile-section">
+            <h4>📍 Contact et Localisation</h4>
+            <div class="info-grid">
+              <div class="info-row" *ngIf="selectedDoc()!.profile?.adresseCabinet">
+                <span class="info-label">Adresse</span>
+                <span>{{ selectedDoc()!.profile.adresseCabinet }}</span>
+              </div>
+              <div class="info-row" *ngIf="selectedDoc()!.profile?.ville">
+                <span class="info-label">Ville</span>
+                <span>{{ selectedDoc()!.profile.ville }}</span>
+              </div>
+              <div class="info-row" *ngIf="selectedDoc()!.profile?.telephonePro">
+                <span class="info-label">Téléphone</span>
+                <span>{{ selectedDoc()!.profile.telephonePro }}</span>
+              </div>
+              <div class="info-row" *ngIf="selectedDoc()!.profile?.emailPro">
+                <span class="info-label">Email</span>
+                <span>{{ selectedDoc()!.profile.emailPro }}</span>
+              </div>
+              <div class="info-row" *ngIf="selectedDoc()!.profile?.languesParlees">
+                <span class="info-label">Langues</span>
+                <span>{{ selectedDoc()!.profile.languesParlees }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="profile-section"
+            *ngIf="selectedDoc()!.profile?.tarifs || selectedDoc()!.profile?.assurancesAcceptees">
+            <h4>💰 Tarifs et Assurances</h4>
+            <div class="info-grid">
+              <div class="info-row" *ngIf="selectedDoc()!.profile?.tarifs">
+                <span class="info-label">Tarifs</span>
+                <span>{{ selectedDoc()!.profile.tarifs }}</span>
+              </div>
+              <div class="info-row" *ngIf="selectedDoc()!.profile?.assurancesAcceptees">
+                <span class="info-label">Assurances</span>
+                <span>{{ selectedDoc()!.profile.assurancesAcceptees }}</span>
+              </div>
+              <div class="info-row" *ngIf="selectedDoc()!.profile?.actesCouverts">
+                <span class="info-label">Actes</span>
+                <span>{{ selectedDoc()!.profile.actesCouverts }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Google Maps -->
+          <div class="profile-section" *ngIf="selectedDoc()!.profile?.geoGoogleMaps">
+            <h4>🗺️ Localisation</h4>
+            <a [href]="selectedDoc()!.profile.geoGoogleMaps" target="_blank" class="maps-link">
+              📍 Voir sur Google Maps
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-outline" (click)="selectedDoc.set(null)">Fermer</button>
+        <button class="btn-rdv-lg" (click)="takeAppointment(selectedDoc()!)">
+          📅 Prendre un rendez-vous
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

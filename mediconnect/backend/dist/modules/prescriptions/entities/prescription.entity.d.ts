@@ -34,6 +34,13 @@ export declare class Prescription {
     expiresAt: Date;
     signedAt: Date;
     electronicSignature: string;
+    signatureImage: string;
+    imagingRequests: {
+        type: string;
+        region: string;
+        clinicalReason: string;
+        urgency: string;
+    }[];
     createdAt: Date;
     updatedAt: Date;
 }

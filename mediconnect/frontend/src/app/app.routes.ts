@@ -2,7 +2,12 @@ import { Routes } from "@angular/router";
 import { authGuard } from "./core/guards/auth.guard";
 
 export const routes: Routes = [
-  { path: "", redirectTo: "/auth/login", pathMatch: "full" },
+  {
+    path: "",
+    loadComponent: () =>
+      import("./pages/landing/landing.component").then((m) => m.LandingComponent),
+    pathMatch: "full",
+  },
 
   {
     path: "auth",
@@ -57,6 +62,12 @@ export const routes: Routes = [
     data: { role: "ADMIN_SYSTEM" },
     loadChildren: () =>
       import("./features/admin/admin.routes").then((m) => m.ADMIN_ROUTES),
+  },
+
+  {
+    path: "procedure/:slug",
+    loadComponent: () =>
+      import("./pages/procedure/procedure.component").then((m) => m.ProcedureComponent),
   },
 
   // ⚠️ Wildcard TOUJOURS EN DERNIER

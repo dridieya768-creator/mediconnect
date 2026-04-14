@@ -1,14 +1,19 @@
-import { Repository } from "typeorm";
+import { OnModuleInit } from "@nestjs/common";
+import { Repository, DataSource } from "typeorm";
 import { Prescription } from "./entities/prescription.entity";
 import { QrCodesService } from "../qr-codes/qr-codes.service";
 import { InteractionCheckerService, DrugInteraction } from "./interaction-checker.service";
 import { PdfService } from "./pdf.service";
-export declare class PrescriptionsService {
+export declare class PrescriptionsService implements OnModuleInit {
     private repo;
+    private dataSource;
     private qrCodesService;
     private interactionChecker;
     private pdfService;
-    constructor(repo: Repository<Prescription>, qrCodesService: QrCodesService, interactionChecker: InteractionCheckerService, pdfService: PdfService);
+    constructor(repo: Repository<Prescription>, dataSource: DataSource, qrCodesService: QrCodesService, interactionChecker: InteractionCheckerService, pdfService: PdfService);
+    onModuleInit(): Promise<void>;
+    private generateElectronicSignature;
+    verifySignature(prescription: Prescription, pin: string): boolean;
     checkInteractions(medications: any[]): DrugInteraction[];
     create(dto: any): Promise<Prescription>;
     findOne(id: string): Promise<Prescription>;

@@ -1,4 +1,4 @@
-import {
+﻿import {
   Component,
   Input,
   Output,
@@ -52,20 +52,20 @@ import { AppointmentFormComponent } from '../appointment-form/appointment-form.c
             <span class="doctor-specialty" *ngIf="medecin.specialite">{{ medecin.specialite }}</span>
           </div>
         </div>
-        <button class="close-btn" (click)="onClose()" aria-label="Fermer le panneau">×</button>
+        <button class="close-btn" (click)="onClose()" aria-label="Fermer le panneau">Ã—</button>
       </div>
 
       <!-- Error message -->
       <div class="error-banner" *ngIf="errorMessage()">
-        <span class="error-icon">⚠️</span>
+        <span class="error-icon">âš ï¸</span>
         <span>{{ errorMessage() }}</span>
-        <button class="error-dismiss" (click)="errorMessage.set(null)" aria-label="Fermer le message d'erreur">×</button>
+        <button class="error-dismiss" (click)="errorMessage.set(null)" aria-label="Fermer le message d'erreur">Ã—</button>
       </div>
 
       <!-- Loading state for availability -->
       <div class="loading-state" *ngIf="loadingAvailability()">
         <div class="spinner" aria-hidden="true"></div>
-        <span>Chargement des disponibilités...</span>
+        <span>Chargement des disponibilitÃ©s...</span>
       </div>
 
       <!-- Content -->
@@ -77,6 +77,7 @@ import { AppointmentFormComponent } from '../appointment-form/appointment-form.c
           <app-weekly-calendar
             [availability]="availability()"
             [occupiedSlots]="occupiedSlots()"
+            [conges]="conges()"
             (slotSelected)="onSlotSelected($event)"
           ></app-weekly-calendar>
         </section>
@@ -306,6 +307,7 @@ export class BookAppointmentPanelComponent implements OnChanges {
 
   availability = signal<AvailabilityConfig | null>(null);
   occupiedSlots = signal<OccupiedSlot[]>([]);
+  conges = signal<any[]>([]);
   loadingAvailability = signal<boolean>(false);
   errorMessage = signal<string | null>(null);
 
@@ -335,6 +337,7 @@ export class BookAppointmentPanelComponent implements OnChanges {
       } else {
         this.availability.set(null);
         this.occupiedSlots.set([]);
+        this.conges.set([]);
       }
     }
   }
@@ -348,13 +351,15 @@ export class BookAppointmentPanelComponent implements OnChanges {
 
     this.availabilityService.getAvailability(medecinId).subscribe({
       next: (config) => {
+        console.log('[BookPanel] availability from API:', JSON.stringify(config));
         this.availability.set(config);
+        this.conges.set((config as any).conges ?? []);
         this.bookingState.durationMinutes.set(config.defaultDuration ?? 30);
         this.loadOccupiedSlots(medecinId);
       },
       error: () => {
         this.loadingAvailability.set(false);
-        this.errorMessage.set('Impossible de charger les disponibilités du médecin.');
+        this.errorMessage.set('Impossible de charger les disponibilitÃ©s du mÃ©decin.');
       },
     });
   }
@@ -393,7 +398,7 @@ export class BookAppointmentPanelComponent implements OnChanges {
     this.bookingState.isLoading.set(true);
     this.errorMessage.set(null);
 
-    // Récupérer le vrai patient.id depuis /patients/me
+    // RÃ©cupÃ©rer le vrai patient.id depuis /patients/me
     this.http.get<any>('/api/v1/patients/me').subscribe({
       next: (res) => {
         const outer = res?.data ?? res;
@@ -423,18 +428,18 @@ export class BookAppointmentPanelComponent implements OnChanges {
           error: (err: HttpErrorResponse) => {
             this.bookingState.isLoading.set(false);
             if (err.status === 400) {
-              this.errorMessage.set('Ce créneau est déjà réservé. Veuillez en choisir un autre.');
+              this.errorMessage.set('Ce créneau est deja réservé. Veuillez en choisir un autre.');
               const id = this.medecin?.id ?? this.medecin?.userId;
               if (id) this.loadOccupiedSlots(id);
             } else {
-              this.errorMessage.set('Une erreur est survenue. Veuillez réessayer.');
+              this.errorMessage.set('Une erreur est survenue. Veuillez rÃ©essayer.');
             }
           },
         });
       },
       error: () => {
         this.bookingState.isLoading.set(false);
-        this.errorMessage.set('Impossible de récupérer votre profil patient.');
+        this.errorMessage.set('Impossible de recuperer votre profil patient.');
       }
     });
   }
@@ -450,3 +455,9 @@ export class BookAppointmentPanelComponent implements OnChanges {
     return `${y}-${m}-${d}`;
   }
 }
+
+
+
+
+
+

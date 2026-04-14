@@ -95,6 +95,7 @@ let AuthService = class AuthService {
         ].includes(registerDto.role);
         const user = this.userRepository.create({
             ...registerDto,
+            phone: registerDto.phone?.substring(0, 20),
             password: hashedPassword,
             status: isMedecin ? user_entity_1.UserStatus.PENDING_VERIFICATION : user_entity_1.UserStatus.ACTIVE,
         });

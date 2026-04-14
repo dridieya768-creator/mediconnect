@@ -95,6 +95,14 @@ __decorate([
     __metadata("design:type", String)
 ], Prescription.prototype, "electronicSignature", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ name: 'signature_image', nullable: true, type: 'text' }),
+    __metadata("design:type", String)
+], Prescription.prototype, "signatureImage", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'imaging_requests', type: 'jsonb', nullable: true }),
+    __metadata("design:type", Array)
+], Prescription.prototype, "imagingRequests", void 0);
+__decorate([
     (0, typeorm_1.CreateDateColumn)({ name: 'created_at' }),
     __metadata("design:type", Date)
 ], Prescription.prototype, "createdAt", void 0);

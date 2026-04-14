@@ -25,6 +25,20 @@ let PatientsController = class PatientsController {
         this.userRepo = userRepo;
         this.patientRepo = patientRepo;
     }
+    async searchPatients(search) {
+        if (!search || search.trim().length < 2)
+            return { success: true, data: [] };
+        const q = search.trim();
+        const patients = await this.patientRepo.find({
+            where: [
+                { nom: (0, typeorm_2.ILike)(`%${q}%`) },
+                { prenom: (0, typeorm_2.ILike)(`%${q}%`) },
+                { nss: (0, typeorm_2.ILike)(`%${q}%`) },
+            ],
+            take: 10,
+        });
+        return { success: true, data: patients };
+    }
     async getMe(req) {
         const userId = req.user?.sub || req.user?.id || req.user?.userId;
         if (!userId)
@@ -113,6 +127,14 @@ let PatientsController = class PatientsController {
     }
 };
 exports.PatientsController = PatientsController;
+__decorate([
+    (0, common_1.Get)(),
+    (0, swagger_1.ApiOperation)({ summary: "Rechercher des patients (médecin)" }),
+    __param(0, (0, common_1.Query)("search")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], PatientsController.prototype, "searchPatients", null);
 __decorate([
     (0, common_1.Get)("me"),
     (0, swagger_1.ApiOperation)({ summary: "Profil complet du patient connecté" }),

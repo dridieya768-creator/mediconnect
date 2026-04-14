@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+﻿import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { MedecinProfile } from './entities/medecin-profile.entity';
@@ -95,7 +95,7 @@ export class MedecinsService {
     });
 
     if (!user || !medecinRoles.includes(user.role) || user.status !== 'ACTIVE') {
-      throw new NotFoundException('Médecin non trouvé');
+      throw new NotFoundException('MÃ©decin non trouvÃ©');
     }
 
     const profile = await this.medecinProfileRepository.findOne({
@@ -178,6 +178,7 @@ async updateAvailability(userId: string, dto: UpdateAvailabilityDto) {
     workDays:                dto.workDays,
     defaultDuration:         dto.defaultDuration,
     acceptsTeleconsultation: dto.acceptsTeleconsultation,
+    conges:                  (dto as any).conges ?? [],
   };
 
   Object.assign(profile, {
@@ -197,7 +198,7 @@ async getAvailability(userId: string) {
 
   if (!profile) throw new NotFoundException('Profile not found');
 
-  // ✅ Parser tarifs car c'est du TEXT en DB, pas du JSON automatique
+  // âœ… Parser tarifs car c'est du TEXT en DB, pas du JSON automatique
   let saved: any = {};
   if (profile.tarifs) {
     try {
@@ -213,36 +214,37 @@ async getAvailability(userId: string) {
     workDays:                saved?.workDays                ?? null,
     defaultDuration:         saved?.defaultDuration         ?? 30,
     acceptsTeleconsultation: saved?.acceptsTeleconsultation ?? true,
+    conges:                  saved?.conges                  ?? [],
     disponTeleconsult:       profile.disponTeleconsult,
     connexionVideoIntegree:  profile.connexionVideoIntegree,
   };
 }
-  // Ajouter un patient à la liste du médecin
+  // Ajouter un patient Ã  la liste du mÃ©decin
 async addPatientToDoctorList(doctorId: string, patientId: string) {
-  console.log(`[Service] 🔵 addPatientToDoctorList: doctor=${doctorId}, patient=${patientId}`);
+  console.log(`[Service] ðŸ”µ addPatientToDoctorList: doctor=${doctorId}, patient=${patientId}`);
   
   try {
-    // Vérifier d'abord si le patient existe dans users
+    // VÃ©rifier d'abord si le patient existe dans users
     const patientExists = await this.userRepository.findOne({
       where: { id: patientId }
     });
     
     if (!patientExists) {
-      console.error(`[Service] ❌ Patient ${patientId} does not exist in users table!`);
+      console.error(`[Service] âŒ Patient ${patientId} does not exist in users table!`);
       return { 
         success: false, 
-        message: 'Patient non trouvé dans la base de données',
+        message: 'Patient non trouvÃ© dans la base de donnÃ©es',
         patient: null
       };
     }
     
-    // Vérifier si la relation existe déjà
+    // VÃ©rifier si la relation existe dÃ©jÃ 
     const existingRelation = await this.doctorPatientRepository.findOne({
       where: { doctorId, patientId }
     });
     
     if (!existingRelation) {
-      // Créer la relation médecin-patient
+      // CrÃ©er la relation mÃ©decin-patient
       const newRelation = this.doctorPatientRepository.create({
         doctorId,
         patientId,
@@ -250,15 +252,15 @@ async addPatientToDoctorList(doctorId: string, patientId: string) {
         status: 'ACTIVE'
       });
       await this.doctorPatientRepository.save(newRelation);
-      console.log(`[Service] ✅ Patient ${patientId} added to doctor ${doctorId}`);
+      console.log(`[Service] âœ… Patient ${patientId} added to doctor ${doctorId}`);
       
       return { success: true, patient: patientExists };
     }
     
-    console.log(`[Service] ℹ️ Patient ${patientId} already in doctor ${doctorId} list`);
-    return { success: false, message: 'Patient déjà dans la liste', patient: patientExists };
+    console.log(`[Service] â„¹ï¸ Patient ${patientId} already in doctor ${doctorId} list`);
+    return { success: false, message: 'Patient dÃ©jÃ  dans la liste', patient: patientExists };
   } catch (error) {
-    console.error('[Service] ❌ Error in addPatientToDoctorList:', error);
+    console.error('[Service] âŒ Error in addPatientToDoctorList:', error);
     return { success: false, message: error.message, patient: null };
   }
 }
@@ -266,16 +268,16 @@ async addPatientToDoctorList(doctorId: string, patientId: string) {
   // Accepter un rendez-vous et ajouter le patient
  // Accepter un rendez-vous et ajouter le patient
 async acceptAppointment(doctorId: string, appointmentId: string) {
-  console.log(`[Service] 🔵 acceptAppointment called with doctorId=${doctorId}, appointmentId=${appointmentId}`);
+  console.log(`[Service] ðŸ”µ acceptAppointment called with doctorId=${doctorId}, appointmentId=${appointmentId}`);
   
   try {
-    // 1. Récupérer le rendez-vous
+    // 1. RÃ©cupÃ©rer le rendez-vous
     const appointment = await this.appointmentRepository.findOne({
       where: { id: appointmentId, doctorId: doctorId },
       relations: ['patient']
     });
     
-    console.log(`[Service] 📋 Appointment found:`, {
+    console.log(`[Service] ðŸ“‹ Appointment found:`, {
       id: appointment?.id,
       status: appointment?.status,
       patientId: appointment?.patientId,
@@ -283,49 +285,49 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
     });
     
     if (!appointment) {
-      throw new NotFoundException(`Rendez-vous ${appointmentId} non trouvé`);
+      throw new NotFoundException(`Rendez-vous ${appointmentId} non trouvÃ©`);
     }
     
-    // Vérifier que le patient existe
+    // VÃ©rifier que le patient existe
     if (!appointment.patientId) {
-      throw new BadRequestException('Le rendez-vous n\'a pas de patient associé');
+      throw new BadRequestException('Le rendez-vous n\'a pas de patient associÃ©');
     }
     
-    // Vérifier que le patient existe dans la table users
+    // VÃ©rifier que le patient existe dans la table users
     const patientExists = await this.userRepository.findOne({
       where: { id: appointment.patientId }
     });
     
     if (!patientExists) {
-      console.warn(`[Service] ⚠️ Patient ${appointment.patientId} not found in users, but continuing with appointment acceptance`);
-      // On continue quand même pour accepter le rendez-vous, même si le patient n'existe pas
+      console.warn(`[Service] âš ï¸ Patient ${appointment.patientId} not found in users, but continuing with appointment acceptance`);
+      // On continue quand mÃªme pour accepter le rendez-vous, mÃªme si le patient n'existe pas
     }
     
-    // 2. Mettre à jour le statut du rendez-vous
+    // 2. Mettre Ã  jour le statut du rendez-vous
     if (appointment.status !== AppointmentStatus.CONFIRMED) {
       await this.appointmentRepository.update(
         { id: appointmentId },
         { status: AppointmentStatus.CONFIRMED }
       );
-      console.log(`[Service] ✅ Appointment status updated to CONFIRMED`);
+      console.log(`[Service] âœ… Appointment status updated to CONFIRMED`);
     } else {
-      console.log(`[Service] ℹ️ Appointment already confirmed`);
+      console.log(`[Service] â„¹ï¸ Appointment already confirmed`);
     }
     
-    // 3. Ajouter le patient à la liste du médecin (seulement s'il existe)
+    // 3. Ajouter le patient Ã  la liste du mÃ©decin (seulement s'il existe)
     let addedPatient = null;
     if (patientExists) {
       addedPatient = await this.addPatientToDoctorList(doctorId, appointment.patientId);
-      console.log(`[Service] 👤 Add patient result:`, addedPatient);
+      console.log(`[Service] ðŸ‘¤ Add patient result:`, addedPatient);
     } else {
-      console.log(`[Service] ⚠️ Skipping adding patient to doctor list because patient doesn't exist`);
+      console.log(`[Service] âš ï¸ Skipping adding patient to doctor list because patient doesn't exist`);
     }
     
     return {
       success: true,
       message: patientExists 
-        ? 'Rendez-vous accepté et patient ajouté à votre liste'
-        : 'Rendez-vous accepté (patient non trouvé dans la base)',
+        ? 'Rendez-vous acceptÃ© et patient ajoutÃ© Ã  votre liste'
+        : 'Rendez-vous acceptÃ© (patient non trouvÃ© dans la base)',
       appointment: {
         ...appointment,
         status: AppointmentStatus.CONFIRMED
@@ -333,14 +335,14 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
       patient: patientExists || null
     };
   } catch (error) {
-    console.error('[Service] ❌ Error in acceptAppointment:', error);
+    console.error('[Service] âŒ Error in acceptAppointment:', error);
     throw error;
   }
 }
   
-  // Récupérer tous les patients du médecin
+  // RÃ©cupÃ©rer tous les patients du mÃ©decin
   async getMyPatients(doctorId: string) {
-    // Récupérer les relations
+    // RÃ©cupÃ©rer les relations
     const relations = await this.doctorPatientRepository.find({
       where: { doctorId, status: 'ACTIVE' },
     });
@@ -351,7 +353,7 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
       return [];
     }
     
-    // Récupérer les informations complètes des patients
+    // RÃ©cupÃ©rer les informations complÃ¨tes des patients
     const patients = await this.userRepository
       .createQueryBuilder('user')
       .where('user.id IN (:...ids)', { ids: patientIds })
@@ -361,7 +363,7 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
     return patients;
   }
 
-  // Vérifier si un patient est dans la liste du médecin
+  // VÃ©rifier si un patient est dans la liste du mÃ©decin
   async isPatientInDoctorList(doctorId: string, patientId: string) {
     const relation = await this.doctorPatientRepository.findOne({
       where: { doctorId, patientId }
@@ -377,17 +379,17 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
     relations: ['patient'],
   });
 
-  // Dédupliquer par userId patient
+  // DÃ©dupliquer par userId patient
   const seen = new Map<string, any>();
   for (const appt of appointments) {
     if (appt.patient && !seen.has(appt.patientId)) {
-      // Résoudre le vrai patient.id depuis la table patients
+      // RÃ©soudre le vrai patient.id depuis la table patients
       const patientRecord = await this.patientRepository.findOne({
         where: { userId: appt.patientId }
       });
       seen.set(appt.patientId, {
         id:        appt.patient.id,
-        // patientId = UUID de la table patients (requis pour créer une prescription)
+        // patientId = UUID de la table patients (requis pour crÃ©er une prescription)
         patientId: patientRecord?.id ?? appt.patientId,
         email:     appt.patient.email,
         firstName: appt.patient.firstName,
@@ -407,11 +409,11 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
     });
     
     if (!relation) {
-      throw new NotFoundException('Patient non trouvé dans la liste');
+      throw new NotFoundException('Patient non trouvÃ© dans la liste');
     }
     
     await this.doctorPatientRepository.remove(relation);
-    return { success: true, message: 'Patient retiré de la liste' };
+    return { success: true, message: 'Patient retirÃ© de la liste' };
   }
   
   async getMedecinAvailabilityById(id: string) {
@@ -420,7 +422,7 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
     });
 
     if (!profile) {
-      throw new NotFoundException('Médecin non trouvé');
+      throw new NotFoundException('MÃ©decin non trouvÃ©');
     }
 
     let saved: any = {};
@@ -434,7 +436,7 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
       }
     }
 
-    // Horaires par défaut si le médecin n'a pas configuré ses disponibilités
+    // Horaires par dÃ©faut si le mÃ©decin n'a pas configurÃ© ses disponibilitÃ©s
     const defaultWorkDays = [
       { day: 'monday',    startTime: '08:00', endTime: '17:00' },
       { day: 'tuesday',   startTime: '08:00', endTime: '17:00' },
@@ -443,7 +445,7 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
       { day: 'friday',    startTime: '08:00', endTime: '17:00' },
     ];
 
-    // Mapping des noms français/anciens vers le format standard
+    // Mapping des noms franÃ§ais/anciens vers le format standard
     const dayNameMap: Record<string, string> = {
       'Lundi': 'monday', 'Mardi': 'tuesday', 'Mercredi': 'wednesday',
       'Jeudi': 'thursday', 'Vendredi': 'friday', 'Samedi': 'saturday', 'Dimanche': 'sunday',
@@ -464,7 +466,7 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
         if (wd.morningStart && wd.morningEnd) {
           converted.push({ day: dayKey, startTime: wd.morningStart, endTime: wd.morningEnd });
         }
-        // Après-midi
+        // AprÃ¨s-midi
         if (wd.afternoonStart && wd.afternoonEnd) {
           converted.push({ day: dayKey, startTime: wd.afternoonStart, endTime: wd.afternoonEnd });
         }
@@ -472,12 +474,15 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
       workDays = converted.length > 0 ? converted : defaultWorkDays;
     }
 
-    return {
+    const result = {
       workDays: workDays ?? defaultWorkDays,
       defaultDuration: saved?.defaultDuration ?? 30,
       acceptsTeleconsultation: saved?.acceptsTeleconsultation ?? true,
+      conges: saved?.conges ?? [],
       disponTeleconsult: profile.disponTeleconsult,
     };
+    console.log('[getMedecinAvailabilityById] result workDays sample:', JSON.stringify(result.workDays?.slice(0,2)));
+    return result;
   }
 
   async getOccupiedSlots(id: string, startDate: string, endDate: string) {
@@ -486,7 +491,7 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
     });
 
     if (!profile) {
-      throw new NotFoundException('Médecin non trouvé');
+      throw new NotFoundException('MÃ©decin non trouvÃ©');
     }
 
     const appointments = await this.appointmentRepository
@@ -535,3 +540,5 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
   }
   
 }
+
+

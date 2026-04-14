@@ -61,7 +61,7 @@ import { AvailabilityConfig } from '../../../../../core/models/medecin-availabil
 
       <!-- Message aucun créneau -->
       <div class="no-slot-msg" *ngIf="!selectedSlot()">
-        <span>📅</span>
+        <span></span>
         <p>Veuillez sélectionner un créneau dans le calendrier.</p>
       </div>
 

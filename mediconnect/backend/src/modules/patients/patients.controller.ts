@@ -1,8 +1,8 @@
-import { Controller, Get, Patch, Body, Param, UseGuards, Req } from "@nestjs/common";
+import { Controller, Get, Patch, Body, Param, UseGuards, Req, Query } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { Repository, ILike, Or } from "typeorm";
 import { User } from "../users/entities/user.entity";
 import { Patient } from "./entities/patient.entity";
 
@@ -19,9 +19,24 @@ export class PatientsController {
     private readonly patientRepo: Repository<Patient>,
   ) {}
 
+  @Get()
+  @ApiOperation({ summary: "Rechercher des patients (médecin)" })
+  async searchPatients(@Query("search") search: string) {
+    if (!search || search.trim().length < 2) return { success: true, data: [] };
+    const q = search.trim();
+    const patients = await this.patientRepo.find({
+      where: [
+        { nom: ILike(`%${q}%`) },
+        { prenom: ILike(`%${q}%`) },
+        { nss: ILike(`%${q}%`) },
+      ],
+      take: 10,
+    });
+    return { success: true, data: patients };
+  }
+
   @Get("me")
-  @ApiOperation({ summary: "Profil complet du patient connecté" })
-  async getMe(@Req() req: any) {
+  @ApiOperation({ summary: "Profil complet du patient connecté" })  async getMe(@Req() req: any) {
     const userId = req.user?.sub || req.user?.id || req.user?.userId;
     if (!userId) return { success: false, data: null, message: "Non authentifié" };
 

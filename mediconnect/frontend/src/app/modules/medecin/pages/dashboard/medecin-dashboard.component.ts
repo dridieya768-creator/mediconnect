@@ -15,19 +15,20 @@ import { of } from "rxjs";
   template: `
     <div class="dash">
 
-      <!-- ══ HEADER ══════════════════════════════════════════════ -->
-      <div class="dash-header">
-        <div class="dash-greeting">
-          <div class="greeting-avatar">{{ getInitials() }}</div>
-          <div>
-            <h1 class="dash-title">
-              Bonjour, {{ medecin()?.firstName ?? 'Docteur' }} 👋
-            </h1>
-            <p class="dash-sub">{{ today() }}</p>
-          </div>
-        </div>
-        <div class="dash-header-actions">
-          <a routerLink="/medecin/planning" class="btn-primary">📅 Mon Planning</a>
+      <!-- HERO BANNER -->
+      <div style="position:relative; width:100%; height:480px; overflow:hidden; margin-bottom:24px;">
+        <img src="assets/images/Homepage-Hero.jpg.webp" alt="Dashboard Medecin"
+             style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center; display:block;">
+        <div style="position:absolute; inset:0; background:linear-gradient(to right, rgba(15,39,90,0.78), rgba(15,39,90,0.25)); display:flex; flex-direction:column; justify-content:center; padding:0 60px;">
+          <p style="font-family:'Georgia',serif; font-size:18px; color:rgba(255,255,255,0.85); margin:0 0 12px; font-weight:400;">
+            Bonjour, {{ medecin()?.firstName ?? 'Docteur' }} 
+          </p>
+          <h1 style="font-family:'Georgia',serif; font-size:42px; font-weight:700; color:white; margin:0 0 12px; line-height:1.2;">
+            Bienvenue dans MediConnect
+          </h1>
+          <p style="font-family:'Georgia',serif; font-size:17px; color:rgba(255,255,255,0.82); margin:0; max-width:560px; line-height:1.6;">
+            MediConnect assure la continuite de vos soins — un suivi intelligent, des patients fideles, une carriere epanouie.
+          </p>
         </div>
       </div>
 
@@ -51,7 +52,7 @@ import { of } from "rxjs";
         <!-- ── Prochains RDV ──────────────────────────────────── -->
         <div class="card card-appts">
           <div class="card-head">
-            <h2>📆 Prochains rendez-vous</h2>
+            <h2>Prochains rendez-vous</h2>
             <a routerLink="/medecin/planning" class="link-more">Voir tout →</a>
           </div>
 
@@ -83,13 +84,13 @@ import { of } from "rxjs";
             </div>
 
             <div class="empty-mini" *ngIf="upcomingAppointments().length === 0">
-              <span>🎉</span>
+              <span></span>
               <p>Aucun RDV à venir aujourd'hui</p>
             </div>
           </div>
 
           <div class="pending-bar" *ngIf="pendingCount() > 0">
-            <span>⏳ {{ pendingCount() }} demande(s) en attente</span>
+            <span> {{ pendingCount() }} demande(s) en attente</span>
             <a routerLink="/medecin/planning" class="link-more">Traiter →</a>
           </div>
         </div>
@@ -127,7 +128,7 @@ import { of } from "rxjs";
             <div class="qr-actions" [class.hidden]="qrLoading() || !!qrError()">
               <button class="btn-qr-dl"    (click)="downloadQr()">⬇️ Télécharger</button>
               <button class="btn-qr-copy"  (click)="copyUrl()">
-                {{ copied() ? '✅ Copié !' : '📋 Copier' }}
+                {{ copied() ? ' Copié !' : ' Copier' }}
               </button>
               <button class="btn-qr-print" (click)="printQr()">🖨️ Imprimer</button>
             </div>
@@ -141,20 +142,20 @@ import { of } from "rxjs";
         <!-- ── Accès rapides ───────────────────────────────────── -->
         <div class="card card-quick">
           <div class="card-head">
-            <h2>⚡ Accès rapides</h2>
+            <h2> Accès rapides</h2>
           </div>
           <div class="quick-grid">
             <a routerLink="/medecin/planning"      class="quick-btn">
-              <span>📅</span><span>Planning</span>
+              <span></span><span>Planning</span>
             </a>
             <a routerLink="/medecin/patients"      class="quick-btn">
-              <span>👥</span><span>Patients</span>
+              <span></span><span>Patients</span>
             </a>
             <a routerLink="/medecin/prescriptions" class="quick-btn">
-              <span>💊</span><span>Prescriptions</span>
+              <span></span><span>Prescriptions</span>
             </a>
             <a routerLink="/medecin/profil"        class="quick-btn">
-              <span>👨‍⚕️</span><span>Mon Profil</span>
+              <span></span><span>Mon Profil</span>
             </a>
           </div>
         </div>

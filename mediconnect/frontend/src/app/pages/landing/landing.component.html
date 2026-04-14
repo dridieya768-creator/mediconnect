@@ -1,0 +1,276 @@
+﻿<nav class="navbar">
+  <div class="nav-container">
+    <a routerLink="/" class="nav-brand">
+      <div class="brand-icon">
+        <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
+          <rect width="32" height="32" rx="8" fill="#1a56db"/>
+          <path d="M16 7v18M7 16h18" stroke="white" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <span class="brand-name">MediConnect</span>
+    </a>
+    <div class="nav-links">
+      <a href="#services" class="nav-link">Nos services</a>
+      <a href="#about" class="nav-link">A propos</a>
+      <a href="#specialites" class="nav-link">Specialites</a>
+      <a href="#contact" class="nav-link">Contact</a>
+    </div>
+    <div class="nav-actions">
+      <a routerLink="/auth/login" class="btn-login">Se connecter</a>
+      <a routerLink="/auth/register" class="btn-register">Prendre RDV</a>
+    </div>
+    <button class="mobile-menu-btn" (click)="menuOpen = !menuOpen">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <div class="mobile-menu" [class.open]="menuOpen">
+    <a href="#services" class="mobile-link" (click)="menuOpen=false">Nos services</a>
+    <a routerLink="/auth/login" class="mobile-link" (click)="menuOpen=false">Se connecter</a>
+    <a routerLink="/auth/register" class="mobile-link highlight" (click)="menuOpen=false">Prendre RDV</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <video class="hero-video" autoplay muted loop playsinline>
+    <source src="assets/images/hero.mp4" type="video/mp4">
+  </video>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <h1 class="hero-title">Votre sante, notre priorite</h1>
+    <p class="hero-sub">La plateforme e-sante qui connecte patients et professionnels de sante en Tunisie.</p>
+    <div class="hero-actions">
+      <a routerLink="/auth/login" class="btn-primary">Se connecter</a>
+      <a routerLink="/auth/register" class="btn-outline">Creer un compte</a>
+    </div>
+  </div>
+</section>
+
+<!-- NOS SERVICES CAROUSEL -->
+<section class="services-section" id="services">
+  <div class="section-container">
+    <h2 style="font-family:'Georgia',serif; font-size:38px; font-weight:700; text-align:center; color:#0f172a; margin-bottom:40px; letter-spacing:-0.5px;">
+      Nos services 
+    </h2>
+    <div style="font-family:'Georgia';align-items:center;margin-top:40px;">
+      <button class="svc-arrow" (click)="svcPrev()" [disabled]="svcIndex===0" style="width:44px;height:44px;border-radius:50%;background:white;border:1.5px solid #e2e8f0;font-size:28px;cursor:pointer;flex-shrink:0;margin-right:12px;display:flex;align-items:center;justify-content:center;">&#8249;</button>
+      <div style="flex:1;overflow:hidden;min-width:0;">
+        <div style="display:flex;flex-direction:row;flex-wrap:nowrap;gap:16px;transition:transform 0.45s ease;"
+             [style.transform]="'translateX(-' + svcOffset + 'px)'">
+          @for (s of services; track s.title) {
+            <div style="min-width:280px;width:280px;flex-shrink:0;background:white;border-radius:14px;overflow:hidden;border:1px solid #e5e7eb;">
+              <div style="width:100%;height:160px;overflow:hidden;">
+                <img [src]="s.image" [alt]="s.title" style="width:100%;height:100%;object-fit:cover;display:block;">
+              </div>
+              <div style="padding:16px;">
+                <h3 style="font-size:14px;font-weight:700;color:#0f172a;margin:0 0 6px;">{{ s.title }}</h3>
+                <p style="font-size:13px;color:#64748b;line-height:1.5;margin:0;">{{ s.desc }}</p>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+      <button class="svc-arrow" (click)="svcNext()" [disabled]="svcIndex>=svcMaxIndex" style="width:44px;height:44px;border-radius:50%;background:white;border:1.5px solid #e2e8f0;font-size:28px;cursor:pointer;flex-shrink:0;margin-left:12px;display:flex;align-items:center;justify-content:center;">&#8250;</button>
+    </div>
+    <div style="display:flex;justify-content:center;gap:6px;margin-top:20px;">
+      @for (d of svcDots; track d) {
+        <button (click)="svcGo(d)" [style.background]="d===svcIndex ? '#1a56db' : '#e2e8f0'" [style.width]="d===svcIndex ? '24px' : '8px'" style="height:8px;border-radius:4px;border:none;cursor:pointer;padding:0;transition:all 0.2s;"></button>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- SECTION SOINS PATIENTS -->
+<section style="background:#deeffe; padding:40px 0; position:relative; overflow:hidden;">
+  <div style="display:grid; grid-template-columns:1fr 1fr; align-items:center; max-width:100%; margin:0;">
+    <div style="padding:0 40px 0 100px;">
+      <h2 style="font-size:40px; font-weight:800; color:#0f172a; line-height:1.2; margin:0 0 14px;">Soins aux patients</h2>
+      <p style="font-size:30px; color:#334155; line-height:1.7; margin:0 0 24px;">
+        MediConnect propose des consultations virtuelles assurees par des medecins agrees et autorises
+        a exercer dans votre Etat de residence afin que vous puissiez beneficier de soins de qualite,
+        en toute simplicite, depuis votre domicile.
+      </p>
+      <a routerLink="/auth/register"
+         style="display:inline-flex;align-items:center;gap:8px;padding:15px 24px;background:#142e65;color:white;border-radius:50px;font-size:14px;font-weight:1000;text-decoration:none;box-shadow:0 4px 16px rgba(16, 44, 104, 0.35);">
+        Voir plus &rsaquo;
+      </a>
+    </div>
+    <div style="display:flex; justify-content:center; align-items:center; overflow:hidden;">
+      <img src="assets/images/teleconsulation.png" alt="Teleconsultation"
+           style="width:100%; max-width:500px; object-fit:contain; display:block; filter:drop-shadow(0 16px 32px rgba(26,86,219,0.18));">
+    </div>
+  </div>
+</section>
+
+<section class="specialites-section" id="specialites">
+  <div class="section-container">
+    <h2 style="font-family:'Georgia',serif; font-size:38px; font-weight:700; text-align:center; color:#0f172a; margin-bottom:40px; letter-spacing:-0.5px;">
+      Spécialités Médicales
+    </h2>
+
+    <!-- CAROUSEL -->
+    <div style="display:flex; align-items:center;">
+      <button (click)="specPrev()" [disabled]="specIndex===0"
+        style="width:44px;height:44px;border-radius:50%;background:white;border:1.5px solid #e2e8f0;font-size:28px;cursor:pointer;flex-shrink:0;margin-right:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.08);">
+        &#8249;
+      </button>
+
+      <div style="flex:1; overflow:hidden; min-width:0;">
+        <div style="display:flex; flex-direction:row; flex-wrap:nowrap; gap:14px; transition:transform 0.45s ease;"
+             [style.transform]="'translateX(-' + specOffset + 'px)'">
+          @for (sp of specialitesList; track sp.name) {
+            <a routerLink="/auth/login"
+               style="min-width:180px;width:180px;flex-shrink:0;border-radius:14px;overflow:hidden;cursor:pointer;text-decoration:none;position:relative;display:block;aspect-ratio:1;">
+              <img [src]="sp.image" [alt]="sp.name"
+                   style="width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.3s;filter:brightness(1.05) saturate(0.9);">
+              <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.55) 0%,rgba(0,0,0,0.05) 55%,transparent 100%);"></div>
+              <span style="position:absolute;bottom:10px;left:0;right:0;text-align:center;color:white;font-size:12px;font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,.5);padding:0 6px;">
+                {{ sp.name }}
+              </span>
+            </a>
+          }
+        </div>
+      </div>
+
+      <button (click)="specNext()" [disabled]="specIndex>=specMaxIndex"
+        style="width:44px;height:44px;border-radius:50%;background:white;border:1.5px solid #e2e8f0;font-size:28px;cursor:pointer;flex-shrink:0;margin-left:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.08);">
+        &#8250;
+      </button>
+    </div>
+
+    <!-- Dots -->
+    <div style="display:flex;justify-content:center;gap:6px;margin-top:20px;">
+      @for (d of specDots; track d) {
+        <button (click)="specGo(d)"
+          [style.background]="d===specIndex ? '#1a56db' : '#e2e8f0'"
+          [style.width]="d===specIndex ? '24px' : '8px'"
+          style="height:8px;border-radius:4px;border:none;cursor:pointer;padding:0;transition:all 0.2s;">
+        </button>
+      }
+    </div>
+  </div>
+</section>
+<section style="background:#ffffff; padding:60px 0; overflow:hidden;">
+  <div style="display:grid; grid-template-columns:1fr 1fr; align-items:center; max-width:100%; margin:0;">
+
+    <!-- IMAGE GAUCHE -->
+    <div style="display:flex; justify-content:center; align-items:center; overflow:hidden;">
+      <img src="assets/images/teleconsultation5.png" alt="Pharmacies"
+           style="width:100%; max-width:500px; object-fit:contain; display:block;
+                  filter:drop-shadow(0 16px 32px rgba(26,86,219,0.15));">
+    </div>
+
+    <!-- TEXTE DROITE -->
+    <div style="padding:0 100px 0 40px;">
+      <h2 style="font-size:40px; font-weight:800; color:#0f172a; line-height:1.2; margin:0 0 16px;">
+        Pharmacies
+      </h2>
+      <p style="font-size:30px; color:#253546; line-height:1.8; margin:0 0 28px;">
+        MediConnect accompagne les pharmacies avec un réseau médical certifié et des outils stratégiques pour améliorer la qualité des soins
+         les resultats pour les patients et les revenus.
+      </p>
+      <a routerLink="/auth/register"
+         style="display:inline-flex; align-items:center; gap:8px; padding:10px 22px;
+                background:#14146c; color:white; border-radius:50px;
+                font-size:14px; font-weight:700; text-decoration:none;
+                box-shadow:0 4px 16px rgba(26,86,219,0.35);">
+         voir plus &rsaquo;
+      </a>
+    </div>
+  </div>
+</section>
+
+
+<section class="procedures-section">
+  <div class="procedures-container">
+    <h2 style="font-family:'Georgia',serif; font-size:32px; font-weight:700; color:#0f172a; margin-bottom:40px; letter-spacing:-0.3px;">
+      Procédures les plus consultées en Chirurgie Esthétique
+    </h2>
+
+    <!-- CAROUSEL -->
+    <div style="display:flex; align-items:center;">
+      <button (click)="procPrev()" [disabled]="procIndex===0"
+        style="width:44px;height:44px;border-radius:50%;background:white;border:1.5px solid #e2e8f0;font-size:28px;cursor:pointer;flex-shrink:0;margin-right:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.08);">
+        &#8249;
+      </button>
+
+      <div style="flex:1; overflow:hidden; min-width:0;">
+        <div style="display:flex; flex-direction:row; flex-wrap:nowrap; gap:20px; transition:transform 0.45s ease;"
+             [style.transform]="'translateX(-' + procOffset + 'px)'">
+          @for (p of topProcedures; track p.slug) {
+            <div style="min-width:220px;width:220px;flex-shrink:0;background:white;border-radius:14px;overflow:hidden;border:1px solid #e5e7eb;transition:all 0.2s;cursor:pointer;">
+              <div style="width:100%;height:200px;overflow:hidden;">
+                <img [src]="p.image" [alt]="p.label" style="width:100%;height:100%;object-fit:cover;display:block;">
+              </div>
+              <div style="padding:14px;">
+                <h4 style="font-size:14px;font-weight:700;color:#0f172a;margin:0 0 6px;">{{ p.label }}</h4>
+                <p style="font-size:12px;color:#64748b;line-height:1.5;margin:0 0 10px;">{{ p.desc }}</p>
+                <a [routerLink]="['/procedure', p.slug]"
+                   style="font-size:13px;color:#1b2f5b;font-weight:600;text-decoration:none;">
+                  voir plus &rsaquo;
+                </a>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <button (click)="procNext()" [disabled]="procIndex>=procMaxIndex"
+        style="width:44px;height:44px;border-radius:50%;background:white;border:1.5px solid #e2e8f0;font-size:28px;cursor:pointer;flex-shrink:0;margin-left:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.08);">
+        &#8250;
+      </button>
+    </div>
+
+    <!-- Dots -->
+    <div style="display:flex;justify-content:center;gap:6px;margin-top:20px;">
+      @for (d of procDots; track d) {
+        <button (click)="procGo(d)"
+          [style.background]="d===procIndex ? '#1a56db' : '#e2e8f0'"
+          [style.width]="d===procIndex ? '24px' : '8px'"
+          style="height:8px;border-radius:4px;border:none;cursor:pointer;padding:0;transition:all 0.2s;">
+        </button>
+      }
+    </div>
+  </div>
+</section>
+
+<section class="global-section">
+  <div class="global-container">
+    <div class="global-image">
+      <img src="assets/images/global-care.jpg" alt="Medecin" class="section-img">
+    </div>
+    <div class="global-text">
+      <h2>Des soins accessibles pour tous</h2>
+      <p>Nous facilitons l acces aux soins medicaux pour tous les patients en Tunisie.</p>
+      <a routerLink="/auth/register" class="btn-outline-dark">Prendre rendez-vous</a>
+    </div>
+  </div>
+</section>
+
+<footer class="footer" id="contact">
+  <div class="footer-container">
+    <div class="footer-brand">
+      <span>MediConnect</span>
+      <p>La plateforme e-sante de reference en Tunisie.</p>
+    </div>
+    <div class="footer-links">
+      <h4>Services</h4>
+      <a href="#">Prise de RDV</a>
+      <a href="#">Teleconsultation</a>
+    </div>
+    <div class="footer-links">
+      <h4>Portails</h4>
+      <a routerLink="/auth/login">Patient</a>
+      <a routerLink="/auth/login">Medecin</a>
+    </div>
+    <div class="footer-links">
+      <h4>Contact</h4>
+      <a href="#">support&#64;mediconnect.tn</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>2025 MediConnect.</p>
+  </div>
+</footer>
+
+
+

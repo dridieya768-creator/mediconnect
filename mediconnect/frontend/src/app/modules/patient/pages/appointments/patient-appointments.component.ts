@@ -1,7 +1,8 @@
-import { Component, OnInit, inject, signal, computed } from "@angular/core";
+﻿import { Component, OnInit, inject, signal, computed } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { HttpClient } from "@angular/common/http";
+import { Router } from "@angular/router";
 import { catchError, debounceTime, distinctUntilChanged, Subject, switchMap, of } from "rxjs";
 
 type ViewMode = "list" | "new" | "detail" | "cancel" | "rate";
@@ -14,11 +15,11 @@ type FilterTab = "upcoming" | "past" | "all";
   template: `
     <div class="appt-page">
 
-      <!-- ── HEADER ─────────────────────────────────── -->
+      <!-- HEADER SIMPLE -->
       <div class="page-header">
         <div>
-          <h1 class="page-title">📅 Mes Rendez-vous</h1>
-          <p class="page-subtitle">Gérez vos consultations et téléconsultations</p>
+          <h1 class="page-title">Mes Rendez-vous</h1>
+          <p class="page-subtitle">Gerez vos consultations et teleconsultations</p>
         </div>
         <button class="btn-primary" (click)="showView('new')" *ngIf="view() !== 'new'">
           + Nouveau RDV
@@ -209,12 +210,12 @@ type FilterTab = "upcoming" | "past" | "all";
             <!-- Récapitulatif -->
             <div class="recap-box">
               <div class="recap-row">
-                <span>👨‍⚕️ Médecin</span>
+                <span> Médecin</span>
                 <strong>Dr. {{ selectedDoctor()?.firstName || selectedDoctor()?.first_name }}
                         {{ selectedDoctor()?.lastName  || selectedDoctor()?.last_name }}</strong>
               </div>
               <div class="recap-row">
-                <span>📅 Date & heure</span>
+                <span> Date & heure</span>
                 <strong>{{ formatFullDate(selectedSlot()!) }}</strong>
               </div>
               <div class="recap-row">
@@ -245,7 +246,7 @@ type FilterTab = "upcoming" | "past" | "all";
           </div>
           <div class="detail-grid">
             <div class="detail-row">
-              <span class="detail-label">👨‍⚕️ Médecin</span>
+              <span class="detail-label"> Médecin</span>
               <span class="detail-value">Dr. {{ getDoctorName(selectedAppt()!) }}</span>
             </div>
             <div class="detail-row">
@@ -253,7 +254,7 @@ type FilterTab = "upcoming" | "past" | "all";
               <span class="detail-value">{{ getSpecialty(selectedAppt()!) }}</span>
             </div>
             <div class="detail-row">
-              <span class="detail-label">📅 Date</span>
+              <span class="detail-label"> Date</span>
               <span class="detail-value">{{ formatFullDate(selectedAppt()!.appointmentDate) }}</span>
             </div>
             <div class="detail-row">
@@ -351,7 +352,7 @@ type FilterTab = "upcoming" | "past" | "all";
             <h2>Évaluer la Consultation</h2>
           </div>
           <div style="text-align:center; padding:16px 0 24px;">
-            <div style="font-size:40px; margin-bottom:8px;">⭐</div>
+            <div style="font-size:40px; margin-bottom:8px;"></div>
             <p style="color:#64748b;">Votre avis aide les autres patients à choisir leur médecin</p>
             <p style="font-weight:600; color:#0f172a;">Dr. {{ getDoctorName(selectedAppt()!) }}</p>
           </div>
@@ -374,7 +375,7 @@ type FilterTab = "upcoming" | "past" | "all";
             <button class="btn-primary flex-1"
                     (click)="submitRating()"
                     [disabled]="!rating() || isRating()">
-              {{ isRating() ? '⏳ Envoi...' : '⭐ Publier mon avis' }}
+              {{ isRating() ? ' Envoi...' : ' Publier mon avis' }}
             </button>
           </div>
         </div>
@@ -403,7 +404,7 @@ type FilterTab = "upcoming" | "past" | "all";
   font-weight:600; cursor:pointer;
 }
 .slot-taken-btn:hover { background:#c2410c; }
-    .appt-page { padding: 0; }
+    .appt-page { padding: 24px; background: #f1f5f9; min-height: 100vh; }
     .page-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; }
     .page-title { font-size:26px; font-weight:700; color:#0f172a; margin:0 0 4px; }
     .page-subtitle { color:#64748b; font-size:14px; margin:0; }
@@ -534,7 +535,8 @@ type FilterTab = "upcoming" | "past" | "all";
   `]
 })
 export class PatientAppointmentsComponent implements OnInit {
-  private http = inject(HttpClient);
+  private http   = inject(HttpClient);
+  private router = inject(Router);
   slotTakenError = signal(false);
   view         = signal<ViewMode>("list");
   filterTab    = signal<FilterTab>("upcoming");
@@ -550,6 +552,7 @@ export class PatientAppointmentsComponent implements OnInit {
   doctors        = signal<any[]>([]);
   selectedAppt   = signal<any>(null);
   selectedDoctor = signal<any>(null);
+  doctorConges   = signal<any[]>([]);
   selectedSlot   = signal<string | null>(null);
 
   searchQuery     = "";
@@ -585,11 +588,12 @@ export class PatientAppointmentsComponent implements OnInit {
 
   slotDays = computed(() => {
     const start = new Date(this.currentWeekStart());
+    const _conges = this.doctorConges(); // dépendance réactive sur les congés
     return Array.from({ length: 5 }, (_, i) => {
       const d = new Date(start);
       d.setDate(start.getDate() + i);
       return {
-        label: d.toLocaleDateString("fr-FR", { weekday: "short" }),
+        label: d.toLocaleDateString('fr-FR', { weekday: 'short' }),
         date:  d.getDate().toString(),
         slots: this.generateSlots(d),
       };
@@ -714,11 +718,35 @@ export class PatientAppointmentsComponent implements OnInit {
     this.selectedDoctor.set(doc);
     this.selectedSlot.set(null);
     this.currentWeekStart.set(this.getMonday(new Date()));
+    // Charger les congés du médecin et forcer recalcul du calendrier
+    const doctorId = doc.userId || doc.id;
+    this.http.get<any>('/api/v1/medecins/' + doctorId + '/availability')
+      .pipe(catchError(() => of(null)))
+      .subscribe(res => {
+        const data = res?.data ?? res;
+        const conges = data?.conges ?? [];
+        this.doctorConges.set(conges);
+          // Forcer recalcul : reset à lundi de la semaine courante
+        this.currentWeekStart.set(this.getMonday(new Date()));
+      });
+  }
+
+  isDateInConge(date: Date): boolean {
+    const d = new Date(date); d.setHours(0,0,0,0);
+    return this.doctorConges().some(c => {
+      const start = new Date(c.startDate); start.setHours(0,0,0,0);
+      const end   = new Date(c.endDate);   end.setHours(23,59,59,999);
+      if (isNaN(start.getTime()) || isNaN(end.getTime())) return false;
+      if (start.getFullYear() < 2000 || end.getFullYear() < 2000) return false;
+      return d >= start && d <= end;
+    });
   }
 
   generateSlots(date: Date): { time: string; datetime: string; taken: boolean }[] {
     const today = new Date(); today.setHours(0, 0, 0, 0);
     if (date < today) return [];
+    // Bloquer les jours de congé
+    if (this.isDateInConge(date)) return [];
     const times = ["08:00","08:30","09:00","09:30","10:00","10:30","11:00","14:00","14:30","15:00","15:30","16:00","16:30"];
     return times.map(t => {
       const dt = new Date(date);
@@ -835,8 +863,8 @@ export class PatientAppointmentsComponent implements OnInit {
   }
 
   joinVideo(appt: any) {
-    const roomId = appt.videoRoomId || `mediconnect-${appt.id}`;
-    window.open(`https://meet.jit.si/${roomId}`, "_blank");
+    // Naviguer vers la page téléconsultation dédiée
+    this.router.navigate(['/patient/video', appt.id]);
   }
 
   isUpcoming(a: any): boolean {
@@ -890,3 +918,11 @@ export class PatientAppointmentsComponent implements OnInit {
     return date;
   }
 }
+
+
+
+
+
+
+
+

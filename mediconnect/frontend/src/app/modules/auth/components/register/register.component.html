@@ -1,156 +1,120 @@
-<div class="auth-page">
+<div class="auth-wrapper">
 
-  <!-- Illustration gauche -->
-  <div class="auth-left">
-    <div class="illustration-circle">
-      <div class="floating-icon" style="top:10%;left:15%">💊</div>
-      <div class="floating-icon" style="top:8%;right:18%">👨‍⚕️</div>
-      <div class="floating-icon" style="bottom:20%;left:10%">📋</div>
-      <div class="floating-icon" style="bottom:15%;right:12%">❓</div>
-      <div class="doctors-svg">
-        <svg viewBox="0 0 260 320" fill="none" xmlns="http://www.w3.org/2000/svg" width="240">
-          <ellipse cx="90" cy="310" rx="40" ry="8" fill="#e2eaf5"/>
-          <rect x="65" y="200" width="50" height="110" rx="10" fill="#1a56db"/>
-          <circle cx="90" cy="175" r="30" fill="#fcd9bd"/>
-          <rect x="72" y="155" width="36" height="20" rx="10" fill="#1e3a5f"/>
-          <path d="M85 205 Q75 220 80 235" stroke="white" stroke-width="2.5" fill="none"/>
-          <circle cx="80" cy="237" r="5" fill="white"/>
-          <ellipse cx="175" cy="310" rx="40" ry="8" fill="#e2eaf5"/>
-          <rect x="150" y="200" width="50" height="110" rx="10" fill="#0ea5e9"/>
-          <circle cx="175" cy="175" r="30" fill="#fcd9bd"/>
-          <rect x="158" y="155" width="34" height="18" rx="9" fill="#7c3aed"/>
-          <rect x="185" y="210" width="22" height="28" rx="3" fill="white" stroke="#cbd5e1" stroke-width="1"/>
-          <rect x="189" y="207" width="14" height="6" rx="3" fill="#94a3b8"/>
-          <line x1="189" y1="220" x2="203" y2="220" stroke="#94a3b8" stroke-width="1.5"/>
-          <line x1="189" y1="226" x2="203" y2="226" stroke="#94a3b8" stroke-width="1.5"/>
-        </svg>
-      </div>
-    </div>
-    <div class="auth-left-text">
-      <h1>Nouveau sur <span class="brand-name">MediConnect</span> ?</h1>
+  <!-- GAUCHE : Photo -->
+  <div class="auth-right">
+    <img src="assets/images/consultaion2.jpg" alt="MediConnect" class="login-photo">
+    <div class="photo-overlay">
+      <h2>Rejoignez MediConnect</h2>
+      <p>La plateforme e-sante qui connecte patients et professionnels de sante en Tunisie.</p>
     </div>
   </div>
 
-  <!-- Formulaire droite -->
-  <div class="auth-right">
+  <!-- DROITE : Formulaire -->
+  <div class="auth-left">
     <div class="auth-card">
 
-      <!-- Tabs -->
-      <div class="auth-tabs">
-        <button class="tab-btn" routerLink="/auth/login">Connexion</button>
-        <button class="tab-btn active" routerLink="/auth/register">Inscription</button>
+      <div class="brand">
+        <div class="brand-icon">
+          <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
+            <rect width="32" height="32" rx="8" fill="#1a56db"/>
+            <path d="M16 7v18M7 16h18" stroke="white" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <span class="brand-name">MediConnect</span>
       </div>
 
-      <!-- Bouton professionnel de santé -->
-      <button class="pro-btn" (click)="setProfessional()">
+      <div class="auth-tabs">
+        <button class="tab-btn" routerLink="/auth/login">Connexion</button>
+        <button class="tab-btn active">Inscription</button>
+      </div>
+
+      <h2 class="card-title">Créer un compte</h2>
+      <p class="card-sub">Rejoignez votre espace santé</p>
+
+      <div class="alert-error" *ngIf="error">
+        <span>⚠️</span> {{ error }}
+      </div>
+
+      <!-- Bouton professionnel -->
+      <button type="button" class="pro-btn" (click)="setProfessional()">
         Vous êtes professionnel de santé ?
       </button>
 
-      <div class="alert-error" *ngIf="error">⚠️ {{ error }}</div>
+      <div class="divider"><span>ou saisir vos informations</span></div>
 
-      <div class="divider"><span>OU</span></div>
-
-      <p class="form-intro">Merci de saisir vos informations</p>
-
-      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="register-form">
 
         <!-- Genre -->
         <div class="gender-row">
           <label class="gender-opt">
-            <input type="radio" formControlName="gender" value="F"> Femme
+            <input type="radio" formControlName="gender" value="FEMME"> Femme
           </label>
           <label class="gender-opt">
-            <input type="radio" formControlName="gender" value="M"> Homme
+            <input type="radio" formControlName="gender" value="HOMME"> Homme
           </label>
         </div>
 
-        <div class="field-row">
-          <div class="field">
-            <input type="text" formControlName="lastName" placeholder="Nom">
-          </div>
-          <div class="field">
-            <input type="text" formControlName="firstName" placeholder="Prénom">
-          </div>
+        <!-- Nom / Prénom -->
+        <div class="row-2">
+          <input class="field-input" type="text" formControlName="lastName" placeholder="Nom"/>
+          <input class="field-input" type="text" formControlName="firstName" placeholder="Prénom"/>
         </div>
 
-        <div class="field phone-field">
+        <!-- Téléphone -->
+        <div class="phone-row">
           <span class="phone-prefix">🇹🇳 +216</span>
-          <input type="tel" formControlName="phone" placeholder="Numéro de mobile">
+          <input class="field-input phone-input" type="tel" formControlName="phone" placeholder="Ex: 50 577 742"/>
         </div>
 
-        <div class="field">
-          <input type="email" formControlName="email" placeholder="Adresse email">
-        </div>
+        <!-- Email -->
+        <input class="field-input" type="email" formControlName="email" placeholder="Email"/>
 
-        <div class="field">
-          <input type="password" formControlName="password" placeholder="Mot de passe">
-        </div>
+        <!-- Rôle -->
+        <select class="field-input" formControlName="role">
+          <option *ngFor="let r of roles" [value]="r.value">{{ r.label }}</option>
+        </select>
 
-        <div class="field" *ngIf="isMedecin">
-          <select formControlName="role">
-            <option value="" disabled>-- Spécialité / Rôle --</option>
-            <option *ngFor="let r of roles" [value]="r.value">{{ r.label }}</option>
-          </select>
-        </div>
+        <!-- Spécialité (si médecin spécialiste) -->
+        <select class="field-input" formControlName="specialite" *ngIf="isMedecinSpecialiste">
+          <option value="">-- Choisir une spécialité --</option>
+          <option *ngFor="let s of specialites" [value]="s.value">{{ s.label }}</option>
+        </select>
 
-        <div class="field" *ngIf="isMedecinSpecialiste">
-          <select formControlName="specialite">
-            <option value="" disabled>-- Spécialité médicale --</option>
-            <option *ngFor="let s of specialites" [value]="s.value">{{ s.label }}</option>
-          </select>
-        </div>
-
-        <!-- Documents médicaux -->
+        <!-- Documents (si médecin) -->
         <div class="docs-section" *ngIf="isMedecin">
-          <div class="docs-header">
-            <span>📋</span>
-            <div>
-              <div class="docs-title">Documents requis pour validation</div>
-              <div class="docs-subtitle">Ces documents seront examinés par un administrateur avant l'activation de votre compte.</div>
-            </div>
-          </div>
-
-          <div class="doc-list">
-            <div class="doc-item" *ngFor="let doc of requiredDocs">
-              <div class="doc-left">
-                <span class="doc-icon">{{ doc.icon }}</span>
-                <div>
-                  <div class="doc-name">{{ doc.label }} <span class="req" *ngIf="doc.required">*</span></div>
-                  <div class="doc-hint">PDF uniquement · max 5MB</div>
-                </div>
-              </div>
-              <div class="doc-right">
-                <input type="file" accept=".pdf"
-                       [id]="'file-' + doc.type"
-                       (change)="onFileSelected($event, doc.type)"
-                       style="display:none">
-                <label [for]="'file-' + doc.type"
-                       class="doc-btn"
-                       [class.uploaded]="uploadedFiles[doc.type]">
-                  <span>📎</span>
-                  {{ uploadedFiles[doc.type] ? uploadedFiles[doc.type].name : 'Choisir un fichier' }}
-                </label>
-              </div>
+          <p class="docs-title">Documents requis (PDF, max 5MB)</p>
+          <div class="doc-item" *ngFor="let doc of requiredDocs">
+            <label class="doc-label">
+              <span>{{ doc.icon }} {{ doc.label }}</span>
+              <span class="doc-required" *ngIf="doc.required">*</span>
+            </label>
+            <div class="doc-upload">
+              <input type="file" accept=".pdf" (change)="onFileSelected($event, doc.type)" [id]="'doc-'+doc.type" style="display:none"/>
+              <label [for]="'doc-'+doc.type" class="upload-btn">
+                {{ uploadedFiles[doc.type] ? '✅ ' + uploadedFiles[doc.type].name : '📎 Choisir un fichier' }}
+              </label>
             </div>
           </div>
         </div>
 
+        <!-- Mot de passe -->
+        <input class="field-input" type="password" formControlName="password" placeholder="Mot de passe (min 8 caractères)"/>
+
+        <!-- CGU -->
         <label class="cgu-row">
-          <input type="checkbox" formControlName="acceptCgu">
-          <span>J'accepte les <a href="#" class="cgu-link">CGU</a> ainsi que la <a href="#" class="cgu-link">politique de confidentialité</a> du site</span>
+          <input type="checkbox" formControlName="acceptCgu"/>
+          <span>J'accepte les <a href="#" class="link">CGU</a> ainsi que la <a href="#" class="link">politique de confidentialité</a></span>
         </label>
 
         <button type="submit" class="submit-btn" [disabled]="isLoading || form.invalid">
-          <span *ngIf="!isLoading">{{ isMedecin ? 'Créer mon compte' : 'Soumettre' }}</span>
+          <span *ngIf="!isLoading">Soumettre</span>
           <span *ngIf="isLoading" class="spinner"></span>
         </button>
 
+        <p class="login-link">Déjà un compte ? <a routerLink="/auth/login" class="link">Se connecter</a></p>
+
       </form>
-
-      <div class="login-link">
-        Déjà un compte ? <a routerLink="/auth/login">Se connecter</a>
-      </div>
-
     </div>
   </div>
+
 </div>

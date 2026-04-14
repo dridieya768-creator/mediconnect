@@ -27,6 +27,11 @@ let UploadController = class UploadController {
         }
         return this.uploadService.uploadFile(file, 'photos');
     }
+    async uploadDocument(file) {
+        if (!file)
+            throw new common_1.BadRequestException('Aucun fichier fourni');
+        return this.uploadService.uploadFile(file, 'documents');
+    }
 };
 exports.UploadController = UploadController;
 __decorate([
@@ -45,6 +50,22 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], UploadController.prototype, "uploadPhoto", null);
+__decorate([
+    (0, common_1.Post)('document'),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file', {
+        limits: { fileSize: 10 * 1024 * 1024 },
+        fileFilter: (req, file, cb) => {
+            if (!file.originalname.match(/\.(pdf)$/i)) {
+                return cb(new common_1.BadRequestException('Seuls les fichiers PDF sont acceptés'), false);
+            }
+            cb(null, true);
+        },
+    })),
+    __param(0, (0, common_1.UploadedFile)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], UploadController.prototype, "uploadDocument", null);
 exports.UploadController = UploadController = __decorate([
     (0, common_1.Controller)('upload'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

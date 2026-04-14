@@ -30,17 +30,8 @@ export class LoginComponent implements OnInit, AfterViewInit {
   isLoading    = false;
   isSsoLoading = false;
   error        = "";
-  infoMsg      = ""; // ✅ UNE SEULE déclaration (suppression du doublon)
+  infoMsg      = "";
   showPassword = false;
-  hasRealGoogleClientId = true;
-
-  portals = [
-    { icon: "👤", name: "Portail Patient",     desc: "RDV, dossier médical, ordonnances" },
-    { icon: "🩺", name: "Portail Médecin",     desc: "Agenda, consultations, prescriptions" },
-    { icon: "💊", name: "Portail Pharmacie",   desc: "Délivrance, stock, conseil" },
-    { icon: "🧪", name: "Portail Laboratoire", desc: "Analyses, résultats, validation" },
-    { icon: "🔬", name: "Portail Radiologie",  desc: "Imagerie, PACS, comptes-rendus" },
-  ];
 
   testAccounts = [
     { icon: "👤", role: "Patient",    email: "patient@test.com" },
@@ -54,16 +45,14 @@ export class LoginComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     const msg = this.route.snapshot.queryParams['msg'];
     if (msg === 'pending') {
-      this.infoMsg = '⏳ Votre compte médecin est en attente de validation par un administrateur. Vous recevrez un email dès que votre compte sera approuvé.';
+      this.infoMsg = 'Votre compte médecin est en attente de validation.';
     }
   }
 
   ngAfterViewInit(): void {
-    if (this.hasRealGoogleClientId) {
-      this.googleAuthService.initializeGoogleSignIn("google-signin-btn", (credential: string) => {
-        this.ngZone.run(() => this.handleGoogleCredential(credential));
-      });
-    }
+    this.googleAuthService.initializeGoogleSignIn("google-signin-btn", (credential: string) => {
+      this.ngZone.run(() => this.handleGoogleCredential(credential));
+    });
   }
 
   private handleGoogleCredential(credential: string): void {
@@ -73,12 +62,9 @@ export class LoginComponent implements OnInit, AfterViewInit {
       next: (res: any) => {
         this.ngZone.run(() => {
           const unwrapped = res?.data?.data ?? res?.data ?? res;
-          const role = unwrapped?.user?.role ?? unwrapped?.role
-                    ?? this.authService.currentUser()?.role ?? "";
+          const role = unwrapped?.user?.role ?? unwrapped?.role ?? this.authService.currentUser()?.role ?? "";
           this.isSsoLoading = false;
-          setTimeout(() => {
-            this.router.navigate([this.authService.getRedirectPath(role)]);
-          }, 50);
+          this.router.navigate([this.authService.getRedirectPath(role)]);
         });
       },
       error: (err: any) => {
@@ -90,55 +76,20 @@ export class LoginComponent implements OnInit, AfterViewInit {
     });
   }
 
-  loginWithFacebook(): void {
+  loginWithGoogle(): void {
     this.isSsoLoading = true;
-    this.error = "";
-
-    const loadAndLogin = () => {
-      (window as any).FB.login((response: any) => {
-        this.ngZone.run(() => {
-          if (response.authResponse?.accessToken) {
-            this.authService.loginWithFacebook(response.authResponse.accessToken).subscribe({
-              next: (res: any) => {
-                this.ngZone.run(() => {
-                  const unwrapped = res?.data?.data ?? res?.data ?? res;
-                  const role = unwrapped?.user?.role ?? unwrapped?.role
-                            ?? this.authService.currentUser()?.role ?? "";
-                  this.isSsoLoading = false;
-                  setTimeout(() => {
-                    this.router.navigate([this.authService.getRedirectPath(role)]);
-                  }, 50);
-                });
-              },
-              error: (err: any) => {
-                this.ngZone.run(() => {
-                  this.error = typeof err === "string" ? err : "Erreur connexion Facebook";
-                  this.isSsoLoading = false;
-                });
-              },
-            });
-          } else {
-            this.error = "Connexion Facebook annulée";
-            this.isSsoLoading = false;
-          }
-        });
-      }, { scope: "email,public_profile" });
-    };
-
-    if (!(window as any).FB) {
-      const script = document.createElement("script");
-      script.src = "https://connect.facebook.net/fr_FR/sdk.js";
-      script.onload = () => {
-        (window as any).FB.init({
-          appId: "912010708142758",
-          cookie: true, xfbml: true, version: "v18.0",
-        });
-        loadAndLogin();
-      };
-      document.body.appendChild(script);
+    this.error = '';
+    if (typeof google !== 'undefined' && google?.accounts?.id) {
+      google.accounts.id.prompt();
+      this.isSsoLoading = false;
     } else {
-      loadAndLogin();
+      this.error = 'Connexion Google non configurée.';
+      this.isSsoLoading = false;
     }
+  }
+
+  loginWithFacebook(): void {
+    this.error = "Connexion Facebook non disponible.";
   }
 
   onSubmit(): void {

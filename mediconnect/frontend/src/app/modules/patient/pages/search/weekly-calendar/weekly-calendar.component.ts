@@ -1,4 +1,4 @@
-import {
+﻿import {
   Component,
   Output,
   EventEmitter,
@@ -11,6 +11,7 @@ import { CommonModule } from '@angular/common';
 import { BookingStateService } from '../../../../../core/services/booking-state.service';
 import {
   AvailabilityConfig,
+  CongesPeriod,
   OccupiedSlot,
   WorkDay,
 } from '../../../../../core/models/medecin-availability.model';
@@ -65,16 +66,17 @@ const DAY_MAP: Record<WorkDay['day'], number> = {
       <!-- Grille des jours -->
       <div class="days-grid" *ngIf="hasWorkDays()">
         <div class="day-col" *ngFor="let day of dayColumns()">
-          <div class="day-header" [class.today]="isToday(day.date)">
-            <span class="day-name">{{ day.label }}</span>
+          <div class="day-header" [class.today]="isToday(day.date)" [class.selected-day]="isSelectedDay(day.date)">
+            <div class="day-name">{{ getDayName(day.date) }}</div>
+            <div class="day-date">{{ getDayDate(day.date) }}</div>
           </div>
 
           <div class="slots-list">
-            <div *ngIf="day.slots.length === 0" class="no-day-slots">—</div>
+            <div *ngIf="day.slots.length === 0" class="no-day-slots">–</div>
             <button
               *ngFor="let slot of day.slots"
               class="slot-btn"
-              [class.occupied]="slot.occupied"
+              [class.occupied]="slot.occupied || isPastSlot(slot.start)"
               [class.selected]="slot.selected"
               [disabled]="slot.occupied || isPastSlot(slot.start)"
               (click)="selectSlot(slot)"
@@ -107,64 +109,70 @@ const DAY_MAP: Record<WorkDay['day'], number> = {
       cursor: pointer;
       color: #0f172a;
       transition: background .15s;
+      white-space: nowrap;
     }
     .nav-btn:hover:not(:disabled) { background: #e2e8f0; }
     .nav-btn:disabled { opacity: .4; cursor: not-allowed; }
     .week-label { font-size: 14px; font-weight: 700; color: #0f172a; text-align: center; flex: 1; }
 
     .no-slots {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      padding: 32px;
-      color: #94a3b8;
-      font-size: 14px;
-      background: #f8fafc;
-      border-radius: 10px;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      padding: 32px; color: #94a3b8; font-size: 14px;
+      background: #f8fafc; border-radius: 10px;
     }
     .no-slots span { font-size: 32px; }
 
     .days-grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
-      gap: 6px;
+      gap: 4px;
       overflow-x: auto;
     }
-    .day-col { display: flex; flex-direction: column; gap: 4px; min-width: 72px; }
+    .day-col { display: flex; flex-direction: column; gap: 4px; min-width: 80px; }
 
     .day-header {
       text-align: center;
-      padding: 6px 4px;
-      background: #f1f5f9;
-      border-radius: 6px;
-      font-size: 11px;
-      font-weight: 700;
-      color: #475569;
-      white-space: pre-line;
+      padding: 8px 4px;
+      background: #f8fafc;
+      border-radius: 8px;
+      border: 1.5px solid #e2e8f0;
+      margin-bottom: 4px;
     }
-    .day-header.today { background: #1a56db; color: white; }
+    .day-header.today { background: #eff6ff; border-color: #bfdbfe; }
+    .day-header.selected-day { background: #1a56db; border-color: #1a56db; }
+    .day-header.selected-day .day-name,
+    .day-header.selected-day .day-date { color: white; }
+    .day-name { font-size: 11px; font-weight: 700; color: #475569; text-transform: capitalize; }
+    .day-date { font-size: 12px; font-weight: 700; color: #0f172a; margin-top: 2px; }
+    .day-header.today .day-name { color: #1a56db; }
+    .day-header.today .day-date { color: #1a56db; }
 
     .slots-list { display: flex; flex-direction: column; gap: 4px; }
-    .no-day-slots { text-align: center; color: #cbd5e1; font-size: 12px; padding: 8px 0; }
+    .no-day-slots { text-align: center; color: #cbd5e1; font-size: 13px; padding: 12px 0; }
 
     .slot-btn {
       width: 100%;
-      padding: 6px 4px;
+      padding: 8px 4px;
       border: 1.5px solid #1a56db;
-      border-radius: 6px;
+      border-radius: 8px;
       background: white;
       color: #1a56db;
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 600;
       cursor: pointer;
       transition: all .15s;
       text-align: center;
     }
     .slot-btn:hover:not(:disabled):not(.occupied) { background: #1a56db; color: white; }
-    .slot-btn.selected { background: #1a56db; color: white; }
-    .slot-btn.occupied { background: #f1f5f9; border-color: #e2e8f0; color: #cbd5e1; cursor: not-allowed; }
-    .slot-btn:disabled:not(.occupied) { opacity: .4; cursor: not-allowed; }
+    .slot-btn.selected { background: #1a56db; color: white; border-color: #1a56db; }
+    .slot-btn.occupied {
+      background: #f1f5f9;
+      border-color: #e2e8f0;
+      color: #94a3b8;
+      cursor: not-allowed;
+      text-decoration: line-through;
+    }
+    .slot-btn:disabled:not(.occupied) { opacity: .4; cursor: not-allowed; text-decoration: line-through; color: #94a3b8; border-color: #e2e8f0; background: #f8fafc; }
 
     @media (max-width: 640px) {
       .days-grid { grid-template-columns: repeat(4, 1fr); }
@@ -174,6 +182,7 @@ const DAY_MAP: Record<WorkDay['day'], number> = {
 export class WeeklyCalendarComponent {
   availability = input<AvailabilityConfig | null>(null);
   occupiedSlots = input<OccupiedSlot[]>([]);
+  conges = input<CongesPeriod[]>([]);
   @Output() slotSelected = new EventEmitter<Date>();
 
   private bookingState = inject(BookingStateService);
@@ -210,8 +219,11 @@ export class WeeklyCalendarComponent {
 
     const days: DayColumn[] = [];
     for (let i = 0; i < 7; i++) {
-      const date = new Date(weekStart);
-      date.setDate(weekStart.getDate() + i);
+      const date = new Date(
+        weekStart.getFullYear(),
+        weekStart.getMonth(),
+        weekStart.getDate() + i
+      );
 
       const label = date.toLocaleDateString('fr-FR', {
         weekday: 'short',
@@ -219,7 +231,9 @@ export class WeeklyCalendarComponent {
         month: '2-digit',
       });
 
-      const slots = availability
+      // Block conge days entirely
+      const isConge = this.isDateInConge(date);
+      const slots = availability && !isConge
         ? this.generateSlotsForDay(date, availability, selectedSlot, occupiedSlots)
         : [];
 
@@ -234,42 +248,55 @@ export class WeeklyCalendarComponent {
     selectedSlot: Date | null,
     occupiedSlots: OccupiedSlot[],
   ): TimeSlot[] {
-    const dayOfWeek = date.getDay(); // 0=Sun, 1=Mon, ...
-    const workDay = availability.workDays.find(
+    const dayOfWeek = date.getDay();
+    // Récupérer TOUTES les plages pour ce jour (matin + après-midi)
+    const workDayRanges = availability.workDays.filter(
       wd => DAY_MAP[wd.day] === dayOfWeek,
     );
-    if (!workDay) return [];
+    if (!workDayRanges.length) {
+      console.log('[Calendar] No workDays for', date.toDateString(), 'dayOfWeek=', dayOfWeek, 'workDays=', JSON.stringify(availability.workDays?.slice(0,2)));
+      return [];
+    }
 
     const duration = availability.defaultDuration;
     const slots: TimeSlot[] = [];
 
-    const [startH, startM] = workDay.startTime.split(':').map(Number);
-    const [endH, endM] = workDay.endTime.split(':').map(Number);
+    for (const workDay of workDayRanges) {
+      if (!workDay.startTime || !workDay.endTime) continue;
+      const [startH, startM] = workDay.startTime.split(':').map(Number);
+      const [endH, endM] = workDay.endTime.split(':').map(Number);
+      if (isNaN(startH) || isNaN(endH)) continue;
 
-    let current = new Date(date);
-    current.setHours(startH, startM, 0, 0);
+      // Construire les dates en utilisant les composantes locales de `date`
+      // pour éviter tout décalage UTC
+      const y = date.getFullYear();
+      const m = date.getMonth();
+      const d = date.getDate();
 
-    const dayEnd = new Date(date);
-    dayEnd.setHours(endH, endM, 0, 0);
+      let current = new Date(y, m, d, startH, startM, 0, 0);
+      const rangeEnd = new Date(y, m, d, endH, endM, 0, 0);
 
-    while (current < dayEnd) {
-      const slotStart = new Date(current);
-      const slotEnd = new Date(current);
-      slotEnd.setMinutes(slotEnd.getMinutes() + duration);
+      while (current.getTime() < rangeEnd.getTime()) {
+        const slotStart = new Date(current);
+        const slotEnd = new Date(current);
+        slotEnd.setMinutes(slotEnd.getMinutes() + duration);
 
-      if (slotEnd > dayEnd) break;
+        if (slotEnd.getTime() > rangeEnd.getTime()) break;
 
-      const occupied = this.isOccupied(slotStart, slotEnd, occupiedSlots);
-      const selected =
-        selectedSlot !== null &&
-        selectedSlot.getTime() === slotStart.getTime();
+        const occupied = this.isOccupied(slotStart, slotEnd, occupiedSlots);
+        const selected =
+          selectedSlot !== null &&
+          selectedSlot.getTime() === slotStart.getTime();
 
-      slots.push({ start: slotStart, end: slotEnd, occupied, selected });
+        slots.push({ start: slotStart, end: slotEnd, occupied, selected });
 
-      current = new Date(current);
-      current.setMinutes(current.getMinutes() + duration);
+        current = new Date(current);
+        current.setMinutes(current.getMinutes() + duration);
+      }
     }
 
+    // Trier par heure
+    slots.sort((a, b) => a.start.getTime() - b.start.getTime());
     return slots;
   }
 
@@ -290,6 +317,34 @@ export class WeeklyCalendarComponent {
       date.getMonth() === today.getMonth() &&
       date.getDate() === today.getDate()
     );
+  }
+
+  isSelectedDay(date: Date): boolean {
+    const sel = this.bookingState.selectedSlot();
+    if (!sel) return false;
+    return sel.getFullYear() === date.getFullYear() &&
+      sel.getMonth() === date.getMonth() &&
+      sel.getDate() === date.getDate();
+  }
+
+  getDayName(date: Date): string {
+    return date.toLocaleDateString('fr-FR', { weekday: 'short' });
+  }
+
+  getDayDate(date: Date): string {
+    return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
+  }
+
+  isDateInConge(date: Date): boolean {
+    const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    return this.conges().some(c => {
+      const start = new Date(c.startDate); start.setHours(0,0,0,0);
+      const end   = new Date(c.endDate);   end.setHours(23,59,59,999);
+      // Ignorer les congés avec dates invalides (ex: année < 2000)
+      if (isNaN(start.getTime()) || isNaN(end.getTime())) return false;
+      if (start.getFullYear() < 2000 || end.getFullYear() < 2000) return false;
+      return d >= start && d <= end;
+    });
   }
 
   isPastSlot(start: Date): boolean {
@@ -317,3 +372,10 @@ export class WeeklyCalendarComponent {
     this.slotSelected.emit(slot.start);
   }
 }
+
+
+
+
+
+
+

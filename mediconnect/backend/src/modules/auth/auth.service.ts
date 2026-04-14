@@ -101,6 +101,8 @@ export class AuthService {
 
     const user = this.userRepository.create({
       ...registerDto,
+      // Tronquer le téléphone à 20 caractères max (limite DB)
+      phone: registerDto.phone?.substring(0, 20),
       password: hashedPassword,
       status: isMedecin ? UserStatus.PENDING_VERIFICATION : UserStatus.ACTIVE,
     });

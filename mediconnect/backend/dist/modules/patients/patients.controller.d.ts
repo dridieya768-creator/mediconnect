@@ -5,6 +5,10 @@ export declare class PatientsController {
     private readonly userRepo;
     private readonly patientRepo;
     constructor(userRepo: Repository<User>, patientRepo: Repository<Patient>);
+    searchPatients(search: string): Promise<{
+        success: boolean;
+        data: Patient[];
+    }>;
     getMe(req: any): Promise<{
         success: boolean;
         data: any;

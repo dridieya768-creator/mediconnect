@@ -1,0 +1,176 @@
+﻿<div *ngIf="procedure" style="font-family:Inter,sans-serif;background:#f8fafc;min-height:100vh;">
+
+  <!-- NAVBAR -->
+  <nav style="background:white;border-bottom:1px solid #e5e7eb;padding:0 32px;height:64px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+    <a routerLink="/" style="display:flex;align-items:center;gap:8px;text-decoration:none;">
+      <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#1a56db"/><path d="M16 7v18M7 16h18" stroke="white" stroke-width="3" stroke-linecap="round"/></svg>
+      <span style="font-size:16px;font-weight:800;color:#0f172a;">MediConnect</span>
+    </a>
+    <span style="margin-left:16px;color:#94a3b8;font-size:13px;">
+      <a routerLink="/" style="color:#64748b;text-decoration:none;">Accueil</a>
+      &nbsp;/&nbsp;Chirurgie Esthetique&nbsp;/&nbsp;
+      <strong style="color:#0f172a;">{{ procedure.label }}</strong>
+    </span>
+    <a routerLink="/auth/register" style="margin-left:auto;padding:9px 20px;background:#1a56db;color:white;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600;">
+      Prendre RDV
+    </a>
+  </nav>
+
+  <!-- HERO -->
+  <div style="background:white;padding:40px 32px;max-width:1100px;margin:0 auto;display:grid;grid-template-columns:280px 1fr;gap:40px;align-items:start;">
+    <img [src]="procedure.image" [alt]="procedure.label" style="width:100%;height:220px;object-fit:cover;border-radius:12px;">
+    <div>
+      <h1 style="font-size:26px;font-weight:800;color:#0f172a;margin:0 0 20px;line-height:1.3;">{{ procedure.subtitle }}</h1>
+      <a routerLink="/auth/register" style="display:inline-flex;align-items:center;gap:10px;padding:12px 28px;background:#1a56db;color:white;border-radius:50px;text-decoration:none;font-size:15px;font-weight:700;margin-bottom:20px;">
+        Prendre Rendez-vous &rsaquo;
+      </a>
+      <p style="font-size:14px;color:#64748b;line-height:1.7;margin:0;">{{ procedure.overview.slice(0,200) }}...</p>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div style="background:white;border-top:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;position:sticky;top:64px;z-index:90;">
+    <div style="max-width:1100px;margin:0 auto;padding:0 32px;display:flex;gap:0;">
+      @for (tab of tabs; track tab.id) {
+        <button (click)="activeTab = tab.id"
+          style="padding:16px 20px;border:none;background:none;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:inherit;"
+          [style.color]="activeTab === tab.id ? '#1a56db' : '#64748b'"
+          [style.border-bottom]="activeTab === tab.id ? '3px solid #1a56db' : '3px solid transparent'">
+          {{ tab.label }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div style="max-width:1100px;margin:0 auto;padding:40px 32px;">
+
+    @if (activeTab === 'overview') {
+      <div style="background:white;border-radius:16px;padding:32px;border:1px solid #e5e7eb;margin-bottom:24px;">
+        <h2 style="font-size:20px;font-weight:800;color:#0f172a;margin:0 0 16px;">Vue d'ensemble</h2>
+        <p style="font-size:15px;color:#374151;line-height:1.8;white-space:pre-line;">{{ procedure.overview }}</p>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;">
+        <div style="background:white;border-radius:16px;padding:28px;border:1px solid #e5e7eb;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+            <div style="width:44px;height:44px;background:#1a56db;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:20px;font-weight:700;">&#10003;</div>
+            <h3 style="font-size:16px;font-weight:700;color:#0f172a;margin:0;">Points a verifier avant l'intervention</h3>
+          </div>
+          <ul style="margin:0;padding-left:20px;">
+            @for (item of procedure.checks; track item) {
+              <li style="font-size:14px;color:#374151;margin-bottom:10px;line-height:1.5;">{{ item }}</li>
+            }
+          </ul>
+        </div>
+        <div style="background:white;border-radius:16px;padding:28px;border:1px solid #e5e7eb;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+            <div style="width:44px;height:44px;background:#0f172a;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:18px;">&#9888;</div>
+            <h3 style="font-size:16px;font-weight:700;color:#0f172a;margin:0;">Risques et Complications</h3>
+          </div>
+          <ul style="margin:0;padding-left:20px;">
+            @for (item of procedure.risks; track item) {
+              <li style="font-size:14px;color:#374151;margin-bottom:10px;line-height:1.5;">{{ item }}</li>
+            }
+          </ul>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:center;">
+        <div style="background:white;border-radius:16px;padding:28px;border:1px solid #e5e7eb;">
+          <h3 style="font-size:18px;font-weight:800;color:#0f172a;margin:0 0 20px;">Problemes traites par la {{ procedure.label }}</h3>
+          @for (item of procedure.issues; track item) {
+            <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;">
+              <span style="font-size:18px;color:#1a56db;flex-shrink:0;">&#128203;</span>
+              <span style="font-size:14px;color:#374151;line-height:1.5;">{{ item }}</span>
+            </div>
+          }
+        </div>
+        <img [src]="procedure.image" [alt]="procedure.label" style="width:100%;height:300px;object-fit:cover;border-radius:16px;">
+      </div>
+    }
+
+    @if (activeTab === 'checks') {
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+        <div style="background:white;border-radius:16px;padding:28px;border:1px solid #e5e7eb;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+            <div style="width:44px;height:44px;background:#1a56db;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;">&#128077;</div>
+            <h3 style="font-size:18px;font-weight:700;color:#0f172a;margin:0;">A faire</h3>
+          </div>
+          @for (item of procedure.dos; track item) {
+            <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;">
+              <span style="color:#1a56db;font-size:16px;flex-shrink:0;">&#10004;</span>
+              <span style="font-size:14px;color:#374151;">{{ item }}</span>
+            </div>
+          }
+        </div>
+        <div style="background:white;border-radius:16px;padding:28px;border:1px solid #e5e7eb;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+            <div style="width:44px;height:44px;background:#ef4444;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;">&#128078;</div>
+            <h3 style="font-size:18px;font-weight:700;color:#0f172a;margin:0;">A eviter</h3>
+          </div>
+          @for (item of procedure.donts; track item) {
+            <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;">
+              <span style="color:#ef4444;font-size:16px;flex-shrink:0;">&#10006;</span>
+              <span style="font-size:14px;color:#374151;">{{ item }}</span>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    @if (activeTab === 'dos') {
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;background:linear-gradient(135deg,#eff6ff,#f0fdf4);border-radius:20px;padding:48px;">
+        <div>
+          <h2 style="font-size:32px;font-weight:800;color:#0f172a;margin:0 0 16px;line-height:1.2;">MediConnect est<br>entierement gratuit</h2>
+          <p style="font-size:15px;color:#374151;font-weight:600;margin:0 0 8px;">Acces aux meilleurs medecins sans frais de service.</p>
+          <p style="font-size:14px;color:#64748b;margin:0 0 28px;line-height:1.6;">Un expert a vos cotes tout au long de votre parcours de soins, sans aucun cout supplementaire.</p>
+          <a routerLink="/auth/register" style="display:inline-flex;align-items:center;gap:10px;padding:14px 28px;background:#1a56db;color:white;border-radius:50px;text-decoration:none;font-size:15px;font-weight:700;">
+            Prendre contact &rsaquo;
+          </a>
+        </div>
+        <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=500&h=400&fit=crop" alt="Medecin" style="width:100%;height:320px;object-fit:cover;border-radius:16px;">
+      </div>
+    }
+
+    @if (activeTab === 'faqs') {
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;">
+        <div>
+          <h2 style="font-size:22px;font-weight:800;color:#0f172a;margin:0 0 20px;">Questions Frequentes (FAQ)</h2>
+          @for (faq of procedure.faqs; track faq.q; let i = $index) {
+            <div (click)="toggleFaq(i)"
+              style="border-radius:10px;padding:16px 20px;margin-bottom:10px;cursor:pointer;border:1px solid #e5e7eb;transition:all 0.2s;"
+              [style.background]="expandedFaq === i ? '#eff6ff' : 'white'"
+              [style.border-color]="expandedFaq === i ? '#1a56db' : '#e5e7eb'">
+              <div style="font-size:14px;font-weight:600;color:#0f172a;">{{ faq.q }}</div>
+            </div>
+          }
+        </div>
+        <div>
+          @if (expandedFaq !== null && procedure.faqs[expandedFaq]) {
+            <div style="background:white;border-radius:16px;padding:28px;border:1px solid #e5e7eb;position:sticky;top:140px;">
+              <h3 style="font-size:16px;font-weight:700;color:#0f172a;margin:0 0 16px;">{{ procedure.faqs[expandedFaq].q }}</h3>
+              <p style="font-size:14px;color:#374151;line-height:1.7;margin:0;">{{ procedure.faqs[expandedFaq].a }}</p>
+            </div>
+          } @else {
+            <div style="background:white;border-radius:16px;padding:28px;border:1px solid #e5e7eb;text-align:center;color:#94a3b8;">
+              <p style="font-size:14px;">Cliquez sur une question pour voir la reponse</p>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+  </div>
+
+  <div style="background:#0f172a;padding:40px 32px;text-align:center;margin-top:40px;">
+    <p style="color:rgba(255,255,255,0.7);font-size:14px;margin:0 0 12px;">Pret a consulter un specialiste ?</p>
+    <a routerLink="/auth/register" style="padding:14px 32px;background:#1a56db;color:white;border-radius:50px;text-decoration:none;font-size:15px;font-weight:700;">
+      Prendre rendez-vous maintenant
+    </a>
+  </div>
+
+</div>
+
+<div *ngIf="!procedure" style="min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;">
+  <p style="font-size:18px;color:#64748b;">Procedure introuvable</p>
+  <a routerLink="/" style="color:#1a56db;text-decoration:none;font-weight:600;">Retour a l'accueil</a>
+</div>

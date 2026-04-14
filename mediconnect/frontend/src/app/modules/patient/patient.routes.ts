@@ -1,5 +1,5 @@
 import { Routes } from "@angular/router";
-
+// v2
 export const PATIENT_ROUTES: Routes = [
   {
     path: "",
@@ -44,6 +44,16 @@ export const PATIENT_ROUTES: Routes = [
         path: "prescriptions",
         loadComponent: () =>
           import("./pages/prescriptions/patient-prescriptions.component").then((m) => m.PatientPrescriptionsComponent),
+      },
+      {
+        path: "video/:id",
+        loadComponent: () =>
+          import("./pages/video/teleconsultation.component").then((m) => m.TeleconsultationComponent),
+      },
+      {
+        path: "guide-medecin",
+        loadComponent: () =>
+          import("./pages/guide-medecin/guide-medecin.component").then((m) => m.GuideMedecinComponent),
       },
     ],
   },

@@ -1,22 +1,91 @@
-import { Injectable, NotFoundException, BadRequestException } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { Injectable, NotFoundException, BadRequestException, OnModuleInit } from "@nestjs/common";
+import { InjectRepository, InjectDataSource } from "@nestjs/typeorm";
+import { Repository, DataSource } from "typeorm";
 import { Prescription, PrescriptionStatus } from "./entities/prescription.entity";
 import { QrCodesService } from "../qr-codes/qr-codes.service";
 import { InteractionCheckerService, DrugInteraction } from "./interaction-checker.service";
 import { PdfService } from "./pdf.service";
 import { writeFileSync, mkdirSync, existsSync } from "fs";
 import { join } from "path";
+import * as crypto from "crypto";
 
 @Injectable()
-export class PrescriptionsService {
+export class PrescriptionsService implements OnModuleInit {
   constructor(
     @InjectRepository(Prescription)
     private repo: Repository<Prescription>,
+    @InjectDataSource()
+    private dataSource: DataSource,
     private qrCodesService: QrCodesService,
     private interactionChecker: InteractionCheckerService,
     private pdfService: PdfService,
   ) {}
+
+  // ── Migration automatique au démarrage ───────────────────────────────────
+  async onModuleInit() {
+    try {
+      await this.dataSource.query(
+        `ALTER TABLE prescriptions ADD COLUMN IF NOT EXISTS signature_image TEXT;`
+      );
+      await this.dataSource.query(
+        `ALTER TABLE prescriptions ADD COLUMN IF NOT EXISTS imaging_requests JSONB;`
+      );
+      console.log('[PrescriptionsService] Migrations OK');
+    } catch (err: any) {
+      console.warn('[PrescriptionsService] Migration warning:', err?.message);
+    }
+  }
+
+  // ── Génère une signature HMAC-SHA256 réelle ──────────────────────────────
+  private generateElectronicSignature(
+    prescriptionId: string,
+    doctorId: string,
+    patientId: string,
+    medications: any[],
+    pin: string,
+    issuedAt: Date,
+  ): string {
+    // Payload canonique : contenu de l'ordonnance
+    const payload = JSON.stringify({
+      prescriptionId,
+      doctorId,
+      patientId,
+      medicationsHash: crypto
+        .createHash("sha256")
+        .update(JSON.stringify(medications))
+        .digest("hex"),
+      issuedAt: issuedAt.toISOString(),
+    });
+
+    // Clé = HMAC(PIN + doctorId, SECRET_KEY)
+    const secretKey = process.env.SIGNATURE_SECRET || "mediconnect-pfe-2026-secret-key";
+    const signingKey = crypto
+      .createHmac("sha256", secretKey)
+      .update(`${pin}:${doctorId}`)
+      .digest("hex");
+
+    // Signature finale = HMAC-SHA256(payload, signingKey)
+    const signature = crypto
+      .createHmac("sha256", signingKey)
+      .update(payload)
+      .digest("hex");
+
+    return `HMAC-SHA256:${signature.toUpperCase()}`;
+  }
+
+  // ── Vérifie une signature ────────────────────────────────────────────────
+  verifySignature(prescription: Prescription, pin: string): boolean {
+    if (!prescription.electronicSignature) return false;
+    const expected = this.generateElectronicSignature(
+      prescription.id,
+      prescription.doctorId,
+      prescription.patientId,
+      prescription.medications,
+      pin,
+      prescription.issuedAt,
+    );
+    return prescription.electronicSignature === expected;
+  }
 
   checkInteractions(medications: any[]): DrugInteraction[] {
     return this.interactionChecker.checkInteractions(medications);
@@ -41,6 +110,20 @@ export class PrescriptionsService {
         status:      PrescriptionStatus.ACTIVE,
         qrCode:      tempCode,
         qrJwt:       '',
+        // Signature électronique HMAC-SHA256 réelle si PIN fourni
+        signedAt:    dto.pin ? now : undefined,
+        electronicSignature: dto.pin
+          ? this.generateElectronicSignature(
+              'PENDING',
+              dto.doctorId,
+              dto.patientId,
+              dto.medications ?? [],
+              dto.pin,
+              now,
+            )
+          : undefined,
+        signatureImage: dto.signatureImage || undefined,
+        imagingRequests: dto.imagingRequests?.length ? dto.imagingRequests : undefined,
       });
 
       const saved = (await this.repo.save(entity as any)) as unknown as Prescription;
@@ -54,6 +137,22 @@ export class PrescriptionsService {
           medecinName: dto.medecinName ?? '',
         });
         await this.repo.update(saved.id, { qrCode });
+
+        // Re-signer avec l'ID réel (la première signature utilisait 'PENDING')
+        if (dto.pin) {
+          const realSignature = this.generateElectronicSignature(
+            saved.id,
+            dto.doctorId,
+            dto.patientId,
+            dto.medications ?? [],
+            dto.pin,
+            now,
+          );
+          await this.repo.update(saved.id, {
+            electronicSignature: realSignature,
+            signatureImage: dto.signatureImage || undefined,
+          });
+        }
 
         // Générer le PDF
         try {

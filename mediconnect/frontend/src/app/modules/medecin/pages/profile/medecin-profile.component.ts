@@ -1,9 +1,11 @@
-import { Component, OnInit, inject, signal } from "@angular/core";
+import { Component, OnInit, OnDestroy, inject, signal, AfterViewChecked } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { HttpClient } from "@angular/common/http";
+import { Router } from "@angular/router";
 import { catchError, finalize } from "rxjs/operators";
 import { of } from "rxjs";
+import * as L from "leaflet";
 
 @Component({
   selector: "app-medecin-profile",
@@ -13,10 +15,13 @@ import { of } from "rxjs";
     <div class="profile-page">
       <!-- HEADER -->
       <div class="page-header">
-        <h1 class="page-title">👨‍⚕️ Mon Profil Professionnel</h1>
+        <h1 class="page-title"> Mon Profil Professionnel</h1>
         <div class="header-actions">
           <button class="btn-save" (click)="saveProfile()" [disabled]="isSaving()">
-            {{ isSaving() ? '⏳ Enregistrement...' : '💾 Enregistrer' }}
+            {{ isSaving() ? ' Enregistrement...' : '💾 Enregistrer' }}
+          </button>
+          <button class="btn-logout" (click)="logout()">
+             Déconnexion
           </button>
         </div>
       </div>
@@ -33,7 +38,7 @@ import { of } from "rxjs";
         <!-- ── CARTE IDENTITÉ ── -->
         <div class="profile-card full-width">
           <div class="card-header">
-            <span class="card-icon">🪪</span>
+            <span class="card-icon"></span>
             <h2>Identité Professionnelle</h2>
           </div>
           <div class="card-body">
@@ -115,8 +120,17 @@ import { of } from "rxjs";
               <input class="form-input" [(ngModel)]="form.adresseCabinet" placeholder="Ex: 12 Rue de la République, Tunis"/>
             </div>
             <div class="form-group">
-              <label class="form-label">Lien Google Maps</label>
-              <input class="form-input" [(ngModel)]="form.geoGoogleMaps" placeholder="https://maps.google.com/..."/>
+              <label class="form-label">📍 Position du cabinet sur la carte</label>
+              <div class="map-hint">Cliquez sur la carte pour placer votre cabinet. Les patients vous trouveront à cet emplacement.</div>
+              <div id="profile-map" class="profile-leaflet-map"></div>
+              <div class="coords-display" *ngIf="form.geoGoogleMaps">
+                <span class="coords-icon">📌</span>
+                <span class="coords-text">{{ form.geoGoogleMaps }}</span>
+                <button type="button" class="coords-clear" (click)="clearLocation()">✕</button>
+              </div>
+              <div class="coords-empty" *ngIf="!form.geoGoogleMaps">
+                Aucune position définie — cliquez sur la carte
+              </div>
             </div>
             <div class="form-group">
               <label class="form-label">Photos du cabinet (upload multiple)</label>
@@ -218,6 +232,8 @@ import { of } from "rxjs";
     .page-title { font-size:24px; font-weight:700; color:#0f172a; margin:0; }
     .btn-save { padding:10px 24px; background:#4f46e5; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; }
     .btn-save:disabled { opacity:.6; cursor:not-allowed; }
+    .btn-logout { padding:10px 20px; background:#ef4444; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; }
+    .btn-logout:hover { background:#dc2626; }
     .alert-success { background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; border-radius:10px; padding:12px 16px; margin-bottom:16px; font-size:14px; }
     .alert-error { background:#fef2f2; color:#dc2626; border:1px solid #fecaca; border-radius:10px; padding:12px 16px; margin-bottom:16px; font-size:14px; }
     .loading-state { display:flex; flex-direction:column; align-items:center; padding:60px; color:#64748b; gap:12px; }
@@ -278,6 +294,14 @@ import { of } from "rxjs";
     .toggle-input:checked + .toggle-switch { background:#4f46e5; }
     .toggle-input:checked + .toggle-switch::after { transform:translateX(18px); }
 
+    .profile-leaflet-map { height: 280px; width: 100%; border-radius: 10px; border: 1.5px solid #e2e8f0; margin-top: 6px; }
+    .map-hint { font-size: 12px; color: #64748b; margin-bottom: 6px; }
+    .coords-display { display: flex; align-items: center; gap: 8px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 8px 12px; margin-top: 8px; }
+    .coords-icon { font-size: 14px; }
+    .coords-text { font-size: 12px; font-family: monospace; color: #16a34a; flex: 1; }
+    .coords-clear { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 14px; padding: 0; }
+    .coords-empty { font-size: 12px; color: #94a3b8; margin-top: 8px; font-style: italic; }
+
     @media (max-width:768px) {
       .profile-grid { grid-template-columns:1fr; }
       .form-grid { grid-template-columns:1fr; }
@@ -287,8 +311,9 @@ import { of } from "rxjs";
     }
   `]
 })
-export class MedecinProfileComponent implements OnInit {
-  private http = inject(HttpClient);
+export class MedecinProfileComponent implements OnInit, OnDestroy, AfterViewChecked {
+  private http   = inject(HttpClient);
+  private router = inject(Router);
 
   medecin    = signal<any>(null);
   isLoading  = signal(true);
@@ -296,9 +321,12 @@ export class MedecinProfileComponent implements OnInit {
   isUploadingPhoto = signal(false);
   successMsg = signal<string | null>(null);
   errorMsg   = signal<string | null>(null);
-  
+
   photoPreview: string | null = null;
   cabinetPhotosList: string[] = [];
+  private profileMap: L.Map | null = null;
+  private profileMarker: L.Marker | null = null;
+  private mapInitialized = false;
 
   form: any = {
     titre: '',
@@ -333,6 +361,96 @@ export class MedecinProfileComponent implements OnInit {
   ];
 
   ngOnInit() { this.loadProfile(); }
+
+  logout() {
+    localStorage.removeItem('token');
+    sessionStorage.clear();
+    this.router.navigate(['/auth/login']);
+  }
+
+  ngAfterViewChecked() {
+    if (!this.isLoading() && !this.mapInitialized) {
+      const el = document.getElementById('profile-map');
+      if (el) { this.initProfileMap(); this.mapInitialized = true; }
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.profileMap) { this.profileMap.remove(); this.profileMap = null; }
+  }
+
+  private initProfileMap() {
+    const icon = L.icon({
+      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+      iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+      iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34],
+    });
+
+    // Centre par défaut : Tunis
+    let center: [number, number] = [36.8065, 10.1815];
+    let zoom = 7;
+
+    // Si coordonnées déjà sauvegardées
+    if (this.form.geoGoogleMaps) {
+      const match = this.form.geoGoogleMaps.match(/(-?\d+\.?\d*)[,\s]+(-?\d+\.?\d*)/);
+      if (match) {
+        center = [parseFloat(match[1]), parseFloat(match[2])];
+        zoom = 15;
+      }
+    }
+
+    this.profileMap = L.map('profile-map').setView(center, zoom);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap', maxZoom: 18,
+    }).addTo(this.profileMap);
+
+    // Placer marker si coords existantes
+    if (this.form.geoGoogleMaps) {
+      this.profileMarker = L.marker(center, { icon, draggable: true })
+        .addTo(this.profileMap)
+        .bindPopup('📍 Mon cabinet').openPopup();
+      this.profileMarker.on('dragend', (e: any) => {
+        const pos = e.target.getLatLng();
+        this.form.geoGoogleMaps = `${pos.lat.toFixed(6)},${pos.lng.toFixed(6)}`;
+      });
+    }
+
+    // Clic sur la carte → placer/déplacer le marker
+    this.profileMap.on('click', (e: L.LeafletMouseEvent) => {
+      const { lat, lng } = e.latlng;
+      this.form.geoGoogleMaps = `${lat.toFixed(6)},${lng.toFixed(6)}`;
+
+      if (this.profileMarker) {
+        this.profileMarker.setLatLng([lat, lng]);
+      } else {
+        this.profileMarker = L.marker([lat, lng], { icon, draggable: true })
+          .addTo(this.profileMap!)
+          .bindPopup('📍 Mon cabinet').openPopup();
+        this.profileMarker.on('dragend', (ev: any) => {
+          const pos = ev.target.getLatLng();
+          this.form.geoGoogleMaps = `${pos.lat.toFixed(6)},${pos.lng.toFixed(6)}`;
+        });
+      }
+    });
+
+    // Géolocalisation
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(pos => {
+        if (!this.form.geoGoogleMaps) {
+          this.profileMap?.setView([pos.coords.latitude, pos.coords.longitude], 13);
+        }
+      });
+    }
+  }
+
+  clearLocation() {
+    this.form.geoGoogleMaps = '';
+    if (this.profileMarker) {
+      this.profileMarker.remove();
+      this.profileMarker = null;
+    }
+  }
 
   loadProfile() {
     this.isLoading.set(true);

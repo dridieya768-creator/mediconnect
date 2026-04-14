@@ -13,10 +13,10 @@ import { of } from "rxjs";
     <div class="profile-page">
       <!-- HEADER -->
       <div class="page-header">
-        <h1 class="page-title">👨‍⚕️ Mon Profil Professionnel</h1>
+        <h1 class="page-title"> Mon Profil Professionnel</h1>
         <div class="header-actions">
           <button class="btn-save" (click)="saveProfile()" [disabled]="isSaving()">
-            {{ isSaving() ? '⏳ Enregistrement...' : '💾 Enregistrer' }}
+            {{ isSaving() ? ' Enregistrement...' : ' Enregistrer' }}
           </button>
         </div>
       </div>
@@ -33,7 +33,7 @@ import { of } from "rxjs";
         <!-- ── CARTE IDENTITÉ ── -->
         <div class="profile-card full-width">
           <div class="card-header">
-            <span class="card-icon">🪪</span>
+            <span class="card-icon"></span>
             <h2>Identité Professionnelle</h2>
           </div>
           <div class="card-body">
@@ -52,12 +52,12 @@ import { of } from "rxjs";
                 <span class="role-badge">{{ getRoleLabel() }}</span>
                 <div class="avatar-upload">
                   <label class="upload-photo-btn">
-                    📸 Changer la photo
+                     Changer la photo
                     <input type="file" (change)="onPhotoSelected($event)" 
                            accept="image/jpeg,image/png,image/jpg" hidden>
                   </label>
                   <button *ngIf="form.photoPro || photoPreview" class="remove-photo-btn" 
-                          (click)="removePhoto()" type="button">🗑️ Supprimer</button>
+                          (click)="removePhoto()" type="button"> Supprimer</button>
                 </div>
                 <small class="upload-hint">JPEG, PNG, JPG. Max 5MB</small>
               </div>
@@ -102,7 +102,7 @@ import { of } from "rxjs";
         <!-- ── LOCALISATION ── -->
         <div class="profile-card">
           <div class="card-header">
-            <span class="card-icon">📍</span>
+            <span class="card-icon"></span>
             <h2>Cabinet & Localisation</h2>
           </div>
           <div class="card-body">
@@ -144,7 +144,7 @@ import { of } from "rxjs";
         <!-- ── CONTACT PRO ── -->
         <div class="profile-card">
           <div class="card-header">
-            <span class="card-icon">📞</span>
+            <span class="card-icon"></span>
             <h2>Contact Professionnel</h2>
           </div>
           <div class="card-body">
@@ -162,7 +162,7 @@ import { of } from "rxjs";
         <!-- ── TARIFS ── -->
         <div class="profile-card">
           <div class="card-header">
-            <span class="card-icon">💰</span>
+            <span class="card-icon"></span>
             <h2>Tarifs & Actes</h2>
           </div>
           <div class="card-body">

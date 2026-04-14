@@ -46,7 +46,7 @@ let PdfService = class PdfService {
                 doc.text('Posologie', 310, 248);
                 doc.text('Durée', 440, 248);
                 doc.text('Qté', 500, 248);
-                const meds = prescription.medications ?? [];
+                const meds = (prescription.medications ?? []).filter((m) => m.name && m.name.trim());
                 let y = 270;
                 meds.forEach((m, i) => {
                     if (i % 2 === 0) {
@@ -67,6 +67,71 @@ let PdfService = class PdfService {
                     doc.fontSize(11).fillColor('#475569').font('Helvetica-Oblique').text(prescription.notes, 50, y, { width: 495 });
                     y += 30;
                 }
+                const imaging = prescription.imagingRequests ?? [];
+                if (imaging.length > 0) {
+                    y += 10;
+                    doc.fontSize(9).fillColor('#94a3b8').font('Helvetica').text('BON D\'IMAGERIE MÉDICALE', 50, y);
+                    y += 14;
+                    doc.rect(50, y, 495, 22).fillColor('#0f275a').fill();
+                    doc.fontSize(10).fillColor('white').font('Helvetica-Bold');
+                    doc.text('Type d\'examen', 58, y + 6);
+                    doc.text('Région', 220, y + 6);
+                    doc.text('Urgence', 360, y + 6);
+                    y += 26;
+                    imaging.forEach((img, i) => {
+                        if (i % 2 === 0)
+                            doc.rect(50, y - 4, 495, 22).fillColor('#f0f7ff').fill();
+                        doc.fontSize(11).fillColor('#0f172a').font('Helvetica');
+                        doc.text(img.type || '—', 58, y, { width: 155 });
+                        doc.text(img.region || '—', 220, y, { width: 135 });
+                        const urgBadge = img.urgency === 'URGENT' ? '⚠ URGENT' : 'Normal';
+                        doc.fillColor(img.urgency === 'URGENT' ? '#dc2626' : '#16a34a').text(urgBadge, 360, y);
+                        y += 22;
+                        if (img.clinicalReason) {
+                            doc.fontSize(9).fillColor('#64748b').font('Helvetica-Oblique')
+                                .text(`Motif : ${img.clinicalReason}`, 68, y, { width: 470 });
+                            y += 16;
+                        }
+                    });
+                    y += 10;
+                }
+                y = Math.max(y + 20, 580);
+                doc.moveTo(50, y).lineTo(545, y).strokeColor('#e2e8f0').lineWidth(1).stroke();
+                y += 16;
+                doc.fontSize(9).fillColor('#94a3b8').font('Helvetica').text('CACHET ET SIGNATURE DU MÉDECIN', 50, y);
+                y += 14;
+                doc.rect(50, y, 200, 90).strokeColor('#e2e8f0').lineWidth(1).stroke();
+                doc.fontSize(11).fillColor('#0f172a').font('Helvetica-Bold').text(`Dr. ${doctorName}`, 60, y + 8);
+                doc.fontSize(9).fillColor('#64748b').font('Helvetica').text('Médecin MediConnect', 60, y + 22);
+                if (prescription.signatureImage) {
+                    try {
+                        const sigBuffer = Buffer.from(prescription.signatureImage.replace(/^data:image\/\w+;base64,/, ''), 'base64');
+                        doc.image(sigBuffer, 60, y + 34, { width: 120, height: 40 });
+                    }
+                    catch { }
+                }
+                if (prescription.signedAt) {
+                    const signedStr = new Date(prescription.signedAt).toLocaleDateString('fr-FR', {
+                        day: '2-digit', month: 'long', year: 'numeric'
+                    }) + ' à ' + new Date(prescription.signedAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                    doc.fontSize(8).fillColor('#16a34a').font('Helvetica').text(`Signé le ${signedStr}`, 60, y + 76);
+                    const sigDisplay = prescription.electronicSignature
+                        ? prescription.electronicSignature.replace('HMAC-SHA256:', '').substring(0, 20) + '...'
+                        : '';
+                    if (sigDisplay) {
+                        doc.fontSize(7).fillColor('#94a3b8').font('Helvetica').text(`Sig: ${sigDisplay}`, 60, y + 86, { width: 185 });
+                    }
+                }
+                else {
+                    doc.fontSize(8).fillColor('#94a3b8').font('Helvetica-Oblique').text('Signature en attente', 60, y + 76);
+                }
+                doc.fontSize(9).fillColor('#94a3b8').font('Helvetica').text('VALIDITÉ ET AUTHENTICITÉ', 310, y - 14);
+                doc.rect(310, y, 235, 80).strokeColor('#e2e8f0').lineWidth(1).stroke();
+                doc.fontSize(9).fillColor('#374151').font('Helvetica').text('Ordonnance valable 90 jours', 320, y + 10);
+                doc.fontSize(9).fillColor('#374151').text(`Émise le : ${prescription.issuedAt ? new Date(prescription.issuedAt).toLocaleDateString('fr-FR') : '—'}`, 320, y + 26);
+                doc.fontSize(9).fillColor('#374151').text(`Expire le : ${prescription.expiresAt ? new Date(prescription.expiresAt).toLocaleDateString('fr-FR') : '—'}`, 320, y + 42);
+                doc.fontSize(8).fillColor('#94a3b8').font('Helvetica-Oblique').text('Document généré par MediConnect', 320, y + 60);
+                y += 100;
                 doc.moveTo(50, 760).lineTo(545, 760).strokeColor('#e2e8f0').lineWidth(1).stroke();
                 doc.fontSize(9).fillColor('#94a3b8').font('Helvetica');
                 doc.text(`Code QR: ${prescription.qrCode || 'N/A'}`, 50, 770);

@@ -42,7 +42,12 @@ export const MEDECIN_ROUTES: Routes = [
       {
         path: "prescriptions",
         loadComponent: () =>
-          import("./pages/ordonnance-form.component").then((m) => m.OrdonnanceFormComponent),
+          import("./pages/prescriptions/ordonnance-form.component").then((m) => m.OrdonnanceFormComponent),
+      },
+      {
+        path: "video/:id",
+        loadComponent: () =>
+          import("./pages/video/teleconsultation-medecin.component").then((m) => m.TeleconsultationMedecinComponent),
       },
     ],
   },

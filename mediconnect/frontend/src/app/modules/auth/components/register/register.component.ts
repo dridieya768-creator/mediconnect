@@ -34,40 +34,44 @@ export class RegisterComponent implements OnInit {
   ];
 
   roles = [
-    { value: 'PATIENT',                label: '👤 Patient' },
-    { value: 'MEDECIN_GENERALISTE',    label: '🩺 Médecin Généraliste' },
-    { value: 'MEDECIN_SPECIALISTE',    label: '🩺 Médecin Spécialiste' },
-    { value: 'MEDECIN_CHEF_SERVICE',   label: '🩺 Médecin Chef de Service' },
-    { value: 'PHARMACIEN',             label: '💊 Pharmacien' },
-    { value: 'BIOLOGISTE_RESPONSABLE', label: '🧪 Biologiste Responsable' },
-    { value: 'BIOLOGISTE_MEDICAL',     label: '🧪 Biologiste Médical' },
-    { value: 'TECHNICIEN_LABO',        label: '🧪 Technicien de Laboratoire' },
-    { value: 'RADIOLOGUE',             label: '🔬 Radiologue' },
-    { value: 'MANIPULATEUR_RADIO',     label: '🔬 Manipulateur Radio' },
-    { value: 'SECRETAIRE_RADIO',       label: '🔬 Secrétaire Radiologie' },
+    { value: 'PATIENT',                label: ' Patient' },
+    { value: 'MEDECIN_GENERALISTE',    label: ' Médecin Généraliste' },
+    { value: 'MEDECIN_SPECIALISTE',    label: ' Médecin Spécialiste' },
+    { value: 'MEDECIN_CHEF_SERVICE',   label: ' Médecin Chef de Service' },
+    { value: 'PHARMACIEN',             label: ' Pharmacien' },
+    { value: 'BIOLOGISTE_RESPONSABLE', label: ' Biologiste Responsable' },
+    { value: 'BIOLOGISTE_MEDICAL',     label: ' Biologiste Médical' },
+    { value: 'TECHNICIEN_LABO',        label: ' Technicien de Laboratoire' },
+    { value: 'RADIOLOGUE',             label: ' Radiologue' },
+    { value: 'MANIPULATEUR_RADIO',     label: ' Manipulateur Radio' },
+    { value: 'SECRETAIRE_RADIO',       label: ' Secrétaire Radiologie' },
   ];
 
   specialites = [
-    { value: 'CARDIOLOGUE',     label: '❤️ Cardiologue' },
-    { value: 'DERMATOLOGUE',    label: '🧴 Dermatologue' },
-    { value: 'URGENTISTE',      label: '🚨 Urgentiste' },
-    { value: 'MEDECIN_FAMILLE', label: '🏠 Médecin de famille' },
-    { value: 'GYNECOLOGUE',     label: '🌸 Gynécologue' },
-    { value: 'NEUROLOGUE',      label: '🧠 Neurologue' },
-    { value: 'OPHTALMOLOGUE',   label: '👁️ Ophtalmologue' },
-    { value: 'ORL',             label: '👂 ORL' },
-    { value: 'PEDIATRE',        label: '👶 Pédiatre' },
-    { value: 'PSYCHIATRE',      label: '🧘 Psychiatre' },
-    { value: 'RADIOLOGUE_SPEC', label: '🔬 Radiologue' },
-    { value: 'RHUMATOLOGUE',    label: '🦴 Rhumatologue' },
-    { value: 'UROLOGUE',        label: '🫀 Urologue' },
-    { value: 'CHIRURGIEN',      label: '🔪 Chirurgien' },
-    { value: 'ANESTHESISTE',    label: '💉 Anesthésiste' },
-    { value: 'ENDOCRINOLOGUE',  label: '⚗️ Endocrinologue' },
-    { value: 'GASTROLOGUE',     label: '🫁 Gastro-entérologue' },
-    { value: 'NEPHROLOGUE',     label: '🩺 Néphrologue' },
-    { value: 'ONCOLOGUE',       label: '🎗️ Oncologue' },
-    { value: 'PNEUMOLOGUE',     label: '🫁 Pneumologue' },
+    { value: 'CHIRURGIEN_PLASTICIEN ',     label: 'Chirurgien plasticien' },
+    { value: 'DENTISTE',     label: ' Dentiste' },
+    { value: 'CARDIOLOGUE',     label: ' Cardiologue' },
+    { value: 'DERMATOLOGUE',    label: ' Dermatologue' },
+    { value: 'URGENTISTE',      label: ' Urgentiste' },
+    { value: 'MEDECIN_FAMILLE', label: ' Médecin de famille' },
+    { value: 'GYNECOLOGUE',     label: ' Gynécologue' },
+    { value: 'NEUROLOGUE',      label: ' Neurologue' },
+    { value: 'OPHTALMOLOGUE',   label: ' Ophtalmologue' },
+    { value: 'ORL',             label: ' ORL' },
+    { value: 'PEDIATRE',        label: ' Pédiatre' },
+    { value: 'PSYCHIATRE',      label: ' Psychiatre' },
+    { value: 'RADIOLOGUE_SPEC', label: ' Radiologue' },
+    { value: 'RHUMATOLOGUE',    label: ' Rhumatologue' },
+    { value: 'UROLOGUE',        label: ' Urologue' },
+    { value: 'CHIRURGIEN',      label: ' Chirurgien' },
+    { value: 'CHIRURGIEN_PLASTICIEN', label: ' Chirurgien Plasticien' },
+    { value: 'DENTISTE',        label: ' Dentiste' },
+    { value: 'ANESTHESISTE',    label: ' Anesthésiste' },
+    { value: 'ENDOCRINOLOGUE',  label: ' Endocrinologue' },
+    { value: 'GASTROLOGUE',     label: ' Gastro-entérologue' },
+    { value: 'NEPHROLOGUE',     label: ' Néphrologue' },
+    { value: 'ONCOLOGUE',       label: ' Oncologue' },
+    { value: 'PNEUMOLOGUE',     label: ' Pneumologue' },
   ];
 
   form = this.fb.group({
@@ -79,7 +83,7 @@ export class RegisterComponent implements OnInit {
     role:            [UserRole.PATIENT, Validators.required],
     specialite:      [""],
     password:        ["", [Validators.required, Validators.minLength(8)]],
-    confirmPassword: ["", Validators.required],
+    confirmPassword: [""],
     acceptCgu:       [false],
   });
 
@@ -149,10 +153,6 @@ export class RegisterComponent implements OnInit {
     }
 
     const { confirmPassword, ...dto } = this.form.value;
-    if (dto.password !== confirmPassword) {
-      this.error = "Les mots de passe ne correspondent pas";
-      return;
-    }
 
     this.isLoading = true;
     this.error = "";

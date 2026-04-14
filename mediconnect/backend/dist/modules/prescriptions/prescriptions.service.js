@@ -22,12 +22,52 @@ const interaction_checker_service_1 = require("./interaction-checker.service");
 const pdf_service_1 = require("./pdf.service");
 const fs_1 = require("fs");
 const path_1 = require("path");
+const crypto = require("crypto");
 let PrescriptionsService = class PrescriptionsService {
-    constructor(repo, qrCodesService, interactionChecker, pdfService) {
+    constructor(repo, dataSource, qrCodesService, interactionChecker, pdfService) {
         this.repo = repo;
+        this.dataSource = dataSource;
         this.qrCodesService = qrCodesService;
         this.interactionChecker = interactionChecker;
         this.pdfService = pdfService;
+    }
+    async onModuleInit() {
+        try {
+            await this.dataSource.query(`ALTER TABLE prescriptions ADD COLUMN IF NOT EXISTS signature_image TEXT;`);
+            await this.dataSource.query(`ALTER TABLE prescriptions ADD COLUMN IF NOT EXISTS imaging_requests JSONB;`);
+            console.log('[PrescriptionsService] Migrations OK');
+        }
+        catch (err) {
+            console.warn('[PrescriptionsService] Migration warning:', err?.message);
+        }
+    }
+    generateElectronicSignature(prescriptionId, doctorId, patientId, medications, pin, issuedAt) {
+        const payload = JSON.stringify({
+            prescriptionId,
+            doctorId,
+            patientId,
+            medicationsHash: crypto
+                .createHash("sha256")
+                .update(JSON.stringify(medications))
+                .digest("hex"),
+            issuedAt: issuedAt.toISOString(),
+        });
+        const secretKey = process.env.SIGNATURE_SECRET || "mediconnect-pfe-2026-secret-key";
+        const signingKey = crypto
+            .createHmac("sha256", secretKey)
+            .update(`${pin}:${doctorId}`)
+            .digest("hex");
+        const signature = crypto
+            .createHmac("sha256", signingKey)
+            .update(payload)
+            .digest("hex");
+        return `HMAC-SHA256:${signature.toUpperCase()}`;
+    }
+    verifySignature(prescription, pin) {
+        if (!prescription.electronicSignature)
+            return false;
+        const expected = this.generateElectronicSignature(prescription.id, prescription.doctorId, prescription.patientId, prescription.medications, pin, prescription.issuedAt);
+        return prescription.electronicSignature === expected;
     }
     checkInteractions(medications) {
         return this.interactionChecker.checkInteractions(medications);
@@ -49,6 +89,12 @@ let PrescriptionsService = class PrescriptionsService {
                 status: prescription_entity_1.PrescriptionStatus.ACTIVE,
                 qrCode: tempCode,
                 qrJwt: '',
+                signedAt: dto.pin ? now : undefined,
+                electronicSignature: dto.pin
+                    ? this.generateElectronicSignature('PENDING', dto.doctorId, dto.patientId, dto.medications ?? [], dto.pin, now)
+                    : undefined,
+                signatureImage: dto.signatureImage || undefined,
+                imagingRequests: dto.imagingRequests?.length ? dto.imagingRequests : undefined,
             });
             const saved = (await this.repo.save(entity));
             try {
@@ -60,6 +106,13 @@ let PrescriptionsService = class PrescriptionsService {
                     medecinName: dto.medecinName ?? '',
                 });
                 await this.repo.update(saved.id, { qrCode });
+                if (dto.pin) {
+                    const realSignature = this.generateElectronicSignature(saved.id, dto.doctorId, dto.patientId, dto.medications ?? [], dto.pin, now);
+                    await this.repo.update(saved.id, {
+                        electronicSignature: realSignature,
+                        signatureImage: dto.signatureImage || undefined,
+                    });
+                }
                 try {
                     const prescription = await this.findOne(saved.id);
                     console.log('[PrescriptionsService] Generating PDF for prescription:', saved.id);
@@ -140,7 +193,9 @@ exports.PrescriptionsService = PrescriptionsService;
 exports.PrescriptionsService = PrescriptionsService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(prescription_entity_1.Prescription)),
+    __param(1, (0, typeorm_1.InjectDataSource)()),
     __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.DataSource,
         qr_codes_service_1.QrCodesService,
         interaction_checker_service_1.InteractionCheckerService,
         pdf_service_1.PdfService])

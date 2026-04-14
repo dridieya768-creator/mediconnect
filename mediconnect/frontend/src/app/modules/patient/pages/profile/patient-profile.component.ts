@@ -103,6 +103,9 @@ import { AuthService } from "../../../../core/services/auth.service";
             <button class="btn-security" (click)="goTo('/patient/settings')">
               ⚙️ Paramètres de sécurité
             </button>
+            <button class="btn-logout" (click)="logout()">
+              🚪 Déconnexion
+            </button>
           </div>
         </div>
 
@@ -177,16 +180,16 @@ import { AuthService } from "../../../../core/services/auth.service";
               <div class="tags-section">
                 <div class="tags-label">🤧 Allergies</div>
                 <div class="tags-list">
-                  <span class="tag tag-danger" *ngFor="let a of profile()?.allergies">{{ a }}</span>
-                  <span class="empty-tag" *ngIf="!profile()?.allergies?.length">Aucune allergie renseignée</span>
+                  <span class="tag tag-danger" *ngFor="let a of getAllergies()">{{ a }}</span>
+                  <span class="empty-tag" *ngIf="!getAllergies().length">Aucune allergie renseignée</span>
                 </div>
               </div>
 
               <div class="tags-section">
                 <div class="tags-label">🫀 Maladies chroniques</div>
                 <div class="tags-list">
-                  <span class="tag tag-warning" *ngFor="let m of profile()?.maladiesChroniques">{{ m }}</span>
-                  <span class="empty-tag" *ngIf="!profile()?.maladiesChroniques?.length">Aucune maladie chronique renseignée</span>
+                  <span class="tag tag-warning" *ngFor="let m of getMaladies()">{{ m }}</span>
+                  <span class="empty-tag" *ngIf="!getMaladies().length">Aucune maladie chronique renseignée</span>
                 </div>
               </div>
 
@@ -274,6 +277,8 @@ import { AuthService } from "../../../../core/services/auth.service";
     .badge-off { background:#fef2f2; color:#dc2626; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; }
     .btn-security { width:100%; margin-top:12px; padding:9px; background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:8px; font-size:13px; color:#64748b; cursor:pointer; transition:all .15s; }
     .btn-security:hover { border-color:#1a56db; color:#1a56db; background:#eff6ff; }
+    .btn-logout { width:100%; margin-top:8px; padding:9px; background:#fef2f2; border:1.5px solid #fecaca; border-radius:8px; font-size:13px; color:#dc2626; cursor:pointer; font-weight:600; transition:all .15s; }
+    .btn-logout:hover { background:#fee2e2; border-color:#dc2626; }
 
     /* ── RIGHT ── */
     .right-col { display:flex; flex-direction:column; gap:16px; }
@@ -430,11 +435,29 @@ export class PatientProfileComponent implements OnInit {
   }
 
   getMedNames(): string[] {
-    const meds = this.profile()?.medicamentsActuels || [];
-    return meds.map((m: any) => typeof m === 'string' ? m : m?.nom || m?.name || JSON.stringify(m));
+    const meds = this.profile()?.medicamentsActuels;
+    if (!meds) return [];
+    if (Array.isArray(meds)) return meds.map((m: any) => typeof m === 'string' ? m : m?.nom || m?.name || '').filter(Boolean);
+    return String(meds).split(',').map((s: string) => s.trim()).filter(Boolean);
+  }
+
+  getAllergies(): string[] {
+    const val = this.profile()?.allergies;
+    if (!val) return [];
+    if (Array.isArray(val)) return val.filter(Boolean);
+    return String(val).split(',').map((s: string) => s.trim()).filter(Boolean);
+  }
+
+  getMaladies(): string[] {
+    const val = this.profile()?.maladiesChroniques;
+    if (!val) return [];
+    if (Array.isArray(val)) return val.filter(Boolean);
+    return String(val).split(',').map((s: string) => s.trim()).filter(Boolean);
   }
 
   goTo(route: string) { this.router.navigate([route]); }
+
+  logout() { this.authService.logout(); }
 
   onAvatarSelected(event: Event) {
     const file = (event.target as HTMLInputElement).files?.[0];
