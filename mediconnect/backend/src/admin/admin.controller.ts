@@ -34,7 +34,7 @@ class RolesGuard implements CanActivate {
 @ApiTags('Admin')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.ADMIN_SYSTEM)
+@Roles(UserRole.ADMIN)
 @Controller('admin')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}

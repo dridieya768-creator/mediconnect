@@ -153,6 +153,6 @@ __decorate([
     __metadata("design:type", Date)
 ], MedecinProfile.prototype, "updatedAt", void 0);
 exports.MedecinProfile = MedecinProfile = __decorate([
-    (0, typeorm_1.Entity)('medecin_profiles')
+    (0, typeorm_1.Entity)('medecins')
 ], MedecinProfile);
 //# sourceMappingURL=medecin-profile.entity.js.map

@@ -22,15 +22,15 @@ export class RegisterComponent implements OnInit {
   isLoading = false;
   error     = "";
 
-  // ✅ UNE SEULE déclaration avec le bon type
+  
   uploadedFiles: Record<string, { file: File; base64: string; name: string }> = {};
 
   requiredDocs = [
-    { type: 'DIPLOME',           label: 'Diplôme de Docteur en Médecine',   icon: '🎓', required: true  },
-    { type: 'CASIER_JUDICIAIRE', label: 'Casier judiciaire',                icon: '📜', required: true  },
-    { type: 'CARTE_ORDRE',       label: "Carte d'inscription à l'Ordre",    icon: '🪪', required: true  },
-    { type: 'CIN',               label: "CIN (Carte d'Identité Nationale)", icon: '🪪', required: true  },
-    { type: 'ATTESTATION_SPEC',  label: 'Attestation de spécialité',        icon: '🏅', required: false },
+    { type: 'DIPLOME',           label: 'Diplôme de Docteur en Médecine',   icon: '', required: true  },
+    { type: 'CASIER_JUDICIAIRE', label: 'Casier judiciaire',                icon: '', required: true  },
+    { type: 'CARTE_ORDRE',       label: "Carte d'inscription à l'Ordre",    icon: '', required: true  },
+    { type: 'CIN',               label: "CIN (Carte d'Identité Nationale)", icon: '', required: true  },
+    { type: 'ATTESTATION_SPEC',  label: 'Attestation de spécialité',        icon: '', required: false },
   ];
 
   roles = [
@@ -114,7 +114,7 @@ export class RegisterComponent implements OnInit {
     });
   }
 
-  // ✅ Méthode DANS la classe (indentation correcte)
+  
   onFileSelected(event: Event, docType: string): void {
     const input = event.target as HTMLInputElement;
     const file  = input.files?.[0];
@@ -139,7 +139,8 @@ export class RegisterComponent implements OnInit {
     this.error = '';
   }
 
-  // ✅ Méthode DANS la classe (indentation correcte)
+ 
+
   onSubmit(): void {
     if (this.form.invalid) return;
 
@@ -184,7 +185,7 @@ export class RegisterComponent implements OnInit {
     }
   }
 
-  // ✅ Méthode DANS la classe (indentation correcte)
+  
   private handleRegisterSuccess(res: any): void {
     const payload = res?.data ?? res;
     if (payload?.pendingApproval) {

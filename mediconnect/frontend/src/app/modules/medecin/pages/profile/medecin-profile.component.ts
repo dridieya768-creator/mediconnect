@@ -227,8 +227,15 @@ import * as L from "leaflet";
     </div>
   `,
   styles: [`
-    .profile-page { padding: 0; }
-    .page-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; }
+    .profile-page { padding: 24px 32px; }
+    .page-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 24px; padding: 16px 20px;
+      background: white; border-radius: 12px;
+      border: 1.5px solid #e2e8f0;
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
     .page-title { font-size:24px; font-weight:700; color:#0f172a; margin:0; }
     .btn-save { padding:10px 24px; background:#4f46e5; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; }
     .btn-save:disabled { opacity:.6; cursor:not-allowed; }

@@ -30,6 +30,10 @@ let AppointmentsController = class AppointmentsController {
     getByPatient(patientId) {
         return this.svc.findByPatient(patientId);
     }
+    async getMyDoctors(req) {
+        const userId = req.user?.sub || req.user?.id;
+        return this.svc.findDoctorsByPatient(userId);
+    }
     getByDoctor(doctorId, date) {
         return this.svc.findByDoctor(doctorId, date);
     }
@@ -66,6 +70,14 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], AppointmentsController.prototype, "getByPatient", null);
+__decorate([
+    (0, common_1.Get)("my-doctors"),
+    (0, swagger_1.ApiOperation)({ summary: "Liste des médecins avec qui le patient a eu des RDV" }),
+    __param(0, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AppointmentsController.prototype, "getMyDoctors", null);
 __decorate([
     (0, common_1.Get)("doctor/:doctorId"),
     (0, swagger_1.ApiOperation)({ summary: "RDV d'un médecin" }),

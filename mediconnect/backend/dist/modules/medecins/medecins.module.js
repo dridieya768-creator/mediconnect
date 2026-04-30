@@ -16,12 +16,13 @@ const medecin_profile_entity_1 = require("./entities/medecin-profile.entity");
 const doctor_patient_entity_1 = require("./entities/doctor-patient.entity");
 const appointment_entity_1 = require("../appointments/entities/appointment.entity");
 const patient_entity_1 = require("../patients/entities/patient.entity");
+const notifications_module_1 = require("../notifications/notifications.module");
 let MedecinsModule = class MedecinsModule {
 };
 exports.MedecinsModule = MedecinsModule;
 exports.MedecinsModule = MedecinsModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([user_entity_1.User, medecin_profile_entity_1.MedecinProfile, appointment_entity_1.Appointment, doctor_patient_entity_1.DoctorPatient, patient_entity_1.Patient])],
+        imports: [typeorm_1.TypeOrmModule.forFeature([user_entity_1.User, medecin_profile_entity_1.MedecinProfile, appointment_entity_1.Appointment, doctor_patient_entity_1.DoctorPatient, patient_entity_1.Patient]), notifications_module_1.NotificationsModule],
         controllers: [medecins_controller_1.MedecinsController],
         providers: [medecins_service_1.MedecinsService],
         exports: [medecins_service_1.MedecinsService],

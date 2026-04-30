@@ -148,39 +148,87 @@ import * as L from "leaflet";
       <div class="modal-overlay" *ngIf="selectedDoc()" (click)="selectedDoc.set(null)">
         <div class="modal-card" (click)="$event.stopPropagation()">
           <div class="modal-header">
-            <h2>Profil du Medecin</h2>
-            <button class="btn-close" (click)="selectedDoc.set(null)">X</button>
+            <h2>Profil du Médecin</h2>
+            <button class="btn-close" (click)="selectedDoc.set(null)">✕</button>
           </div>
           <div class="modal-body" *ngIf="selectedDoc()">
+
+            <!-- Hero -->
             <div class="profile-hero">
               <div class="profile-avatar">
                 <img *ngIf="selectedDoc()!.profile?.photoPro" [src]="selectedDoc()!.profile.photoPro" class="avatar-img-lg"/>
                 <span *ngIf="!selectedDoc()!.profile?.photoPro" class="avatar-initials-lg">{{ getInitials(selectedDoc()!) }}</span>
               </div>
-              <div>
+              <div class="profile-hero-info">
                 <h3>{{ selectedDoc()!.profile?.titre || 'Dr.' }} {{ getFullName(selectedDoc()!) }}</h3>
                 <p class="profile-spec">{{ selectedDoc()!.profile?.specialite || getRoleLabel(selectedDoc()!.role) }}</p>
-              </div>
-            </div>
-            <div class="profile-sections">
-              <div class="profile-section" *ngIf="selectedDoc()!.profile?.biographie">
-                <h4>Biographie</h4><p>{{ selectedDoc()!.profile.biographie }}</p>
-              </div>
-              <div class="profile-section">
-                <h4>Contact</h4>
-                <div class="info-grid">
-                  <div class="info-row" *ngIf="selectedDoc()!.profile?.ville"><span class="info-label">Ville</span><span>{{ selectedDoc()!.profile.ville }}</span></div>
-                  <div class="info-row" *ngIf="selectedDoc()!.profile?.telephonePro"><span class="info-label">Tel</span><span>{{ selectedDoc()!.profile.telephonePro }}</span></div>
-                  <div class="info-row" *ngIf="selectedDoc()!.profile?.assurancesAcceptees"><span class="info-label">Assurances</span><span>{{ selectedDoc()!.profile.assurancesAcceptees }}</span></div>
+                <div class="profile-badges">
+                  <span class="badge-tele" *ngIf="selectedDoc()!.profile?.disponTeleconsult">💻 Téléconsultation</span>
+                  <span class="badge-ville" *ngIf="selectedDoc()!.profile?.ville">📍 {{ selectedDoc()!.profile.ville }}</span>
                 </div>
               </div>
             </div>
+
+            <!-- Biographie -->
+            <div class="profile-section" *ngIf="selectedDoc()!.profile?.biographie">
+              <h4>À propos</h4>
+              <p>{{ selectedDoc()!.profile.biographie }}</p>
+            </div>
+
+            <!-- Infos pratiques -->
+            <div class="profile-section">
+              <h4>Informations pratiques</h4>
+              <div class="info-grid">
+                <div class="info-row" *ngIf="selectedDoc()!.profile?.telephonePro">
+                  <span class="info-label">📞 Téléphone</span><span>{{ selectedDoc()!.profile.telephonePro }}</span>
+                </div>
+                <div class="info-row" *ngIf="selectedDoc()!.profile?.adresseCabinet">
+                  <span class="info-label">🏥 Adresse</span><span>{{ selectedDoc()!.profile.adresseCabinet }}</span>
+                </div>
+                <div class="info-row" *ngIf="selectedDoc()!.profile?.assurancesAcceptees">
+                  <span class="info-label">🛡️ Assurances</span><span>{{ selectedDoc()!.profile.assurancesAcceptees }}</span>
+                </div>
+                <div class="info-row" *ngIf="selectedDoc()!.profile?.languesParlees">
+                  <span class="info-label">🌐 Langues</span><span>{{ selectedDoc()!.profile.languesParlees }}</span>
+                </div>
+                <div class="info-row" *ngIf="selectedDoc()!.profile?.tarifs">
+                  <span class="info-label">💰 Tarifs</span><span>{{ selectedDoc()!.profile.tarifs }}</span>
+                </div>
+                <div class="info-row" *ngIf="selectedDoc()!.profile?.actesCouverts">
+                  <span class="info-label">✅ Actes</span><span>{{ selectedDoc()!.profile.actesCouverts }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Diplômes -->
+            <div class="profile-section" *ngIf="selectedDoc()!.profile?.diplomes">
+              <h4>🎓 Diplômes & Formations</h4>
+              <p class="diplomes-text">{{ selectedDoc()!.profile.diplomes }}</p>
+            </div>
+
+            <!-- Photos cabinet -->
+            <div class="profile-section" *ngIf="getCabinetPhotos(selectedDoc()!).length > 0">
+              <h4>📸 Photos du cabinet</h4>
+              <div class="cabinet-photos">
+                <img *ngFor="let photo of getCabinetPhotos(selectedDoc()!)"
+                     [src]="photo" alt="Photo cabinet"
+                     class="cabinet-photo"
+                     (error)="hideImg($event)"
+                     (click)="openPhotoFull(photo)"/>
+              </div>
+            </div>
+
           </div>
           <div class="modal-footer">
             <button class="btn-outline" (click)="selectedDoc.set(null)">Fermer</button>
             <button class="btn-rdv-lg" (click)="takeAppointment(selectedDoc()!)">Prendre RDV</button>
           </div>
         </div>
+      </div>
+
+      <!-- Photo plein écran -->
+      <div class="photo-fullscreen" *ngIf="fullscreenPhoto()" (click)="fullscreenPhoto.set(null)">
+        <img [src]="fullscreenPhoto()!" alt="Photo cabinet"/>
       </div>
     </div>
   `,
@@ -269,14 +317,24 @@ import * as L from "leaflet";
     .profile-avatar { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #1a56db, #2563eb); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
     .avatar-img-lg { width: 100%; height: 100%; object-fit: cover; }
     .avatar-initials-lg { color: white; font-size: 26px; font-weight: 700; }
-    .profile-hero h3 { font-size: 20px; font-weight: 700; color: #0f172a; margin: 0 0 4px; }
-    .profile-spec { color: #1a56db; font-weight: 600; font-size: 14px; margin: 0; }
+    .profile-hero-info h3 { font-size: 20px; font-weight: 700; color: #0f172a; margin: 0 0 4px; }
+    .profile-spec { color: #1a56db; font-weight: 600; font-size: 14px; margin: 0 0 10px; }
+    .profile-badges { display: flex; gap: 8px; flex-wrap: wrap; }
+    .badge-tele { background: #eff6ff; color: #1a56db; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .badge-ville { background: #f0fdf4; color: #16a34a; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
     .profile-sections { display: flex; flex-direction: column; gap: 20px; }
+    .profile-section { margin-bottom: 20px; }
     .profile-section h4 { font-size: 14px; font-weight: 700; color: #0f172a; margin: 0 0 10px; padding-bottom: 6px; border-bottom: 1px solid #f1f5f9; }
     .profile-section p { font-size: 14px; color: #475569; line-height: 1.6; margin: 0; }
+    .diplomes-text { font-size: 13px; color: #475569; line-height: 1.7; white-space: pre-line; }
     .info-grid { display: flex; flex-direction: column; gap: 8px; }
-    .info-row { display: flex; gap: 12px; font-size: 13px; }
-    .info-label { color: #64748b; font-weight: 600; min-width: 90px; flex-shrink: 0; }
+    .info-row { display: flex; gap: 12px; font-size: 13px; align-items: flex-start; }
+    .info-label { color: #64748b; font-weight: 600; min-width: 110px; flex-shrink: 0; }
+    .cabinet-photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
+    .cabinet-photo { width: 100%; height: 100px; object-fit: cover; border-radius: 8px; cursor: pointer; transition: transform .2s; border: 1.5px solid #e2e8f0; }
+    .cabinet-photo:hover { transform: scale(1.03); }
+    .photo-fullscreen { position: fixed; inset: 0; background: rgba(0,0,0,.9); display: flex; align-items: center; justify-content: center; z-index: 9999; cursor: pointer; }
+    .photo-fullscreen img { max-width: 90vw; max-height: 90vh; border-radius: 8px; object-fit: contain; }
     .btn-outline { flex: 1; padding: 10px; background: white; color: #64748b; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
     .btn-rdv-lg { flex: 2; padding: 10px; background: #1a56db; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
     .btn-rdv-lg:hover { background: #1447c0; }
@@ -294,6 +352,7 @@ export class PatientSearchMedecinComponent implements OnInit, OnDestroy {
   allDoctors    = signal<any[]>([]);
   selectedDoc   = signal<any>(null);
   bookingDoctor = signal<any>(null);
+  fullscreenPhoto = signal<string | null>(null);
 
   searchQuery       = "";
   filterVille       = "";
@@ -494,6 +553,24 @@ export class PatientSearchMedecinComponent implements OnInit, OnDestroy {
 
   openProfile(doc: any) { this.selectedDoc.set(doc); }
 
+  getCabinetPhotos(doc: any): string[] {
+    const raw = doc?.profile?.photosCabinet ?? doc?.profile?.photos_cabinet;
+    console.log('[getCabinetPhotos]', raw);
+    if (!raw) return [];
+    if (Array.isArray(raw)) return raw.filter(Boolean);
+    if (typeof raw === 'string') {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed.filter(Boolean);
+      } catch {}
+      return raw.split(',').map((s: string) => s.trim()).filter(Boolean);
+    }
+    return [];
+  }
+
+  openPhotoFull(photo: string) { this.fullscreenPhoto.set(photo); }
+  hideImg(e: Event) { (e.target as HTMLImageElement).style.display = 'none'; }
+
   takeAppointment(doc: any) {
     this.selectedDoc.set(null);
     if (!this.authService.isAuthenticated()) {
@@ -509,7 +586,13 @@ export class PatientSearchMedecinComponent implements OnInit, OnDestroy {
   getFullName(doc: any): string { return `${doc.firstName||doc.first_name||""} ${doc.lastName||doc.last_name||""}`.trim() || "Medecin"; }
   getInitials(doc: any): string { return ((doc.firstName||doc.first_name||"")[0]||"").toUpperCase() + ((doc.lastName||doc.last_name||"")[0]||"").toUpperCase() || "M"; }
   getRoleLabel(role: string): string {
-    const labels: Record<string,string> = { MEDECIN_GENERALISTE:"Medecin Generaliste", MEDECIN_SPECIALISTE:"Medecin Specialiste", MEDECIN_CHEF_SERVICE:"Chef de Service", MEDECIN_URGENTISTE:"Medecin Urgentiste" };
+    const labels: Record<string,string> = {
+      MEDECIN: "Medecin Generaliste",
+      MEDECIN_GENERALISTE:"Medecin Generaliste",
+      MEDECIN_SPECIALISTE:"Medecin Specialiste",
+      MEDECIN_CHEF_SERVICE:"Chef de Service",
+      MEDECIN_URGENTISTE:"Medecin Urgentiste"
+    };
     return labels[role] || "Medecin";
   }
   getTarif(tarifs: string): string {

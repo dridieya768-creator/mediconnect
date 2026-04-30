@@ -9,7 +9,7 @@ import { QRCodeModule } from "angularx-qrcode";
   imports: [CommonModule, QRCodeModule],
   template: `
     <div class="page-header">
-      <h1 class="page-title">💊 Mes Ordonnances</h1>
+      <h1 class="page-title"> Mes Ordonnances</h1>
       <p class="page-subtitle">Consultez, téléchargez ou présentez le QR code à votre pharmacien</p>
     </div>
 
@@ -38,7 +38,7 @@ import { QRCodeModule } from "angularx-qrcode";
                   {{ rx.pdfUrl ? '⬇ PDF' : 'PDF non disponible' }}
                 </button>
                 <button class="btn-qr" (click)="showQr(rx)" *ngIf="rx.qrCode">
-                  📲 Afficher QR Code
+                   Afficher QR Code
                 </button>
               </div>
             </div>
@@ -60,7 +60,7 @@ import { QRCodeModule } from "angularx-qrcode";
       </div>
 
       <div class="empty-state" *ngIf="prescriptions().length === 0">
-        <div style="font-size:48px">💊</div>
+        <div style="font-size:48px"></div>
         <p>Aucune ordonnance pour le moment</p>
       </div>
     </div>
@@ -69,7 +69,7 @@ import { QRCodeModule } from "angularx-qrcode";
     <div class="modal-overlay" *ngIf="selectedRx()" (click)="closeQr()">
       <div class="modal-box" (click)="$event.stopPropagation()">
         <button class="modal-close" (click)="closeQr()">✕</button>
-        <h2 class="modal-title">📲 QR Code Ordonnance</h2>
+        <h2 class="modal-title"> QR Code Ordonnance</h2>
         <p class="modal-sub">Présentez ce code à votre pharmacien</p>
 
         <div class="qr-container">
@@ -85,10 +85,10 @@ import { QRCodeModule } from "angularx-qrcode";
 
         <!-- Indication selon type de QR -->
         <div class="qr-hint" *ngIf="selectedRx()!.pdfUrl">
-          📄 Ce QR ouvre directement le PDF de l'ordonnance
+           Ce QR ouvre directement le PDF de l'ordonnance
         </div>
         <div class="qr-hint qr-hint-code" *ngIf="!selectedRx()!.pdfUrl">
-          🔑 Code à saisir manuellement chez le pharmacien
+           Code à saisir manuellement chez le pharmacien
         </div>
 
         <div class="qr-code-text">{{ selectedRx()!.qrCode }}</div>

@@ -38,6 +38,11 @@ export const MEDECIN_ROUTES: Routes = [
   loadComponent: () =>
     import("./medecin-patients.component").then((m) => m.MedecinPatientsComponent),
 },
+      {
+  path: "patients/:id",
+  loadComponent: () =>
+    import("./pages/patient-profile/medecin-patient-profile.component").then((m) => m.MedecinPatientProfileComponent),
+},
       // Route prescriptions médecin
       {
         path: "prescriptions",

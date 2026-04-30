@@ -55,6 +55,11 @@ export const PATIENT_ROUTES: Routes = [
         loadComponent: () =>
           import("./pages/guide-medecin/guide-medecin.component").then((m) => m.GuideMedecinComponent),
       },
+      {
+        path: "paiement",
+        loadComponent: () =>
+          import("./pages/paiement/paiement.component").then((m) => m.PaiementComponent),
+      },
     ],
   },
 ];

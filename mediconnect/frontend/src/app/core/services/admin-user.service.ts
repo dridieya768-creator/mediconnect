@@ -2,27 +2,12 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-// ✅ Tous les rôles exacts de user.entity.ts
+// ✅ Rôles simplifiés alignés avec user.entity.ts
 export type UserRole =
   | 'PATIENT'
-  | 'MEDECIN_GENERALISTE'
-  | 'MEDECIN_SPECIALISTE'
-  | 'MEDECIN_CHEF_SERVICE'
-  | 'MEDECIN_URGENTISTE'
-  | 'PHARMACIEN_TITULAIRE'
-  | 'PHARMACIEN_ADJOINT'
-  | 'PHARMACIEN_GERANT'
-  | 'BIOLOGISTE_RESPONSABLE'
-  | 'BIOLOGISTE_MEDICAL'
-  | 'TECHNICIEN_LABO'
-  | 'PRELEVEUR'
-  | 'RADIOLOGUE'
-  | 'MANIPULATEUR_RADIO'
-  | 'TECHNICIEN_IMAGERIE'
-  | 'ASSISTANT_MEDICAL'
-  | 'SECRETAIRE_MEDICAL'
-  | 'ADMIN_SYSTEM'
-  | 'SUPPORT';
+  | 'MEDECIN'
+  | 'PHARMACIEN'
+  | 'ADMIN';
 
 export type UserStatus = 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | 'PENDING_VERIFICATION';
 

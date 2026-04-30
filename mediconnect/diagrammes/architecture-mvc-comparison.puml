@@ -1,0 +1,117 @@
+@startuml
+title Comparaison : MVC Classique vs Architecture MediConnect
+
+skinparam componentStyle rectangle
+
+package "MVC CLASSIQUE (Ancien)" {
+  
+  rectangle "Serveur Monolithique" {
+    component "View\n(Templates Serveur)" as oldView {
+      [JSP / PHP / EJS]
+    }
+    
+    component "Controller\n(Routes + Logique)" as oldController {
+      [Routing]
+      [Business Logic]
+      [Data Access]
+    }
+    
+    component "Model\n(Données)" as oldModel {
+      [Database Queries]
+      [Business Rules]
+    }
+    
+    oldView -down-> oldController : Rendu serveur
+    oldController -down-> oldModel : Accès direct
+  }
+  
+  database "Database" as oldDB
+  oldModel -down-> oldDB : SQL
+  
+  actor "Client\n(Navigateur)" as oldClient
+  oldClient -down-> oldView : HTTP Request\nHTML Response
+  
+  note right of oldView
+    ❌ Couplage fort
+    ❌ Rendu serveur lent
+    ❌ Pas de SPA
+    ❌ Difficile à tester
+  end note
+}
+
+package "ARCHITECTURE MEDICONNECT (Moderne)" {
+  
+  rectangle "Frontend (Angular)" {
+    component "View\n(Templates HTML)" as newView {
+      [Components HTML]
+      [Data Binding]
+    }
+    
+    component "ViewModel\n(Components TS)" as newViewModel {
+      [Presentation Logic]
+      [State Management]
+    }
+    
+    component "Services\n(HTTP Client)" as newFrontServices {
+      [API Calls]
+      [Cache]
+    }
+    
+    newView -down-> newViewModel : Two-way Binding
+    newViewModel -down-> newFrontServices : Utilise
+  }
+  
+  rectangle "Backend (NestJS)" {
+    component "Controller\n(Routes HTTP)" as newController {
+      [HTTP Endpoints]
+      [DTO Validation]
+    }
+    
+    component "Service\n(Business Logic)" as newService {
+      [Business Rules]
+      [Orchestration]
+      [Transactions]
+    }
+    
+    component "Repository\n(Data Access)" as newRepo {
+      [CRUD Operations]
+      [Query Builder]
+    }
+    
+    component "Entity\n(ORM Model)" as newEntity {
+      [Database Mapping]
+      [Relations]
+    }
+    
+    newController -down-> newService : Appelle
+    newService -down-> newRepo : Utilise
+    newRepo -down-> newEntity : Manipule
+  }
+  
+  database "PostgreSQL" as newDB
+  newEntity -down-> newDB : TypeORM\nSQL
+  
+  actor "Client\n(SPA)" as newClient
+  newClient -down-> newView : Interaction
+  newFrontServices -down-> newController : REST API\nJSON + JWT
+  
+  note right of newView
+    ✅ Séparation claire
+    ✅ SPA performante
+    ✅ Réactivité
+    ✅ Testable
+    ✅ Scalable
+  end note
+}
+
+legend right
+  |= Aspect |= MVC Classique |= MediConnect |
+  | Séparation | Couplée | Découplée |
+  | Performance | Moyenne | Excellente |
+  | Scalabilité | Limitée | Haute |
+  | Testabilité | Difficile | Facile |
+  | Maintenance | Complexe | Simple |
+  | Type Safety | Variable | TypeScript |
+endlegend
+
+@enduml

@@ -19,6 +19,7 @@ var NotificationType;
     NotificationType["DOCTOR_PENDING_APPROVAL"] = "DOCTOR_PENDING_APPROVAL";
     NotificationType["DOCTOR_APPROVED"] = "DOCTOR_APPROVED";
     NotificationType["DOCTOR_REJECTED"] = "DOCTOR_REJECTED";
+    NotificationType["SMS_REMINDER"] = "SMS_REMINDER";
 })(NotificationType || (exports.NotificationType = NotificationType = {}));
 let Notification = class Notification {
 };

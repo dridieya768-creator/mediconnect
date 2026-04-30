@@ -10,7 +10,7 @@
     <span class="role-badge">{{ portalName }}</span>
   </div>
 
-  <!-- ✅ FIX : user-profile cliquable → redirige vers le profil -->
+  <!--  FIX : user-profile cliquable → redirige vers le profil -->
   <a class="user-profile" *ngIf="currentUser() as user"
      [routerLink]="profileRoute"
      routerLinkActive="user-profile--active"
@@ -46,7 +46,7 @@
 
   <div class="sidebar-footer">
     <button class="logout-btn" (click)="logout()">
-      <span>🚪</span> Déconnexion
+      <span></span> Déconnexion
     </button>
   </div>
 </aside>

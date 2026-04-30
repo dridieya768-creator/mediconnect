@@ -17,6 +17,7 @@ const qr_code_service_1 = require("./qr-code.service");
 const patient_entity_1 = require("./entities/patient.entity");
 const medecins_module_1 = require("../medecins/medecins.module");
 const user_entity_1 = require("../users/entities/user.entity");
+const dossier_medical_module_1 = require("../dossier-medical/dossier-medical.module");
 let PatientsModule = class PatientsModule {
 };
 exports.PatientsModule = PatientsModule;
@@ -24,11 +25,9 @@ exports.PatientsModule = PatientsModule = __decorate([
     (0, common_1.Module)({
         imports: [
             medecins_module_1.MedecinsModule,
-            typeorm_1.TypeOrmModule.forFeature([
-                patient_entity_1.Patient,
-                user_entity_1.User,
-            ]),
+            typeorm_1.TypeOrmModule.forFeature([patient_entity_1.Patient, user_entity_1.User]),
             config_1.ConfigModule,
+            (0, common_1.forwardRef)(() => dossier_medical_module_1.DossierMedicalModule),
         ],
         controllers: [patients_controller_1.PatientsController, patient_qr_controller_1.PatientQrController],
         providers: [patients_service_1.PatientsService, qr_code_service_1.QrCodeService],

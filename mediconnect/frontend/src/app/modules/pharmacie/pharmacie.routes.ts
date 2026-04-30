@@ -17,6 +17,16 @@ export const PHARMACIE_ROUTES: Routes = [
         loadComponent: () =>
           import("./pages/scanner/scanner-pharmacie.component").then((m) => m.ScannerPharmacieComponent),
       },
+      {
+        path: "delivrance",
+        loadComponent: () =>
+          import("./pages/delivrance/delivrance-workflow.component").then((m) => m.DelivranceWorkflowComponent),
+      },
+      {
+        path: "stock",
+        loadComponent: () =>
+          import("./pages/stock/stock.component").then((m) => m.StockComponent),
+      },
     ],
   },
 ];

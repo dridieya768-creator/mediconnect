@@ -161,6 +161,14 @@ __decorate([
     __metadata("design:type", String)
 ], Patient.prototype, "nss", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ name: 'observations_medecin', type: 'text', nullable: true }),
+    __metadata("design:type", String)
+], Patient.prototype, "observationsMedecin", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'jsonb', nullable: true }),
+    __metadata("design:type", Array)
+], Patient.prototype, "documents", void 0);
+__decorate([
     (0, typeorm_1.CreateDateColumn)({ name: "created_at" }),
     __metadata("design:type", Date)
 ], Patient.prototype, "createdAt", void 0);

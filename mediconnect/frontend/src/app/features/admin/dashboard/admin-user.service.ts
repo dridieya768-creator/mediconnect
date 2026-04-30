@@ -5,21 +5,9 @@ import { map } from 'rxjs/operators'; // ✅ import map
 
 export type UserRole =
   | 'PATIENT'
-  | 'MEDECIN_GENERALISTE'
-  | 'MEDECIN_SPECIALISTE'
-  | 'MEDECIN_CHEF_SERVICE'
-  | 'PHARMACIEN_TITULAIRE'
-  | 'BIOLOGISTE_RESPONSABLE'
-  | 'BIOLOGISTE_MEDICAL'
-  | 'TECHNICIEN_LABO'
-  | 'PRELEVEUR'
-  | 'RADIOLOGUE'
-  | 'MANIPULATEUR_RADIO'
-  | 'TECHNICIEN_IMAGERIE'
-  | 'ASSISTANT_MEDICAL'
-  | 'SECRETAIRE_MEDICAL'
-  | 'ADMIN_SYSTEM'
-  | 'SUPPORT';
+  | 'MEDECIN'
+  | 'PHARMACIEN'
+  | 'ADMIN';
 
 export type UserStatus =
   | 'ACTIVE'

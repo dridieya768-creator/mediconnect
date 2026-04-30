@@ -1,4 +1,4 @@
-// appointments.service.ts
+// appointments.service.ts - v2
 import { Injectable, NotFoundException, BadRequestException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository, Between, In } from "typeorm";
@@ -7,14 +7,15 @@ import { CreateAppointmentDto } from "././dto/create-appointment.dto";
 import { RateAppointmentDto }   from "././dto/rate-appointment.dto";
 import { NotificationsService } from "../notifications/notifications.service";
 import { NotificationType }     from "../notifications/notification.entity";
+import { SmsService }           from "../notifications/sms.service";
 import { v4 as uuid } from "uuid";
-import { Patient } from "../patients/entities/patient.entity";
 @Injectable()
 export class AppointmentsService {
   constructor(
     @InjectRepository(Appointment)
     private readonly repo: Repository<Appointment>,
     private readonly notificationsService: NotificationsService,
+    private readonly smsService: SmsService,
   ) {}
 
   async create(dto: CreateAppointmentDto): Promise<Appointment> {
@@ -72,10 +73,16 @@ export class AppointmentsService {
 
   async findByPatient(patientId: string): Promise<any[]> {
     try {
-      const appts = await this.repo.find({
-        where: { patientId },
-        order: { appointmentDate: "DESC" },
-      });
+      // patientId peut être un patient.id OU un user.id — chercher les deux
+      const userIdFromPatient = await this.resolvePatientUserId(patientId);
+      const idsToSearch = [...new Set([patientId, userIdFromPatient])];
+
+      const appts = await this.repo
+        .createQueryBuilder("a")
+        .where("a.patientId IN (:...ids)", { ids: idsToSearch })
+        .orderBy("a.appointmentDate", "DESC")
+        .getMany();
+
       return await Promise.all(appts.map(a => this.findOneSafe(a.id)));
     } catch (err) {
       console.error("[AppointmentsService] findByPatient error:", err.message);
@@ -83,6 +90,39 @@ export class AppointmentsService {
         where: { patientId },
         order: { appointmentDate: "DESC" },
       });
+    }
+  }
+
+  async findDoctorsByPatient(patientUserId: string): Promise<any[]> {
+    try {
+      // Résoudre les deux IDs possibles (user.id et patient.id)
+      const resolvedId = await this.resolvePatientUserId(patientUserId);
+      const idsToSearch = [...new Set([patientUserId, resolvedId])];
+
+      const appts = await this.repo
+        .createQueryBuilder('a')
+        .leftJoinAndSelect('a.doctor', 'doctor')
+        .where('a.patientId IN (:...ids)', { ids: idsToSearch })
+        .andWhere('a.appointmentDate < :now', { now: new Date() })
+        .andWhere('a.status IN (:...statuses)', {
+          statuses: [AppointmentStatus.COMPLETED, AppointmentStatus.CONFIRMED, AppointmentStatus.CANCELLED],
+        })
+        .getMany();
+
+      const doctorMap = new Map<string, any>();
+      for (const a of appts) {
+        if (a.doctorId && !doctorMap.has(a.doctorId)) {
+          doctorMap.set(a.doctorId, {
+            id:        a.doctorId,
+            firstName: (a.doctor as any)?.firstName ?? '',
+            lastName:  (a.doctor as any)?.lastName ?? '',
+          });
+        }
+      }
+      return Array.from(doctorMap.values());
+    } catch (err) {
+      console.error('[AppointmentsService] findDoctorsByPatient error:', (err as any).message);
+      return [];
     }
   }
 
@@ -150,12 +190,9 @@ export class AppointmentsService {
   await this.repo.save(appt);
 
   try {
-    // ✅ Résoudre le vrai user_id depuis la table patients
-    const patient = await this.repo.manager.findOne(Patient, {
-      where: { id: appt.patientId },
-    });
-    const notifUserId = patient?.userId ?? appt.patientId;
-    console.log(`[Notifications] cancel → patientId=${appt.patientId} → userId=${notifUserId}`);
+    // Résoudre le vrai user_id : patient_id peut être un patient.id OU un user.id
+    const notifUserId = await this.resolvePatientUserId(appt.patientId);
+    console.log(`[Notifications] cancel → patientId=${appt.patientId} → notifUserId=${notifUserId}`);
 
     const dateStr = new Date(appt.appointmentDate).toLocaleDateString("fr-FR", {
       weekday: "long", day: "2-digit", month: "long",
@@ -165,9 +202,9 @@ export class AppointmentsService {
     });
 
     await this.notificationsService.create({
-      userId:    notifUserId,  // ✅ user_id, pas patient_id
+      userId:    notifUserId,
       type:      NotificationType.APPOINTMENT_CANCELLED,
-      title:     "❌ Rendez-vous refusé",
+      title:     "Rendez-vous refusé",
       message:   reason
         ? `Votre demande de RDV du ${dateStr} à ${timeStr} a été refusée. Motif : ${reason}`
         : `Votre demande de RDV du ${dateStr} à ${timeStr} a été refusée.`,
@@ -180,7 +217,7 @@ export class AppointmentsService {
   return this.findOneSafe(id);
 }
 
-async confirm(id: string): Promise<Appointment> {
+  async confirm(id: string): Promise<Appointment> {
   const appt = await this.findOne(id);
   if (appt.status !== AppointmentStatus.REQUESTED)
     throw new BadRequestException("Seules les demandes en attente peuvent être confirmées.");
@@ -188,21 +225,38 @@ async confirm(id: string): Promise<Appointment> {
   appt.status = AppointmentStatus.CONFIRMED;
   await this.repo.save(appt);
 
-  try {
-    // ✅ Résoudre le vrai user_id
-    const patient = await this.repo.manager.findOne(Patient, {
-      where: { id: appt.patientId },
-    });
-    const notifUserId = patient?.userId ?? appt.patientId;
-    console.log(`[Notifications] confirm → patientId=${appt.patientId} → userId=${notifUserId}`);
+    try {
+    // Résoudre le vrai user_id : patient_id peut être un patient.id OU un user.id
+    const notifUserId = await this.resolvePatientUserId(appt.patientId);
+    console.log(`[Notifications] confirm → patientId=${appt.patientId} → notifUserId=${notifUserId}`);
+
+    const dateStr = new Date(appt.appointmentDate).toLocaleDateString("fr-FR", { weekday:"long", day:"2-digit", month:"long" });
+    const timeStr = new Date(appt.appointmentDate).toLocaleTimeString("fr-FR", { hour:"2-digit", minute:"2-digit" });
+    const message = `Votre rendez-vous du ${dateStr} à ${timeStr} a été confirmé.`;
 
     await this.notificationsService.create({
-      userId:    notifUserId,  // ✅ user_id, pas patient_id
+      userId:    notifUserId,
       type:      NotificationType.APPOINTMENT_CONFIRMED,
-      title:     "✅ Rendez-vous confirmé",
-      message:   `Votre rendez-vous du ${new Date(appt.appointmentDate).toLocaleDateString("fr-FR", { weekday:"long", day:"2-digit", month:"long" })} à ${new Date(appt.appointmentDate).toLocaleTimeString("fr-FR", { hour:"2-digit", minute:"2-digit" })} a été confirmé.`,
+      title:     "Rendez-vous confirmé",
+      message,
       relatedId: appt.id,
     });
+
+    // ── Envoi SMS ────────────────────────────────────────────────────
+    const patientPhone = await this.resolvePatientPhone(appt.patientId);
+    if (patientPhone) {
+      await this.smsService.sendSms(
+        patientPhone,
+        `MediConnect: ${message}`,
+      );
+      await this.notificationsService.create({
+        userId:    notifUserId,
+        type:      NotificationType.SMS_REMINDER,
+        title:     "SMS envoyé",
+        message:   `SMS de confirmation envoyé au ${patientPhone}`,
+        relatedId: appt.id,
+      });
+    }
   } catch (e) {
     console.warn("[Notifications] Impossible de notifier le patient (confirm):", e.message);
   }
@@ -240,6 +294,39 @@ async confirm(id: string): Promise<Appointment> {
       await this.repo.save(appt);
     }
     return { videoRoomId: appt.videoRoomId, jitsiUrl: `https://meet.jit.si/${appt.videoRoomId}` };
+  }
+
+  // Résout le user_id depuis un patientId qui peut être soit un patient.id soit un user.id
+  private async resolvePatientUserId(patientId: string): Promise<string> {
+    const result = await this.repo.manager.query(
+      `SELECT user_id FROM patients WHERE id = $1 LIMIT 1`,
+      [patientId]
+    );
+    if (result?.length > 0 && result[0].user_id) {
+      return result[0].user_id;
+    }
+    return patientId;
+  }
+
+  // Résout le numéro de téléphone du patient
+  private async resolvePatientPhone(patientId: string): Promise<string | null> {
+    // Cherche dans patients.telephone
+    const fromPatient = await this.repo.manager.query(
+      `SELECT p.telephone, u.phone
+       FROM patients p
+       LEFT JOIN users u ON u.id = p.user_id
+       WHERE p.id = $1 LIMIT 1`,
+      [patientId]
+    );
+    if (fromPatient?.length > 0) {
+      return fromPatient[0].telephone || fromPatient[0].phone || null;
+    }
+    // patientId est peut-être un user_id directement
+    const fromUser = await this.repo.manager.query(
+      `SELECT phone FROM users WHERE id = $1 LIMIT 1`,
+      [patientId]
+    );
+    return fromUser?.[0]?.phone || null;
   }
 
   private async findOne(id: string): Promise<Appointment> {

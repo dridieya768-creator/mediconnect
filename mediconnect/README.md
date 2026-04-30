@@ -66,3 +66,46 @@ npm start              # Port 4200
 
 ## 📡 API Documentation
 Swagger disponible sur : http://localhost:3000/api/docs
+
+## 🏗️ Architecture
+
+MediConnect utilise une architecture moderne en couches :
+
+### Backend (NestJS)
+- **Pattern** : Controller-Service-Repository-Entity
+- **Modules** : Organisation modulaire par fonctionnalité
+- **ORM** : TypeORM avec PostgreSQL
+- **Authentification** : JWT avec Passport
+
+### Frontend (Angular 17)
+- **Pattern** : MVVM (Model-View-ViewModel)
+- **Modules** : Lazy loading pour optimisation
+- **State Management** : Services + RxJS
+- **Routing** : Angular Router avec guards
+
+### Communication
+- **API REST** : JSON avec authentification JWT
+- **WebSocket** : Notifications temps réel
+- **WebRTC** : Téléconsultation P2P
+
+📚 **Documentation complète** : Voir `ARCHITECTURE.md` et `INDEX-DOCUMENTATION.md`
+
+## 📊 Diagrammes UML
+
+Tous les diagrammes UML (cas d'utilisation, classes, séquence, architecture) sont disponibles dans le dossier `diagrammes/` au format PlantUML.
+
+Pour générer les images :
+```bash
+cd diagrammes
+npm install -g node-plantuml
+plantuml *.puml
+```
+
+## 📖 Documentation
+
+- `ARCHITECTURE.md` - Documentation technique complète
+- `ARCHITECTURE-RESUME.md` - Résumé simplifié de l'architecture
+- `ARCHITECTURE-RAPPORT.md` - Section pour rapport PFE
+- `rapport-release1-mediconnect.md` - Rapport Release 1
+- `INDEX-DOCUMENTATION.md` - Index de toute la documentation
+- `DEMARRAGE_RAPIDE.md` - Guide d'installation détaillé

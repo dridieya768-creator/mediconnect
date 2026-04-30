@@ -151,7 +151,7 @@ exports.AdminController = AdminController = __decorate([
     (0, swagger_1.ApiTags)('Admin'),
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(JwtAuthGuard, RolesGuard),
-    (0, exports.Roles)(user_entity_1.UserRole.ADMIN_SYSTEM),
+    (0, exports.Roles)(user_entity_1.UserRole.ADMIN),
     (0, common_1.Controller)('admin'),
     __metadata("design:paramtypes", [admin_service_1.AdminService])
 ], AdminController);

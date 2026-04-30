@@ -1,32 +1,170 @@
-import { Component } from "@angular/core";
-import { RouterOutlet } from "@angular/router";
-import { SidebarComponent, NavSection } from "@shared/components/sidebar/sidebar.component";
+import { Component, inject } from "@angular/core";
+import { RouterOutlet, RouterLink, RouterLinkActive } from "@angular/router";
+import { CommonModule } from "@angular/common";
+import { AuthService } from "@core/services/auth.service";
 
 @Component({
   selector: "app-pharmacie-layout",
   standalone: true,
-  imports: [RouterOutlet, SidebarComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule],
   template: `
-    <app-sidebar
-      portalName="Portail Pharmacie"
-      portalIcon="💊"
-      brandColor="#059669"
-      [navSections]="navSections"
-    />
-    <div class="page-container">
+    <!-- Navbar horizontale -->
+    <nav class="ph-navbar">
+      <div class="ph-nav-brand">
+        <span class="ph-brand-icon"></span>
+        <span class="ph-brand-name">MediConnect</span>
+        <span class="ph-brand-tag">Pharmacie</span>
+      </div>
+
+      <div class="ph-nav-links">
+        <a class="ph-nav-link" routerLink="/pharmacie/dashboard" routerLinkActive="active">
+           Tableau de bord
+        </a>
+        <a class="ph-nav-link" routerLink="/pharmacie/scan" routerLinkActive="active">
+           Scanner
+        </a>
+        <a class="ph-nav-link" routerLink="/pharmacie/delivrance" routerLinkActive="active">
+           Délivrance QR
+        </a>
+        <a class="ph-nav-link" routerLink="/pharmacie/stock" routerLinkActive="active">
+           Stock
+        </a>
+      </div>
+
+      <div class="ph-nav-user">
+        <div class="ph-user-avatar">{{ initials }}</div>
+        <div class="ph-user-info">
+          <div class="ph-user-name">{{ fullName }}</div>
+          <div class="ph-user-role">PHARMACIEN</div>
+        </div>
+        <button class="ph-logout-btn" (click)="logout()">Déconnexion</button>
+      </div>
+    </nav>
+
+    <!-- Contenu principal -->
+    <div class="ph-page-content">
       <router-outlet />
     </div>
   `,
+  styles: [`
+    :host { display: flex; flex-direction: column; min-height: 100vh; }
+
+    .ph-navbar {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      background: white;
+      border-bottom: 2px solid #059669;
+      padding: 0 24px;
+      height: 64px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .ph-nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-right: 32px;
+      flex-shrink: 0;
+    }
+    .ph-brand-icon { font-size: 22px; }
+    .ph-brand-name { font-size: 17px; font-weight: 700; color: #0f172a; }
+    .ph-brand-tag {
+      font-size: 11px;
+      font-weight: 600;
+      color: #059669;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 6px;
+      padding: 2px 8px;
+    }
+
+    .ph-nav-links {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex: 1;
+    }
+    .ph-nav-link {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #64748b;
+      text-decoration: none;
+      transition: all .15s;
+      white-space: nowrap;
+    }
+    .ph-nav-link:hover { background: #f0fdf4; color: #059669; }
+    .ph-nav-link.active { background: #f0fdf4; color: #059669; font-weight: 700; }
+
+    .ph-nav-user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+    .ph-user-avatar {
+      width: 36px;
+      height: 36px;
+      background: #059669;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .ph-user-info { line-height: 1.2; }
+    .ph-user-name { font-size: 13px; font-weight: 600; color: #0f172a; }
+    .ph-user-role { font-size: 11px; color: #64748b; }
+    .ph-logout-btn {
+      padding: 6px 14px;
+      background: white;
+      color: #dc2626;
+      border: 1.5px solid #fecaca;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-left: 8px;
+    }
+    .ph-logout-btn:hover { background: #fef2f2; }
+
+    .ph-page-content {
+      flex: 1;
+      padding: 24px 32px;
+      background: #f8fafc;
+      min-height: calc(100vh - 64px);
+    }
+  `]
 })
 export class PharmacieLayoutComponent {
-  navSections: NavSection[] = [
-    {
-      label: "Principal",
-      items: [
-        { icon: "🏠", label: "Tableau de bord", route: "/pharmacie/dashboard" },
-        { icon: "📲", label: "Scanner Ordonnance", route: "/pharmacie/scan" },
-        { icon: "📦", label: "Stock", route: "/pharmacie/stock" },
-      ],
-    },
-  ];
+  private auth = inject(AuthService);
+
+  get fullName(): string {
+    const u = this.auth.currentUser();
+    if (!u) return '';
+    return `${u.firstName} ${u.lastName}`.trim();
+  }
+
+  get initials(): string {
+    const u = this.auth.currentUser();
+    if (!u) return 'PH';
+    return `${u.firstName?.[0] ?? ''}${u.lastName?.[0] ?? ''}`.toUpperCase() || 'PH';
+  }
+
+  logout(): void {
+    this.auth.logout();
+  }
 }
+

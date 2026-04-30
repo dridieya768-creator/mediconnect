@@ -1,4 +1,4 @@
-﻿import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+﻿﻿﻿import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { MedecinProfile } from './entities/medecin-profile.entity';
@@ -10,6 +10,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { UpdateAvailabilityDto } from './update-availability.dto';
+import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationType } from '../notifications/notification.entity';
+
 @Injectable()
 export class MedecinsService {
   constructor(
@@ -23,6 +26,7 @@ export class MedecinsService {
     private appointmentRepository: Repository<Appointment>,
     @InjectRepository(Patient)
     private patientRepository: Repository<Patient>,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async getProfile(userId: string) {
@@ -83,12 +87,7 @@ export class MedecinsService {
   }
 
   async getMedecinById(id: string) {
-    const medecinRoles = [
-      'MEDECIN_GENERALISTE',
-      'MEDECIN_SPECIALISTE',
-      'MEDECIN_CHEF_SERVICE',
-      'MEDECIN_URGENTISTE',
-    ];
+    const medecinRoles = ['MEDECIN'];
 
     const user = await this.userRepository.findOne({
       where: { id },
@@ -115,10 +114,7 @@ export class MedecinsService {
   }
 
   async getAllMedecinsWithProfiles(search?: string, specialite?: string, ville?: string) {
-  const roles = [
-    'MEDECIN_GENERALISTE', 'MEDECIN_SPECIALISTE',
-    'MEDECIN_CHEF_SERVICE', 'MEDECIN_URGENTISTE'
-  ];
+  const roles = ['MEDECIN'];
  
   let qb = this.userRepository
     .createQueryBuilder('user')
@@ -309,6 +305,23 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
         { id: appointmentId },
         { status: AppointmentStatus.CONFIRMED }
       );
+
+      // Notifier le patient
+      try {
+        const patientUserId = await this.resolvePatientUserId(appointment.patientId);
+        const dateStr = new Date(appointment.appointmentDate).toLocaleDateString('fr-FR', { weekday: 'long', day: '2-digit', month: 'long' });
+        const timeStr = new Date(appointment.appointmentDate).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        await this.notificationsService.create({
+          userId:    patientUserId,
+          type:      NotificationType.APPOINTMENT_CONFIRMED,
+          title:     'Rendez-vous confirme',
+          message:   `Votre rendez-vous du ${dateStr} a ${timeStr} a ete confirme.`,
+          relatedId: appointment.id,
+        });
+        console.log(`[Notifications] acceptAppointment -> notif envoyee a userId=${patientUserId}`);
+      } catch (e) {
+        console.warn('[Notifications] Impossible de notifier le patient (accept):', e.message);
+      }
       console.log(`[Service] âœ… Appointment status updated to CONFIRMED`);
     } else {
       console.log(`[Service] â„¹ï¸ Appointment already confirmed`);
@@ -341,6 +354,17 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
 }
   
   // RÃ©cupÃ©rer tous les patients du mÃ©decin
+  
+  private async resolvePatientUserId(patientId: string): Promise<string> {
+    const result = await this.appointmentRepository.manager.query(
+      `SELECT user_id FROM patients WHERE id = $1 LIMIT 1`,
+      [patientId]
+    );
+    if (result?.length > 0 && result[0].user_id) {
+      return result[0].user_id;
+    }
+    return patientId;
+  }
   async getMyPatients(doctorId: string) {
     // RÃ©cupÃ©rer les relations
     const relations = await this.doctorPatientRepository.find({
@@ -363,7 +387,7 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
     return patients;
   }
 
-  // VÃ©rifier si un patient est dans la liste du mÃ©decin
+  // Vérifier si un patient est dans la liste du médecin
   async isPatientInDoctorList(doctorId: string, patientId: string) {
     const relation = await this.doctorPatientRepository.findOne({
       where: { doctorId, patientId }
@@ -417,12 +441,26 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
   }
   
   async getMedecinAvailabilityById(id: string) {
+    // Cherche par userId (UUID)
     const profile = await this.medecinProfileRepository.findOne({
       where: { userId: id },
     });
 
+    // Si pas de profil, retourner des valeurs par défaut sans erreur
     if (!profile) {
-      throw new NotFoundException('MÃ©decin non trouvÃ©');
+      return {
+        workDays: [
+          { day: 'monday',    startTime: '08:00', endTime: '17:00' },
+          { day: 'tuesday',   startTime: '08:00', endTime: '17:00' },
+          { day: 'wednesday', startTime: '08:00', endTime: '17:00' },
+          { day: 'thursday',  startTime: '08:00', endTime: '17:00' },
+          { day: 'friday',    startTime: '08:00', endTime: '17:00' },
+        ],
+        defaultDuration: 30,
+        acceptsTeleconsultation: true,
+        conges: [],
+        disponTeleconsult: false,
+      };
     }
 
     let saved: any = {};
@@ -486,29 +524,36 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
   }
 
   async getOccupiedSlots(id: string, startDate: string, endDate: string) {
-    const profile = await this.medecinProfileRepository.findOne({
-      where: { userId: id },
-    });
+    try {
+      const profile = await this.medecinProfileRepository.findOne({
+        where: { userId: id },
+      });
 
-    if (!profile) {
-      throw new NotFoundException('MÃ©decin non trouvÃ©');
+      if (!profile) {
+        return [];
+      }
+
+      const doctorId = profile.userId;
+
+      const appointments = await this.appointmentRepository
+        .createQueryBuilder('appointment')
+        .where('appointment.doctorId = :id', { id: doctorId })
+        .andWhere('appointment.status IN (:...statuses)', {
+          statuses: [AppointmentStatus.CONFIRMED, AppointmentStatus.REQUESTED],
+        })
+        .andWhere('appointment.appointmentDate >= :startDate', { startDate })
+        .andWhere('appointment.appointmentDate <= :endDate', { endDate })
+        .select(['appointment.appointmentDate', 'appointment.durationMinutes'])
+        .getMany();
+
+      return appointments.map((a) => ({
+        appointmentDate: a.appointmentDate,
+        durationMinutes: a.durationMinutes,
+      }));
+    } catch (err) {
+      console.warn('[getOccupiedSlots] error:', err?.message);
+      return [];
     }
-
-    const appointments = await this.appointmentRepository
-      .createQueryBuilder('appointment')
-      .where('appointment.doctorId = :id', { id })
-      .andWhere('appointment.status IN (:...statuses)', {
-        statuses: [AppointmentStatus.CONFIRMED, AppointmentStatus.REQUESTED],
-      })
-      .andWhere('appointment.appointmentDate >= :startDate', { startDate })
-      .andWhere('appointment.appointmentDate <= :endDate', { endDate })
-      .select(['appointment.appointmentDate', 'appointment.durationMinutes'])
-      .getMany();
-
-    return appointments.map((a) => ({
-      appointmentDate: a.appointmentDate,
-      durationMinutes: a.durationMinutes,
-    }));
   }
 
   private async saveBase64Image(base64String: string, folder: string): Promise<string> {

@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal, computed, ChangeDetectorRef } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { RouterLink } from "@angular/router";
+import { RouterLink, Router } from "@angular/router";
 import { HttpClient } from "@angular/common/http";
 import { catchError } from "rxjs/operators";
 import { of } from "rxjs";
@@ -118,6 +118,9 @@ interface Appointment {
                 <div class="patient-rdv-count">
                   <span class="rdv-badge">{{ p.rdvCount }} RDV</span>
                 </div>
+                <button class="btn-profile" (click)="$event.stopPropagation(); goToProfile(p.id)">
+                  📋 Dossier & Observations
+                </button>
               </div>
               <div class="patient-arrow">›</div>
             </div>
@@ -327,8 +330,9 @@ interface Appointment {
     .patient-email { font-size: 12px; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
     .patient-phone { font-size: 12px; color: #64748b; margin-top: 2px; }
     .rdv-badge { background: #eef2ff; color: #4f46e5; border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 600; margin-top: 4px; display: inline-block; }
-    .patient-arrow { color: #94a3b8; font-size: 20px; }
-
+    .patient-arrow { color: #94a3b8; font-size: 20px; align-self: center; }
+    .btn-profile { background: #eef2ff; color: #4f46e5; border: none; border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; margin-top: 8px; display: inline-block; }
+    .btn-profile:hover { background: #e0e7ff; }
     /* ── Table RDV ── */
     .table-card { background: white; border-radius: 14px; border: 1.5px solid #e2e8f0; overflow: hidden; }
     .rdv-table { width: 100%; border-collapse: collapse; }
@@ -389,6 +393,7 @@ interface Appointment {
 })
 export class MedecinPatientsComponent implements OnInit {
   private http = inject(HttpClient);
+  private router = inject(Router);
 
   appointments  = signal<Appointment[]>([]);
   patients      = signal<PatientSummary[]>([]);
@@ -497,6 +502,7 @@ export class MedecinPatientsComponent implements OnInit {
 
   selectPatient(p: PatientSummary) { this.selectedPatient.set(p); }
   openAppt(a: Appointment)         { this.selectedAppt.set(a); }
+  goToProfile(patientId: string)   { this.router.navigate(['/medecin/patients', patientId]); }
 
   formatDate(d: string): string {
     return new Date(d).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });

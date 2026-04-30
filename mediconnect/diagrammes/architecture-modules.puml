@@ -1,0 +1,122 @@
+@startuml
+title Architecture Modulaire MediConnect - Organisation des Modules
+
+skinparam packageStyle rectangle
+
+package "Backend - NestJS Modules" {
+  
+  package "Core Modules" {
+    [AuthModule] as auth
+    [UsersModule] as users
+    [ConfigModule] as config
+  }
+  
+  package "Feature Modules" {
+    [PatientsModule] as patients
+    [MedecinsModule] as medecins
+    [AppointmentsModule] as appointments
+    [PrescriptionsModule] as prescriptions
+    [NotificationsModule] as notifications
+    [QrCodesModule] as qrcodes
+    [PharmacieModule] as pharmacie
+    [LaboratoireModule] as labo
+    [RadiologieModule] as radio
+  }
+  
+  package "Shared Modules" {
+    [EmailService] as emailSvc
+    [UploadModule] as upload
+    [PaymentsModule] as payments
+  }
+  
+  package "Common" {
+    [Guards] as guards
+    [Interceptors] as interceptors
+    [Filters] as filters
+    [Decorators] as decorators
+  }
+}
+
+package "Frontend - Angular Modules" {
+  
+  package "Core Module" {
+    [AuthModule (Front)] as authFront
+    [CoreServices] as coreServices
+    [Guards (Front)] as guardsFront
+    [Interceptors (Front)] as interceptorsFront
+  }
+  
+  package "Feature Modules (Lazy Loaded)" {
+    [PatientModule] as patientModule
+    [MedecinModule] as medecinModule
+    [PharmacieModule (Front)] as pharmacieModule
+    [LaboratoireModule (Front)] as laboModule
+    [RadiologieModule (Front)] as radioModule
+  }
+  
+  package "Shared Module" {
+    [SharedComponents] as sharedComponents
+    [Pipes] as pipes
+    [Directives] as directives
+  }
+}
+
+' Relations Backend
+auth --> users : utilise
+appointments --> patients : utilise
+appointments --> medecins : utilise
+appointments --> notifications : utilise
+prescriptions --> patients : utilise
+prescriptions --> medecins : utilise
+prescriptions --> qrcodes : utilise
+
+guards --> auth : vérifie JWT
+interceptors --> auth : transforme
+filters --> auth : gère erreurs
+
+patients --> emailSvc : envoie emails
+medecins --> emailSvc : envoie emails
+appointments --> emailSvc : confirmations
+
+' Relations Frontend
+patientModule --> coreServices : utilise
+medecinModule --> coreServices : utilise
+pharmacieModule --> coreServices : utilise
+
+guardsFront --> authFront : vérifie auth
+interceptorsFront --> authFront : ajoute JWT
+
+patientModule --> sharedComponents : utilise
+medecinModule --> sharedComponents : utilise
+
+' Communication Frontend-Backend
+authFront -down-> auth : POST /auth/login
+patientModule -down-> patients : API REST
+medecinModule -down-> medecins : API REST
+patientModule -down-> appointments : API REST
+
+note right of auth
+  Authentification JWT
+  - Login
+  - Register
+  - Reset Password
+  - 2FA
+end note
+
+note right of appointments
+  Gestion des RDV
+  - Création
+  - Validation
+  - Annulation
+  - Notifications
+end note
+
+note right of prescriptions
+  Ordonnances
+  - Création
+  - Génération PDF
+  - QR Code
+  - Validation pharmacie
+end note
+
+@enduml

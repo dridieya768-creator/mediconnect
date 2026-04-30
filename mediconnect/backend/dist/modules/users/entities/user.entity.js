@@ -14,24 +14,9 @@ const typeorm_1 = require("typeorm");
 var UserRole;
 (function (UserRole) {
     UserRole["PATIENT"] = "PATIENT";
-    UserRole["MEDECIN_GENERALISTE"] = "MEDECIN_GENERALISTE";
-    UserRole["MEDECIN_SPECIALISTE"] = "MEDECIN_SPECIALISTE";
-    UserRole["MEDECIN_CHEF_SERVICE"] = "MEDECIN_CHEF_SERVICE";
-    UserRole["MEDECIN_URGENTISTE"] = "MEDECIN_URGENTISTE";
-    UserRole["PHARMACIEN_TITULAIRE"] = "PHARMACIEN_TITULAIRE";
-    UserRole["PHARMACIEN_ADJOINT"] = "PHARMACIEN_ADJOINT";
-    UserRole["PHARMACIEN_GERANT"] = "PHARMACIEN_GERANT";
-    UserRole["BIOLOGISTE_RESPONSABLE"] = "BIOLOGISTE_RESPONSABLE";
-    UserRole["BIOLOGISTE_MEDICAL"] = "BIOLOGISTE_MEDICAL";
-    UserRole["TECHNICIEN_LABO"] = "TECHNICIEN_LABO";
-    UserRole["PRELEVEUR"] = "PRELEVEUR";
-    UserRole["RADIOLOGUE"] = "RADIOLOGUE";
-    UserRole["MANIPULATEUR_RADIO"] = "MANIPULATEUR_RADIO";
-    UserRole["TECHNICIEN_IMAGERIE"] = "TECHNICIEN_IMAGERIE";
-    UserRole["ASSISTANT_MEDICAL"] = "ASSISTANT_MEDICAL";
-    UserRole["SECRETAIRE_MEDICAL"] = "SECRETAIRE_MEDICAL";
-    UserRole["ADMIN_SYSTEM"] = "ADMIN_SYSTEM";
-    UserRole["SUPPORT"] = "SUPPORT";
+    UserRole["MEDECIN"] = "MEDECIN";
+    UserRole["PHARMACIEN"] = "PHARMACIEN";
+    UserRole["ADMIN"] = "ADMIN";
 })(UserRole || (exports.UserRole = UserRole = {}));
 var UserStatus;
 (function (UserStatus) {

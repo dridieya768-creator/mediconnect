@@ -12,6 +12,7 @@ const typeorm_1 = require("@nestjs/typeorm");
 const notification_entity_1 = require("./notification.entity");
 const notifications_service_1 = require("./notifications.service");
 const notifications_controller_1 = require("./notifications.controller");
+const sms_service_1 = require("./sms.service");
 const auth_module_1 = require("../auth/auth.module");
 let NotificationsModule = class NotificationsModule {
 };
@@ -23,8 +24,8 @@ exports.NotificationsModule = NotificationsModule = __decorate([
             (0, common_1.forwardRef)(() => auth_module_1.AuthModule),
         ],
         controllers: [notifications_controller_1.NotificationsController],
-        providers: [notifications_service_1.NotificationsService],
-        exports: [notifications_service_1.NotificationsService],
+        providers: [notifications_service_1.NotificationsService, sms_service_1.SmsService],
+        exports: [notifications_service_1.NotificationsService, sms_service_1.SmsService],
     })
 ], NotificationsModule);
 //# sourceMappingURL=notifications.module.js.map

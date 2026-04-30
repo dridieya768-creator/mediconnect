@@ -15,21 +15,21 @@ import { AuthService } from "../../../../core/services/auth.service";
       <!-- HEADER -->
       <div class="page-header">
         <div>
-          <h1 class="page-title">👤 Mon Profil</h1>
+          <h1 class="page-title"> Mon Profil</h1>
           <p class="page-subtitle">Gérez vos informations personnelles et médicales</p>
         </div>
         <div class="header-actions">
-          <button class="btn-edit" *ngIf="!editing()" (click)="startEdit()">✏️ Modifier</button>
+          <button class="btn-edit" *ngIf="!editing()" (click)="startEdit()"> Modifier</button>
           <button class="btn-save" *ngIf="editing()" (click)="saveProfile()" [disabled]="saving()">
-            {{ saving() ? '⏳ Enregistrement...' : '✅ Enregistrer' }}
+            {{ saving() ? ' Enregistrement...' : ' Enregistrer' }}
           </button>
           <button class="btn-cancel" *ngIf="editing()" (click)="cancelEdit()">Annuler</button>
         </div>
       </div>
 
       <!-- ALERTS -->
-      <div class="alert-success" *ngIf="successMsg()">✅ {{ successMsg() }}</div>
-      <div class="alert-error"   *ngIf="errorMsg()">❌ {{ errorMsg() }}</div>
+      <div class="alert-success" *ngIf="successMsg()"> {{ successMsg() }}</div>
+      <div class="alert-error"   *ngIf="errorMsg()"> {{ errorMsg() }}</div>
 
       <!-- LOADING -->
       <div class="loading-state" *ngIf="loading()">
@@ -59,29 +59,29 @@ import { AuthService } from "../../../../core/services/auth.service";
               <input #fileInput type="file" accept="image/*" style="display:none"
                      (change)="onAvatarSelected($event)"/>
             </div>
-            <div class="avatar-upload-hint" *ngIf="uploadingAvatar()">⏳ Envoi en cours...</div>
+            <div class="avatar-upload-hint" *ngIf="uploadingAvatar()"> Envoi en cours...</div>
             <h2 class="avatar-name">{{ user()?.firstName }} {{ user()?.lastName }}</h2>
             <span class="avatar-role">Patient</span>
             <div class="avatar-email">{{ user()?.email }}</div>
 
             <div class="quick-stats">
               <div class="qs-item">
-                <span class="qs-icon">🩸</span>
+                <span class="qs-icon"></span>
                 <span class="qs-label">Groupe sanguin</span>
                 <span class="qs-value blood">{{ profile()?.groupeSanguin || '—' }}</span>
               </div>
               <div class="qs-item">
-                <span class="qs-icon">🎂</span>
+                <span class="qs-icon"></span>
                 <span class="qs-label">Date de naissance</span>
                 <span class="qs-value">{{ formatDate(profile()?.dateNaissance) }}</span>
               </div>
               <div class="qs-item">
-                <span class="qs-icon">📍</span>
+                <span class="qs-icon"></span>
                 <span class="qs-label">Ville</span>
                 <span class="qs-value">{{ profile()?.ville || '—' }}</span>
               </div>
               <div class="qs-item">
-                <span class="qs-icon">📞</span>
+                <span class="qs-icon"></span>
                 <span class="qs-label">Téléphone</span>
                 <span class="qs-value">{{ profile()?.telephone || '—' }}</span>
               </div>
@@ -90,7 +90,7 @@ import { AuthService } from "../../../../core/services/auth.service";
 
           <!-- Sécurité -->
           <div class="security-card">
-            <h3 class="card-title">🔒 Sécurité</h3>
+            <h3 class="card-title"> Sécurité</h3>
             <div class="security-item">
               <span>Authentification 2FA</span>
               <span class="badge-on" *ngIf="user()?.mfaEnabled">Activée</span>
@@ -104,7 +104,7 @@ import { AuthService } from "../../../../core/services/auth.service";
               ⚙️ Paramètres de sécurité
             </button>
             <button class="btn-logout" (click)="logout()">
-              🚪 Déconnexion
+               Déconnexion
             </button>
           </div>
         </div>
@@ -114,7 +114,7 @@ import { AuthService } from "../../../../core/services/auth.service";
 
           <!-- Informations personnelles -->
           <div class="info-card">
-            <h3 class="card-title">👤 Informations personnelles</h3>
+            <h3 class="card-title"> Informations personnelles</h3>
 
             <div class="form-grid" *ngIf="!editing()">
               <div class="info-row"><span class="info-label">Prénom</span><span class="info-val">{{ user()?.firstName || '—' }}</span></div>
@@ -168,7 +168,7 @@ import { AuthService } from "../../../../core/services/auth.service";
 
           <!-- Informations médicales -->
           <div class="info-card">
-            <h3 class="card-title">🏥 Informations médicales</h3>
+            <h3 class="card-title"> Informations médicales</h3>
 
             <div *ngIf="!editing()">
               <div class="medical-row">
@@ -178,7 +178,7 @@ import { AuthService } from "../../../../core/services/auth.service";
               </div>
 
               <div class="tags-section">
-                <div class="tags-label">🤧 Allergies</div>
+                <div class="tags-label"> Allergies</div>
                 <div class="tags-list">
                   <span class="tag tag-danger" *ngFor="let a of getAllergies()">{{ a }}</span>
                   <span class="empty-tag" *ngIf="!getAllergies().length">Aucune allergie renseignée</span>
@@ -186,7 +186,7 @@ import { AuthService } from "../../../../core/services/auth.service";
               </div>
 
               <div class="tags-section">
-                <div class="tags-label">🫀 Maladies chroniques</div>
+                <div class="tags-label"> Maladies chroniques</div>
                 <div class="tags-list">
                   <span class="tag tag-warning" *ngFor="let m of getMaladies()">{{ m }}</span>
                   <span class="empty-tag" *ngIf="!getMaladies().length">Aucune maladie chronique renseignée</span>
@@ -194,7 +194,7 @@ import { AuthService } from "../../../../core/services/auth.service";
               </div>
 
               <div class="tags-section">
-                <div class="tags-label">💊 Médicaments actuels</div>
+                <div class="tags-label"> Médicaments actuels</div>
                 <div class="tags-list">
                   <span class="tag tag-blue" *ngFor="let med of getMedNames()">{{ med }}</span>
                   <span class="empty-tag" *ngIf="!getMedNames().length">Aucun médicament renseigné</span>
@@ -218,7 +218,7 @@ import { AuthService } from "../../../../core/services/auth.service";
 
           <!-- NSS -->
           <div class="info-card" *ngIf="profile()?.nss">
-            <h3 class="card-title">🪪 Numéro de Sécurité Sociale</h3>
+            <h3 class="card-title"> Numéro de Sécurité Sociale</h3>
             <div class="nss-display">{{ profile()?.nss }}</div>
           </div>
 

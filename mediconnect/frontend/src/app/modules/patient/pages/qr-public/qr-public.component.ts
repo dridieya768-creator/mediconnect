@@ -15,7 +15,7 @@ import { of } from "rxjs";
       <!-- HEADER -->
       <div class="qr-header">
         <div class="logo-row">
-          <span class="logo-icon">🏥</span>
+          <span class="logo-icon"></span>
           <div>
             <div class="logo-text">MediConnect</div>
             <div class="logo-sub">Dossier Patient — Accès QR Code</div>
@@ -34,7 +34,7 @@ import { of } from "rxjs";
       <!-- INVALIDE -->
       <div class="qr-body" *ngIf="!isLoading() && !patient()">
         <div class="state-card error">
-          <div style="font-size:56px">❌</div>
+          <div style="font-size:56px"></div>
           <h2>QR Code invalide</h2>
           <p>Ce lien QR est expiré, invalide ou a déjà été utilisé.</p>
         </div>
@@ -45,7 +45,7 @@ import { of } from "rxjs";
 
         <!-- Badge sécurité -->
         <div class="security-banner">
-          <span>🔒</span>
+          <span></span>
           <span>Accès sécurisé — Données médicales confidentielles</span>
           <span class="scan-time">Scanné le {{ now }}</span>
         </div>
@@ -58,13 +58,13 @@ import { of } from "rxjs";
           <div class="patient-identity">
             <h1>{{ p.prenom }} {{ p.nom }}</h1>
             <div class="identity-meta">
-              <span *ngIf="p.dateNaissance">🎂 {{ formatDate(p.dateNaissance) }} ({{ getAge(p.dateNaissance) }} ans)</span>
-              <span *ngIf="p.sexe">{{ p.sexe === 'M' ? '👨' : '👩' }} {{ p.sexe === 'M' ? 'Homme' : 'Femme' }}</span>
-              <span *ngIf="p.telephone">📞 {{ p.telephone }}</span>
+              <span *ngIf="p.dateNaissance"> {{ formatDate(p.dateNaissance) }} ({{ getAge(p.dateNaissance) }} ans)</span>
+              <span *ngIf="p.sexe">{{ p.sexe === 'M' ? '' : '' }} {{ p.sexe === 'M' ? 'Homme' : 'Femme' }}</span>
+              <span *ngIf="p.telephone"> {{ p.telephone }}</span>
             </div>
           </div>
           <div class="blood-badge" *ngIf="p.groupeSanguin">
-            <span class="blood-icon">🩸</span>
+            <span class="blood-icon"></span>
             <span class="blood-type">{{ p.groupeSanguin }}</span>
           </div>
         </div>
@@ -74,7 +74,7 @@ import { of } from "rxjs";
 
           <!-- Informations générales -->
           <div class="medical-card">
-            <div class="card-title">📋 Informations générales</div>
+            <div class="card-title"> Informations générales</div>
             <div class="info-row">
               <span class="info-label">Nom complet</span>
               <span class="info-value">{{ p.prenom }} {{ p.nom }}</span>
@@ -99,7 +99,7 @@ import { of } from "rxjs";
 
           <!-- Informations vitales -->
           <div class="medical-card vital">
-            <div class="card-title">🩸 Informations vitales</div>
+            <div class="card-title"> Informations vitales</div>
             <div class="info-row">
               <span class="info-label">Groupe sanguin</span>
               <span class="info-value blood" *ngIf="p.groupeSanguin">{{ p.groupeSanguin }}</span>
@@ -121,10 +121,10 @@ import { of } from "rxjs";
 
           <!-- Allergies -->
           <div class="medical-card allergy" *ngIf="p.allergies">
-            <div class="card-title">⚠️ Allergies connues</div>
+            <div class="card-title"> Allergies connues</div>
             <div class="tags-list">
               <span class="tag tag-red" *ngFor="let a of parseList(p.allergies)">
-                ⚠️ {{ a }}
+                 {{ a }}
               </span>
               <span class="no-data" *ngIf="parseList(p.allergies).length === 0">Aucune allergie connue</span>
             </div>
@@ -132,7 +132,7 @@ import { of } from "rxjs";
 
           <!-- Maladies chroniques -->
           <div class="medical-card chronic" *ngIf="p.maladiesChroniques">
-            <div class="card-title">🏥 Maladies chroniques</div>
+            <div class="card-title"> Maladies chroniques</div>
             <div class="tags-list">
               <span class="tag tag-orange" *ngFor="let m of parseList(p.maladiesChroniques)">
                 {{ m }}
@@ -143,10 +143,10 @@ import { of } from "rxjs";
 
           <!-- Médicaments actuels -->
           <div class="medical-card meds" *ngIf="p.medicamentsActuels">
-            <div class="card-title">💊 Médicaments en cours</div>
+            <div class="card-title"> Médicaments en cours</div>
             <div class="tags-list">
               <span class="tag tag-blue" *ngFor="let m of parseList(p.medicamentsActuels)">
-                💊 {{ m }}
+                 {{ m }}
               </span>
               <span class="no-data" *ngIf="parseList(p.medicamentsActuels).length === 0">Aucun médicament en cours</span>
             </div>
@@ -154,7 +154,7 @@ import { of } from "rxjs";
 
           <!-- Contact urgence -->
           <div class="medical-card emergency" *ngIf="p.contactUrgenceNom || p.contactUrgence">
-            <div class="card-title">🚨 Contact d'urgence</div>
+            <div class="card-title"> Contact d'urgence</div>
             <div class="info-row" *ngIf="p.contactUrgenceNom || p.contactUrgence">
               <span class="info-label">Nom</span>
               <span class="info-value">{{ p.contactUrgenceNom || p.contactUrgence }}</span>
@@ -169,7 +169,7 @@ import { of } from "rxjs";
 
         <!-- Footer légal -->
         <div class="legal-footer">
-          <p>🔒 Ces informations sont confidentielles et réservées aux professionnels de santé autorisés.</p>
+          <p> Ces informations sont confidentielles et réservées aux professionnels de santé autorisés.</p>
           <p>Plateforme MediConnect — e-Santé Tunisie</p>
         </div>
 

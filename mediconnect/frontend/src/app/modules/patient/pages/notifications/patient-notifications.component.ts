@@ -11,7 +11,7 @@ import { of } from "rxjs";
   template: `
     <div class="notif-page">
       <div class="page-header">
-        <h1 class="page-title">🔔 Notifications</h1>
+        <h1 class="page-title"> Notifications</h1>
         <button class="btn-mark-all" (click)="markAllRead()" *ngIf="unreadCount() > 0">
           ✓ Tout marquer comme lu
         </button>
@@ -25,7 +25,7 @@ import { of } from "rxjs";
       <div class="notif-list" *ngIf="!isLoading()">
 
         <div class="empty-state" *ngIf="notifications().length === 0">
-          <div style="font-size:48px">🔔</div>
+          <div style="font-size:48px"></div>
           <p>Aucune notification</p>
         </div>
 
@@ -34,8 +34,8 @@ import { of } from "rxjs";
              [class.unread]="!n.isRead"
              (click)="markRead(n)">
           <div class="notif-icon">
-            {{ n.type === 'APPOINTMENT_CANCELLED' ? '❌' :
-               n.type === 'APPOINTMENT_CONFIRMED' ? '✅' : '🔔' }}
+            {{ n.type === 'APPOINTMENT_CANCELLED' ? '' :
+               n.type === 'APPOINTMENT_CONFIRMED' ? '' : '' }}
           </div>
           <div class="notif-content">
             <div class="notif-title">{{ n.title }}</div>

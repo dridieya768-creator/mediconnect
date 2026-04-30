@@ -37,7 +37,7 @@ import { AuthService } from "@core/services/auth.service";
       </div>
     </nav>
 
-    <div class="page-container" style="margin-left:0 !important; padding:0;">
+    <div class="page-container">
       <router-outlet />
     </div>
   `,

@@ -7,6 +7,7 @@ export declare class AppointmentsController {
     constructor(svc: AppointmentsService);
     create(dto: CreateAppointmentDto): Promise<import("./entities/appointment.entity").Appointment>;
     getByPatient(patientId: string): Promise<any[]>;
+    getMyDoctors(req: any): Promise<any[]>;
     getByDoctor(doctorId: string, date?: string): Promise<import("./entities/appointment.entity").Appointment[]>;
     confirm(id: string): Promise<import("./entities/appointment.entity").Appointment>;
     cancel(id: string, dto: CancelAppointmentDto): Promise<import("./entities/appointment.entity").Appointment>;

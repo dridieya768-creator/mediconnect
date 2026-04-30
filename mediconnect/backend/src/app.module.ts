@@ -16,6 +16,7 @@ import { RadiologieModule } from './modules/radiologie/radiologie.module';
 import { QrCodesModule } from './modules/qr-codes/qr-codes.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { PaymentsModule } from './modules/payments/payments.module';
+import { DossierMedicalModule } from './modules/dossier-medical/dossier-medical.module';
 
 // Admin — après TypeORM
 import { AdminModule } from './admin/admin.module';
@@ -60,6 +61,7 @@ import { AdminModule } from './admin/admin.module';
     QrCodesModule,
     NotificationsModule,
     PaymentsModule,
+    DossierMedicalModule,
 
     // 5️⃣ Admin — après TypeORM initialisé
     AdminModule,

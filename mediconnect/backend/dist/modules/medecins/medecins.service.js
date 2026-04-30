@@ -24,13 +24,16 @@ const appointment_entity_1 = require("../appointments/entities/appointment.entit
 const fs = require("fs");
 const path = require("path");
 const uuid_1 = require("uuid");
+const notifications_service_1 = require("../notifications/notifications.service");
+const notification_entity_1 = require("../notifications/notification.entity");
 let MedecinsService = class MedecinsService {
-    constructor(medecinProfileRepository, doctorPatientRepository, userRepository, appointmentRepository, patientRepository) {
+    constructor(medecinProfileRepository, doctorPatientRepository, userRepository, appointmentRepository, patientRepository, notificationsService) {
         this.medecinProfileRepository = medecinProfileRepository;
         this.doctorPatientRepository = doctorPatientRepository;
         this.userRepository = userRepository;
         this.appointmentRepository = appointmentRepository;
         this.patientRepository = patientRepository;
+        this.notificationsService = notificationsService;
     }
     async getProfile(userId) {
         const profile = await this.medecinProfileRepository.findOne({
@@ -80,12 +83,7 @@ let MedecinsService = class MedecinsService {
         return this.medecinProfileRepository.save(profile);
     }
     async getMedecinById(id) {
-        const medecinRoles = [
-            'MEDECIN_GENERALISTE',
-            'MEDECIN_SPECIALISTE',
-            'MEDECIN_CHEF_SERVICE',
-            'MEDECIN_URGENTISTE',
-        ];
+        const medecinRoles = ['MEDECIN'];
         const user = await this.userRepository.findOne({
             where: { id },
         });
@@ -107,10 +105,7 @@ let MedecinsService = class MedecinsService {
         };
     }
     async getAllMedecinsWithProfiles(search, specialite, ville) {
-        const roles = [
-            'MEDECIN_GENERALISTE', 'MEDECIN_SPECIALISTE',
-            'MEDECIN_CHEF_SERVICE', 'MEDECIN_URGENTISTE'
-        ];
+        const roles = ['MEDECIN'];
         let qb = this.userRepository
             .createQueryBuilder('user')
             .where('user.role IN (:...roles)', { roles })
@@ -252,6 +247,22 @@ let MedecinsService = class MedecinsService {
             }
             if (appointment.status !== appointment_entity_1.AppointmentStatus.CONFIRMED) {
                 await this.appointmentRepository.update({ id: appointmentId }, { status: appointment_entity_1.AppointmentStatus.CONFIRMED });
+                try {
+                    const patientUserId = await this.resolvePatientUserId(appointment.patientId);
+                    const dateStr = new Date(appointment.appointmentDate).toLocaleDateString('fr-FR', { weekday: 'long', day: '2-digit', month: 'long' });
+                    const timeStr = new Date(appointment.appointmentDate).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                    await this.notificationsService.create({
+                        userId: patientUserId,
+                        type: notification_entity_1.NotificationType.APPOINTMENT_CONFIRMED,
+                        title: 'Rendez-vous confirme',
+                        message: `Votre rendez-vous du ${dateStr} a ${timeStr} a ete confirme.`,
+                        relatedId: appointment.id,
+                    });
+                    console.log(`[Notifications] acceptAppointment -> notif envoyee a userId=${patientUserId}`);
+                }
+                catch (e) {
+                    console.warn('[Notifications] Impossible de notifier le patient (accept):', e.message);
+                }
                 console.log(`[Service] âœ… Appointment status updated to CONFIRMED`);
             }
             else {
@@ -281,6 +292,13 @@ let MedecinsService = class MedecinsService {
             console.error('[Service] âŒ Error in acceptAppointment:', error);
             throw error;
         }
+    }
+    async resolvePatientUserId(patientId) {
+        const result = await this.appointmentRepository.manager.query(`SELECT user_id FROM patients WHERE id = $1 LIMIT 1`, [patientId]);
+        if (result?.length > 0 && result[0].user_id) {
+            return result[0].user_id;
+        }
+        return patientId;
     }
     async getMyPatients(doctorId) {
         const relations = await this.doctorPatientRepository.find({
@@ -345,7 +363,19 @@ let MedecinsService = class MedecinsService {
             where: { userId: id },
         });
         if (!profile) {
-            throw new common_1.NotFoundException('MÃ©decin non trouvÃ©');
+            return {
+                workDays: [
+                    { day: 'monday', startTime: '08:00', endTime: '17:00' },
+                    { day: 'tuesday', startTime: '08:00', endTime: '17:00' },
+                    { day: 'wednesday', startTime: '08:00', endTime: '17:00' },
+                    { day: 'thursday', startTime: '08:00', endTime: '17:00' },
+                    { day: 'friday', startTime: '08:00', endTime: '17:00' },
+                ],
+                defaultDuration: 30,
+                acceptsTeleconsultation: true,
+                conges: [],
+                disponTeleconsult: false,
+            };
         }
         let saved = {};
         if (profile.tarifs) {
@@ -400,26 +430,33 @@ let MedecinsService = class MedecinsService {
         return result;
     }
     async getOccupiedSlots(id, startDate, endDate) {
-        const profile = await this.medecinProfileRepository.findOne({
-            where: { userId: id },
-        });
-        if (!profile) {
-            throw new common_1.NotFoundException('MÃ©decin non trouvÃ©');
+        try {
+            const profile = await this.medecinProfileRepository.findOne({
+                where: { userId: id },
+            });
+            if (!profile) {
+                return [];
+            }
+            const doctorId = profile.userId;
+            const appointments = await this.appointmentRepository
+                .createQueryBuilder('appointment')
+                .where('appointment.doctorId = :id', { id: doctorId })
+                .andWhere('appointment.status IN (:...statuses)', {
+                statuses: [appointment_entity_1.AppointmentStatus.CONFIRMED, appointment_entity_1.AppointmentStatus.REQUESTED],
+            })
+                .andWhere('appointment.appointmentDate >= :startDate', { startDate })
+                .andWhere('appointment.appointmentDate <= :endDate', { endDate })
+                .select(['appointment.appointmentDate', 'appointment.durationMinutes'])
+                .getMany();
+            return appointments.map((a) => ({
+                appointmentDate: a.appointmentDate,
+                durationMinutes: a.durationMinutes,
+            }));
         }
-        const appointments = await this.appointmentRepository
-            .createQueryBuilder('appointment')
-            .where('appointment.doctorId = :id', { id })
-            .andWhere('appointment.status IN (:...statuses)', {
-            statuses: [appointment_entity_1.AppointmentStatus.CONFIRMED, appointment_entity_1.AppointmentStatus.REQUESTED],
-        })
-            .andWhere('appointment.appointmentDate >= :startDate', { startDate })
-            .andWhere('appointment.appointmentDate <= :endDate', { endDate })
-            .select(['appointment.appointmentDate', 'appointment.durationMinutes'])
-            .getMany();
-        return appointments.map((a) => ({
-            appointmentDate: a.appointmentDate,
-            durationMinutes: a.durationMinutes,
-        }));
+        catch (err) {
+            console.warn('[getOccupiedSlots] error:', err?.message);
+            return [];
+        }
     }
     async saveBase64Image(base64String, folder) {
         try {
@@ -457,6 +494,7 @@ exports.MedecinsService = MedecinsService = __decorate([
         typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
-        typeorm_2.Repository])
+        typeorm_2.Repository,
+        notifications_service_1.NotificationsService])
 ], MedecinsService);
 //# sourceMappingURL=medecins.service.js.map

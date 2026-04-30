@@ -121,6 +121,14 @@ export class Patient {
   @Column({ nullable: true, unique: true })
   nss: string;
 
+  // ─── Observations médecin ─────────────────────────────────
+  @Column({ name: 'observations_medecin', type: 'text', nullable: true })
+  observationsMedecin: string;
+
+  // ─── Documents médicaux ───────────────────────────────────
+  @Column({ type: 'jsonb', nullable: true })
+  documents: any[];
+
   // ─── Timestamps ───────────────────────────────────────────
   @CreateDateColumn({ name: "created_at" })
   createdAt: Date;

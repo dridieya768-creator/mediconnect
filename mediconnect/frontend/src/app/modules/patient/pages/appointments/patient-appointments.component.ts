@@ -656,27 +656,28 @@ export class PatientAppointmentsComponent implements OnInit {
     this.http.get<any>("/api/v1/patients/me")
       .pipe(catchError(() => of(null)))
       .subscribe(res => {
-        // FIX : accepte { id } direct OU { data: { id } }
         const patient = res?.data ?? res;
 
-        if (!patient?.id) {
+        // Utiliser userId (user_id) pour charger les RDV — c'est la clé dans appointments
+        const patientUserId = patient?.userId ?? patient?.id;
+
+        if (!patientUserId) {
           console.warn("[Appointments] Impossible de récupérer le patient :", res);
           this.isLoading.set(false);
           return;
         }
 
-        this.patientId.set(patient.id);
+        this.patientId.set(patientUserId);
 
-        this.http.get<any>(`/api/v1/appointments/patient/${patient.id}`)
+        this.http.get<any>(`/api/v1/appointments/patient/${patientUserId}`)
           .pipe(catchError(err => {
             console.error("[Appointments] Erreur chargement RDV :", err);
             return of([]);
           }))
           .subscribe(appts => {
-            // FIX : normalise quelle que soit la forme de la réponse
             const list = this.normalizeList(appts);
 
-            console.log(`[Appointments] ${list.length} RDV chargés pour patient ${patient.id}`);
+            console.log(`[Appointments] ${list.length} RDV chargés pour patient ${patientUserId}`);
 
             this.appointments.set(
               list.sort((a: any, b: any) =>

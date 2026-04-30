@@ -9,6 +9,7 @@
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BookingStateService } from '../../../../../core/services/booking-state.service';
+
 import {
   AvailabilityConfig,
   CongesPeriod,
@@ -59,7 +60,7 @@ const DAY_MAP: Record<WorkDay['day'], number> = {
 
       <!-- Message aucun créneau -->
       <div class="no-slots" *ngIf="!hasWorkDays()">
-        <span>📅</span>
+        <span></span>
         <p>Aucun créneau disponible pour ce médecin.</p>
       </div>
 

@@ -88,11 +88,7 @@ let AuthService = class AuthService {
             throw new common_1.ConflictException("Email deja utilise");
         }
         const hashedPassword = await bcrypt.hash(registerDto.password, 12);
-        const isMedecin = [
-            user_entity_1.UserRole.MEDECIN_GENERALISTE,
-            user_entity_1.UserRole.MEDECIN_SPECIALISTE,
-            user_entity_1.UserRole.MEDECIN_CHEF_SERVICE,
-        ].includes(registerDto.role);
+        const isMedecin = registerDto.role === user_entity_1.UserRole.MEDECIN;
         const user = this.userRepository.create({
             ...registerDto,
             phone: registerDto.phone?.substring(0, 20),
@@ -110,13 +106,13 @@ let AuthService = class AuthService {
         if (isMedecin) {
             try {
                 const admins = await this.userRepository.find({
-                    where: { role: user_entity_1.UserRole.ADMIN_SYSTEM },
+                    where: { role: user_entity_1.UserRole.ADMIN },
                 });
                 for (const admin of admins) {
                     await this.notificationsService.create({
                         userId: admin.id,
                         type: notification_entity_1.NotificationType.DOCTOR_PENDING_APPROVAL,
-                        title: '🩺 Nouvelle inscription médecin',
+                        title: ' Nouvelle inscription médecin',
                         message: `Dr. ${savedUser.firstName} ${savedUser.lastName} a créé un compte et attend votre validation.`,
                         relatedId: savedUser.id,
                     });
@@ -231,7 +227,7 @@ let AuthService = class AuthService {
             console.log(`✅ Email envoyé à ${user.email}`);
         }
         catch (error) {
-            console.error('❌ Erreur envoi email:', error.message);
+            console.error(' Erreur envoi email:', error.message);
         }
         return { message: "Si cet email existe, un lien de reinitialisation a ete envoye" };
     }

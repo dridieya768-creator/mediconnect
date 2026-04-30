@@ -13,14 +13,14 @@
   <div class="search-hero">
     <div class="search-bar-main">
       <div class="search-input-wrap">
-        <span class="search-icon">🔍</span>
+        <span class="search-icon"></span>
         <input class="search-input" type="text"
           [(ngModel)]="searchQuery"
           (ngModelChange)="onSearchChange($event)"
           placeholder="Nom du médecin, spécialité..." />
       </div>
       <div class="search-select-wrap">
-        <span class="search-icon">📍</span>
+        <span class="search-icon"></span>
         <select class="search-select" [(ngModel)]="filterVille" (change)="applyFilters()">
           <option value="">Toutes les villes</option>
           <option *ngFor="let v of villes" [value]="v">{{ v }}</option>
@@ -44,7 +44,7 @@
       </button>
       <button class="quick-btn" [class.active]="filterDisponible"
         (click)="filterDisponible = !filterDisponible; applyFilters()">
-        ✅ Disponible aujourd'hui
+         Disponible aujourd'hui
       </button>
       <button *ngFor="let s of topSpecialites" class="quick-btn"
         [class.active]="filterSpecialite === s"
@@ -122,7 +122,7 @@
                   <span class="badge-teleconsult" *ngIf="doc.profile?.disponTeleconsult">
                     💻 Téléconsult.
                   </span>
-                  <span class="badge-disponible">✅ Disponible</span>
+                  <span class="badge-disponible"> Disponible</span>
                 </div>
               </div>
 
@@ -137,13 +137,13 @@
 
                 <div class="doc-meta">
                   <span *ngIf="doc.profile?.ville">
-                    <span class="meta-icon">📍</span> {{ doc.profile.ville }}
+                    <span class="meta-icon"></span> {{ doc.profile.ville }}
                   </span>
                   <span *ngIf="doc.profile?.languesParlees">
-                    <span class="meta-icon">🗣️</span> {{ doc.profile.languesParlees }}
+                    <span class="meta-icon"></span> {{ doc.profile.languesParlees }}
                   </span>
                   <span *ngIf="doc.profile?.telephonePro">
-                    <span class="meta-icon">📞</span> {{ doc.profile.telephonePro }}
+                    <span class="meta-icon"></span> {{ doc.profile.telephonePro }}
                   </span>
                 </div>
 
@@ -153,13 +153,13 @@
 
                 <!-- Tarifs -->
                 <div class="doc-tarifs" *ngIf="getTarif(doc.profile?.tarifs) as tarif">
-                  <span class="tarif-label">💰</span>
+                  <span class="tarif-label"></span>
                   <span class="tarif-text">{{ tarif }}</span>
                 </div>
 
                 <!-- Assurances -->
                 <div class="doc-assurances" *ngIf="doc.profile?.assurancesAcceptees">
-                  <span class="assur-label">🛡️ Assurances :</span>
+                  <span class="assur-label"> Assurances :</span>
                   <span class="assur-text">{{ doc.profile.assurancesAcceptees }}</span>
                 </div>
               </div>
@@ -168,11 +168,11 @@
               <div class="card-actions">
                 <button class="btn-profile"
                   (click)="$event.stopPropagation(); openProfile(doc)">
-                  👁️ Voir profil
+                   Voir profil
                 </button>
                 <button class="btn-rdv"
                   (click)="$event.stopPropagation(); takeAppointment(doc)">
-                  📅 Prendre RDV
+                   Prendre RDV
                 </button>
               </div>
             </div>
@@ -208,7 +208,7 @@
 
     <!-- EMPTY STATE -->
     <div class="empty-state" *ngIf="filteredDoctors().length === 0 && viewMode === 'list'">
-      <div class="empty-icon">🔍</div>
+      <div class="empty-icon"></div>
       <p>Aucun médecin trouvé pour votre recherche</p>
       <button class="btn-reset" (click)="resetFilters()">Réinitialiser les filtres</button>
     </div>
@@ -246,10 +246,10 @@
             </p>
             <div class="profile-badges">
               <span class="badge-teleconsult" *ngIf="selectedDoc()!.profile?.disponTeleconsult">
-                💻 Téléconsultation
+                 Téléconsultation
               </span>
               <span class="badge-video" *ngIf="selectedDoc()!.profile?.connexionVideoIntegree">
-                📹 Vidéo intégrée
+                 Vidéo intégrée
               </span>
             </div>
           </div>
@@ -258,17 +258,17 @@
         <!-- Infos détaillées -->
         <div class="profile-sections">
           <div class="profile-section" *ngIf="selectedDoc()!.profile?.biographie">
-            <h4>📋 Biographie</h4>
+            <h4> Biographie</h4>
             <p>{{ selectedDoc()!.profile.biographie }}</p>
           </div>
 
           <div class="profile-section" *ngIf="selectedDoc()!.profile?.diplomes">
-            <h4>🎓 Diplômes et Formations</h4>
+            <h4> Diplômes et Formations</h4>
             <p>{{ selectedDoc()!.profile.diplomes }}</p>
           </div>
 
           <div class="profile-section">
-            <h4>📍 Contact et Localisation</h4>
+            <h4> Contact et Localisation</h4>
             <div class="info-grid">
               <div class="info-row" *ngIf="selectedDoc()!.profile?.adresseCabinet">
                 <span class="info-label">Adresse</span>
@@ -295,7 +295,7 @@
 
           <div class="profile-section"
             *ngIf="selectedDoc()!.profile?.tarifs || selectedDoc()!.profile?.assurancesAcceptees">
-            <h4>💰 Tarifs et Assurances</h4>
+            <h4> Tarifs et Assurances</h4>
             <div class="info-grid">
               <div class="info-row" *ngIf="selectedDoc()!.profile?.tarifs">
                 <span class="info-label">Tarifs</span>
@@ -314,9 +314,9 @@
 
           <!-- Google Maps -->
           <div class="profile-section" *ngIf="selectedDoc()!.profile?.geoGoogleMaps">
-            <h4>🗺️ Localisation</h4>
+            <h4> Localisation</h4>
             <a [href]="selectedDoc()!.profile.geoGoogleMaps" target="_blank" class="maps-link">
-              📍 Voir sur Google Maps
+               Voir sur Google Maps
             </a>
           </div>
         </div>
@@ -324,7 +324,7 @@
       <div class="modal-footer">
         <button class="btn-outline" (click)="selectedDoc.set(null)">Fermer</button>
         <button class="btn-rdv-lg" (click)="takeAppointment(selectedDoc()!)">
-          📅 Prendre un rendez-vous
+           Prendre un rendez-vous
         </button>
       </div>
     </div>

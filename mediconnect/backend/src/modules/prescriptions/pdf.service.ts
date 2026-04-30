@@ -20,7 +20,7 @@ export class PdfService {
 
         doc.fontSize(18).fillColor('#0f172a').text('ORDONNANCE MÉDICALE', 300, 50, { align: 'right' });
         doc.fontSize(10).fillColor('#64748b').text(
-          `N° ${(prescription.qrCode || prescription.id || '').substring(0, 16).toUpperCase()}`,
+          `N° ${(prescription.qrCode || prescription.id || '').toUpperCase()}`,
           300, 75, { align: 'right' }
         );
 

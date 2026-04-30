@@ -3,7 +3,7 @@ import {
   AfterViewInit, ElementRef, ViewChild, ChangeDetectorRef
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { RouterLink } from "@angular/router";
+import { RouterLink, Router } from "@angular/router";
 import { HttpClient } from "@angular/common/http";
 import { catchError } from "rxjs/operators";
 import { of } from "rxjs";
@@ -70,7 +70,7 @@ import { of } from "rxjs";
               </div>
               <div class="appt-sep"></div>
               <div class="appt-info">
-                <div class="appt-name">{{ getPatientName(a) }}</div>
+                <div class="appt-name appt-name-link" (click)="viewPatient(a)">{{ getPatientName(a) }}</div>
                 <div class="appt-meta">
                   <span class="appt-type-badge">
                     {{ a.consultationType === 'TELECONSULTATION' ? '💻 Téléconsult.' : '🏥 Présentiel' }}
@@ -266,6 +266,8 @@ import { of } from "rxjs";
     .appt-sep   { width: 1px; height: 36px; background: #e2e8f0; flex-shrink: 0; }
     .appt-info  { flex: 1; }
     .appt-name  { font-size: 14px; font-weight: 600; color: #0f172a; }
+    .appt-name-link { cursor: pointer; }
+    .appt-name-link:hover { color: #4f46e5; text-decoration: underline; }
     .appt-meta  { display: flex; gap: 8px; margin-top: 3px; align-items: center; }
     .appt-type-badge {
       font-size: 11px; color: #64748b;
@@ -381,7 +383,8 @@ export class MedecinDashboardComponent implements OnInit, AfterViewInit {
   // ✅ { static: true } = disponible dès ngAfterViewInit, peu importe les *ngIf
   @ViewChild("qrCanvas", { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
 
-  private http = inject(HttpClient);
+  private http   = inject(HttpClient);
+  private router = inject(Router);
   private cdr  = inject(ChangeDetectorRef);
 
   medecin      = signal<any>(null);
@@ -594,6 +597,11 @@ loadData() {
 
   getStatusClass(s: string): string {
     return ({ CONFIRMED: "status-confirmed", REQUESTED: "status-pending", CANCELLED: "status-cancelled", COMPLETED: "status-completed" } as any)[s] || "status-pending";
+  }
+
+  viewPatient(a: any) {
+    const patientId = a.patientId || a.patient?.id;
+    if (patientId) this.router.navigate(['/medecin/patients', patientId]);
   }
 
   today(): string {

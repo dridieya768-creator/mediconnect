@@ -42,6 +42,8 @@ export declare class Patient {
     doubleAuthentification: boolean;
     notification: any;
     nss: string;
+    observationsMedecin: string;
+    documents: any[];
     createdAt: Date;
     updatedAt: Date;
 }

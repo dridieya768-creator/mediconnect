@@ -68,7 +68,7 @@ let AdminService = class AdminService {
         const oldStatus = user.status;
         Object.assign(user, dto);
         const saved = await this.userRepository.save(user);
-        const isMedecin = saved.role.startsWith('MEDECIN');
+        const isMedecin = saved.role === user_entity_1.UserRole.MEDECIN;
         if (isMedecin && dto.status && dto.status !== oldStatus) {
             try {
                 await this.sendDoctorStatusEmail(saved, dto.status);
@@ -170,14 +170,7 @@ let AdminService = class AdminService {
             .getCount();
         const medecins = await this.userRepository
             .createQueryBuilder('user')
-            .where('user.role IN (:...roles)', {
-            roles: [
-                user_entity_1.UserRole.MEDECIN_GENERALISTE,
-                user_entity_1.UserRole.MEDECIN_SPECIALISTE,
-                user_entity_1.UserRole.MEDECIN_CHEF_SERVICE,
-                user_entity_1.UserRole.MEDECIN_URGENTISTE,
-            ],
-        })
+            .where('user.role = :role', { role: user_entity_1.UserRole.MEDECIN })
             .getCount();
         return { total, actifs, medecins, patients };
     }

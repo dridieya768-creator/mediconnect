@@ -30,6 +30,14 @@ export class AppointmentsController {
     return this.svc.findByPatient(patientId);
   }
 
+  // ── Médecins du patient (pour gestion accès) ───────────────────────────────
+  @Get("my-doctors")
+  @ApiOperation({ summary: "Liste des médecins avec qui le patient a eu des RDV" })
+  async getMyDoctors(@Req() req: any) {
+    const userId = req.user?.sub || req.user?.id;
+    return this.svc.findDoctorsByPatient(userId);
+  }
+
   // ── Planning médecin ────────────────────────────────────────────────────────
   @Get("doctor/:doctorId")
   @ApiOperation({ summary: "RDV d'un médecin" })

@@ -9,7 +9,7 @@ import { HttpClient } from '@angular/common/http';
   imports: [CommonModule, FormsModule],
   template: `
     <div class="page-header">
-      <h1 class="page-title">📲 Scanner une Ordonnance</h1>
+      <h1 class="page-title"> Scanner une Ordonnance</h1>
       <p class="page-subtitle">Saisissez le code QR de l'ordonnance pour la valider et enregistrer la dispensation</p>
     </div>
 
@@ -24,17 +24,17 @@ import { HttpClient } from '@angular/common/http';
           (keyup.enter)="search()"
         />
         <button class="btn-search" (click)="search()" [disabled]="!qrCode.trim() || searching()">
-          {{ searching() ? '⏳ Recherche...' : '🔍 Rechercher' }}
+          {{ searching() ? ' Recherche...' : ' Rechercher' }}
         </button>
       </div>
       <p class="hint">Scannez le QR code ou saisissez le code manuellement</p>
     </div>
 
     <!-- Erreur -->
-    <div class="alert-error" *ngIf="errorMsg()">❌ {{ errorMsg() }}</div>
+    <div class="alert-error" *ngIf="errorMsg()"> {{ errorMsg() }}</div>
 
     <!-- Succès dispensation -->
-    <div class="alert-success" *ngIf="successMsg()">✅ {{ successMsg() }}</div>
+    <div class="alert-success" *ngIf="successMsg()"> {{ successMsg() }}</div>
 
     <!-- Détails ordonnance -->
     <div class="rx-card" *ngIf="prescription()">
@@ -52,18 +52,18 @@ import { HttpClient } from '@angular/common/http';
 
       <div class="info-grid">
         <div class="info-block">
-          <div class="info-label">👤 Patient</div>
+          <div class="info-label"> Patient</div>
           <div class="info-value">{{ prescription()!.patientId }}</div>
         </div>
         <div class="info-block">
-          <div class="info-label">🩺 Médecin</div>
+          <div class="info-label"> Médecin</div>
           <div class="info-value">{{ prescription()!.doctorId }}</div>
         </div>
       </div>
 
       <!-- Médicaments -->
       <div class="meds-section">
-        <h3 class="section-title">💊 Médicaments</h3>
+        <h3 class="section-title"> Médicaments</h3>
         <div class="meds-table">
           <div class="table-header">
             <span>Médicament</span>
@@ -95,19 +95,19 @@ import { HttpClient } from '@angular/common/http';
 
       <!-- Notes -->
       <div class="notes-block" *ngIf="prescription()!.notes">
-        <div class="info-label">📝 Notes</div>
+        <div class="info-label"> Notes</div>
         <div class="notes-text">{{ prescription()!.notes }}</div>
       </div>
 
       <!-- Actions -->
       <div class="actions-row" *ngIf="!isFullyUsed()">
         <button class="btn-dispense" (click)="dispense()" [disabled]="dispensing()">
-          {{ dispensing() ? '⏳ Enregistrement...' : '✅ Valider la dispensation' }}
+          {{ dispensing() ? ' Enregistrement...' : ' Valider la dispensation' }}
         </button>
         <button class="btn-cancel" (click)="reset()">Annuler</button>
       </div>
       <div class="fully-used-msg" *ngIf="isFullyUsed()">
-        ✅ Cette ordonnance a été entièrement délivrée.
+         Cette ordonnance a été entièrement délivrée.
         <button class="btn-cancel" (click)="reset()" style="margin-left:12px">Nouvelle recherche</button>
       </div>
     </div>

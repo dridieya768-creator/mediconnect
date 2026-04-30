@@ -32,7 +32,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
       <!-- Erreur -->
       <div class="error-state" *ngIf="error()">
-        <div style="font-size:48px">❌</div>
+        <div style="font-size:48px"></div>
         <h2>Impossible de rejoindre la salle</h2>
         <p>{{ error() }}</p>
         <button class="btn-retry" (click)="loadRoom()">Réessayer</button>

@@ -12,7 +12,7 @@ import { CommonModule } from "@angular/common";
     </div>
     <div class="mc-card">
       <div class="mc-card-body" style="text-align: center; padding: 60px; color: var(--mc-muted);">
-        <div style="font-size: 48px; margin-bottom: 16px;">🚧</div>
+        <div style="font-size: 48px; margin-bottom: 16px;"></div>
         <div style="font-size: 16px;">Ce module sera disponible prochainement</div>
       </div>
     </div>

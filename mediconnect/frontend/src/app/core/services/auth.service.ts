@@ -14,10 +14,11 @@ export interface User {
   avatarUrl?: string;
 }
 
+
 @Injectable({ providedIn: "root" })
 export class AuthService {
   private readonly API = "/api/v1/auth";
-
+   ///État global (Signals Angular) ki nabdlou tout le reste se maj automatiquement 
   private _currentUser = signal<User | null>(this.loadUserFromStorage());
   private _token = signal<string | null>(this.loadTokenFromStorage());
 
@@ -28,13 +29,12 @@ export class AuthService {
 
   constructor(private http: HttpClient, private router: Router) {}
 
-  // US1: Register
-// Dans auth.service.ts frontend — modifie la méthode register()
+  
 register(data: any): Observable<any> {
   return this.http.post<any>(`${this.API}/register`, data).pipe(
     tap((res: any) => {
       const payload = res?.data ?? res;
-      // ✅ Si médecin en attente, ne pas connecter
+      //  Si médecin en attente, ne pas connecter
       if (!payload?.pendingApproval) {
         this.handleAuthSuccess(payload);
       }
@@ -155,18 +155,21 @@ loginWithFacebook(fbToken: string): Observable<any> {
 
   getRedirectPath(role: string): string {
     const routes: Record<string, string> = {
-      PATIENT: "/patient/dashboard",
-      MEDECIN_GENERALISTE: "/medecin/dashboard",
-      MEDECIN_SPECIALISTE: "/medecin/dashboard",
-      MEDECIN_CHEF_SERVICE: "/medecin/dashboard",
+      PATIENT:    "/patient/dashboard",
+      MEDECIN:    "/medecin/dashboard",
       PHARMACIEN: "/pharmacie/dashboard",
+      ADMIN:      "/admin/dashboard",
+      // anciens rôles (compatibilité)
+      MEDECIN_GENERALISTE:   "/medecin/dashboard",
+      MEDECIN_SPECIALISTE:   "/medecin/dashboard",
+      MEDECIN_CHEF_SERVICE:  "/medecin/dashboard",
+      PHARMACIEN_TITULAIRE:  "/pharmacie/dashboard",
       BIOLOGISTE_RESPONSABLE: "/laboratoire/dashboard",
-      BIOLOGISTE_MEDICAL: "/laboratoire/dashboard",
-      TECHNICIEN_LABO: "/laboratoire/dashboard",
-      RADIOLOGUE: "/radiologie/dashboard",
-      MANIPULATEUR_RADIO: "/radiologie/dashboard",
-      ADMIN_SYSTEM: "/admin/dashboard",
-      
+      BIOLOGISTE_MEDICAL:    "/laboratoire/dashboard",
+      TECHNICIEN_LABO:       "/laboratoire/dashboard",
+      RADIOLOGUE:            "/radiologie/dashboard",
+      MANIPULATEUR_RADIO:    "/radiologie/dashboard",
+      ADMIN_SYSTEM:          "/admin/dashboard",
     };
     return routes[role] || "/auth/login";
   }

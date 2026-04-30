@@ -33,6 +33,7 @@ import { AuthService } from "@core/services/auth.service";
           </a>
           <a routerLink="/patient/dossier" routerLinkActive="active" class="nav-link">Dossier</a>
           <a routerLink="/patient/prescriptions" routerLinkActive="active" class="nav-link">Ordonnances</a>
+          <a routerLink="/patient/paiement" routerLinkActive="active" class="nav-link">💳 Paiement</a>
         </div>
         <div class="nav-user">
           <a routerLink="/patient/notifications" class="notif-btn">

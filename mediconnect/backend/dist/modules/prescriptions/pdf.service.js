@@ -21,7 +21,7 @@ let PdfService = class PdfService {
                 doc.fontSize(20).fillColor('#1a56db').text('MediConnect', 50, 50);
                 doc.fontSize(10).fillColor('#64748b').text('Plateforme e-Santé', 50, 75);
                 doc.fontSize(18).fillColor('#0f172a').text('ORDONNANCE MÉDICALE', 300, 50, { align: 'right' });
-                doc.fontSize(10).fillColor('#64748b').text(`N° ${(prescription.qrCode || prescription.id || '').substring(0, 16).toUpperCase()}`, 300, 75, { align: 'right' });
+                doc.fontSize(10).fillColor('#64748b').text(`N° ${(prescription.qrCode || prescription.id || '').toUpperCase()}`, 300, 75, { align: 'right' });
                 doc.moveTo(50, 100).lineTo(545, 100).strokeColor('#1a56db').lineWidth(2).stroke();
                 doc.fontSize(9).fillColor('#94a3b8').text('MÉDECIN PRESCRIPTEUR', 50, 120);
                 doc.fontSize(13).fillColor('#0f172a').font('Helvetica-Bold').text(`Dr. ${doctorName}`, 50, 135);

@@ -93,22 +93,18 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(registerDto.password, 12);
 
-    const isMedecin = [
-      UserRole.MEDECIN_GENERALISTE,
-      UserRole.MEDECIN_SPECIALISTE,
-      UserRole.MEDECIN_CHEF_SERVICE,
-    ].includes(registerDto.role as UserRole);
+    const isMedecin = registerDto.role === UserRole.MEDECIN;
 
     const user = this.userRepository.create({
       ...registerDto,
-      // Tronquer le téléphone à 20 caractères max (limite DB)
+      //// Tronquer le téléphone à 20 caractères max imite DB
       phone: registerDto.phone?.substring(0, 20),
       password: hashedPassword,
       status: isMedecin ? UserStatus.PENDING_VERIFICATION : UserStatus.ACTIVE,
     });
     const savedUser = await this.userRepository.save(user);
 
-    // ── Sauvegarder les documents du médecin ──────────────
+    // //Sauvegarder les documents du médecin 
     if (isMedecin && (registerDto as any).documents?.length) {
       await this.saveDoctorDocuments(savedUser.id, (registerDto as any).documents);
       console.log(`[Auth] ${(registerDto as any).documents.length} document(s) sauvegardé(s) pour ${savedUser.email}`);
@@ -121,13 +117,13 @@ export class AuthService {
     if (isMedecin) {
       try {
         const admins = await this.userRepository.find({
-          where: { role: UserRole.ADMIN_SYSTEM },
+          where: { role: UserRole.ADMIN },
         });
         for (const admin of admins) {
           await this.notificationsService.create({
             userId:    admin.id,
             type:      NotificationType.DOCTOR_PENDING_APPROVAL,
-            title:     '🩺 Nouvelle inscription médecin',
+            title:     ' Nouvelle inscription médecin',
             message:   `Dr. ${savedUser.firstName} ${savedUser.lastName} a créé un compte et attend votre validation.`,
             relatedId: savedUser.id,
           });
@@ -243,7 +239,7 @@ export class AuthService {
       });
       console.log(`✅ Email envoyé à ${user.email}`);
     } catch (error) {
-      console.error('❌ Erreur envoi email:', error.message);
+      console.error(' Erreur envoi email:', error.message);
     }
     return { message: "Si cet email existe, un lien de reinitialisation a ete envoye" };
   }

@@ -403,7 +403,7 @@ export class BookAppointmentPanelComponent implements OnChanges {
       next: (res) => {
         const outer = res?.data ?? res;
         const profile = outer?.data ?? outer;
-        const patientId = profile?.id;
+        const patientId = profile?.userId ?? profile?.id;
 
         if (!patientId) {
           this.bookingState.isLoading.set(false);

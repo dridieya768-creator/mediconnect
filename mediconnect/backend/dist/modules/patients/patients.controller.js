@@ -14,6 +14,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PatientsController = void 0;
 const common_1 = require("@nestjs/common");
+const dossier_historique_interceptor_1 = require("../dossier-medical/interceptors/dossier-historique.interceptor");
 const swagger_1 = require("@nestjs/swagger");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
 const typeorm_1 = require("@nestjs/typeorm");
@@ -75,6 +76,8 @@ let PatientsController = class PatientsController {
                 allergies: patient.allergies,
                 maladiesChroniques: patient.maladiesChroniques,
                 medicamentsActuels: patient.medicamentsActuels,
+                observationsMedecin: patient.observationsMedecin,
+                documents: patient.documents ?? [],
             },
         };
     }
@@ -96,6 +99,73 @@ let PatientsController = class PatientsController {
             return { success: false, message: "Erreur lors de la mise à jour de l'avatar" };
         }
     }
+    async getPatientByUserId(userId) {
+        const user = await this.userRepo.findOne({
+            where: { id: userId },
+            select: ["id", "firstName", "lastName", "email", "avatarUrl"],
+        });
+        if (!user)
+            return { success: false, data: null, message: "Utilisateur introuvable" };
+        const patient = await this.patientRepo.findOne({ where: { userId } });
+        if (!patient)
+            return { success: false, data: null, message: "Profil patient introuvable" };
+        const parseList = (val) => {
+            if (!val)
+                return [];
+            if (Array.isArray(val))
+                return val;
+            if (typeof val === 'string')
+                return val.split(',').map((s) => s.trim()).filter(Boolean);
+            return [];
+        };
+        return {
+            id: patient.id,
+            userId: user.id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            avatarUrl: user.avatarUrl,
+            telephone: patient.telephone,
+            dateNaissance: patient.dateNaissance,
+            sexe: patient.sexe,
+            ville: patient.ville,
+            groupeSanguin: patient.groupeSanguin,
+            nss: patient.nss,
+            observationsMedecin: patient.observationsMedecin,
+            allergies: parseList(patient.allergies),
+            maladiesChroniques: parseList(patient.maladiesChroniques),
+            medicamentsActuels: parseList(patient.medicamentsActuels),
+            documents: patient.documents ?? [],
+        };
+    }
+    async updateObservations(id, body, req) {
+        const userId = req.user?.sub || req.user?.id || req.user?.userId;
+        const role = req.user?.role ?? '';
+        if (!['MEDECIN', 'MEDECIN_GENERALISTE', 'MEDECIN_SPECIALISTE', 'MEDECIN_CHEF_SERVICE', 'ADMIN'].includes(role)) {
+            return { success: false, message: 'Réservé aux médecins' };
+        }
+        let patient = await this.patientRepo.findOne({ where: { id } });
+        if (!patient)
+            patient = await this.patientRepo.findOne({ where: { userId: id } });
+        if (!patient)
+            return { success: false, message: 'Patient introuvable' };
+        await this.patientRepo.update(patient.id, { observationsMedecin: body.observationsMedecin });
+        return { success: true, message: 'Observation enregistrée' };
+    }
+    async getObservationsHistory(id, req) {
+        let patient = await this.patientRepo.findOne({ where: { id } });
+        if (!patient)
+            patient = await this.patientRepo.findOne({ where: { userId: id } });
+        if (!patient)
+            return [];
+        if (!patient.observationsMedecin)
+            return [];
+        return [{
+                texte: patient.observationsMedecin,
+                medecinNom: 'Médecin traitant',
+                date: patient.updatedAt ?? new Date().toISOString(),
+            }];
+    }
     async updateProfile(id, body, req) {
         const userId = req.user?.sub || req.user?.id || req.user?.userId;
         console.log("[PATCH /patients/:id] id:", id, "userId:", userId, "body:", body);
@@ -107,7 +177,7 @@ let PatientsController = class PatientsController {
             return { success: false, message: "Non autorisé" };
         const allowed = ['telephone', 'dateNaissance', 'sexe', 'ville', 'languePreferee',
             'groupeSanguin', 'allergies', 'maladiesChroniques', 'medicamentsActuels',
-            'rappelsAuto', 'nom', 'prenom'];
+            'rappelsAuto', 'nom', 'prenom', 'documents'];
         const updateData = {};
         for (const key of allowed) {
             const val = body[key];
@@ -120,6 +190,16 @@ let PatientsController = class PatientsController {
         }
         if (body.nss && body.nss.trim())
             updateData.nss = body.nss.trim();
+        if (body.documents !== undefined) {
+            try {
+                updateData.documents = typeof body.documents === 'string'
+                    ? JSON.parse(body.documents)
+                    : body.documents;
+            }
+            catch {
+                updateData.documents = [];
+            }
+        }
         console.log("[PATCH /patients/:id] updateData:", updateData);
         await this.patientRepo.update(id, updateData);
         const updated = await this.patientRepo.findOne({ where: { id } });
@@ -153,8 +233,36 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], PatientsController.prototype, "updateAvatar", null);
 __decorate([
+    (0, common_1.Get)(":userId"),
+    (0, swagger_1.ApiOperation)({ summary: "Profil d'un patient par userId (pour médecin)" }),
+    __param(0, (0, common_1.Param)("userId")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], PatientsController.prototype, "getPatientByUserId", null);
+__decorate([
+    (0, common_1.Patch)(":id/observations"),
+    (0, swagger_1.ApiOperation)({ summary: "Médecin ajoute ses observations sur un patient" }),
+    __param(0, (0, common_1.Param)("id")),
+    __param(1, (0, common_1.Body)()),
+    __param(2, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object, Object]),
+    __metadata("design:returntype", Promise)
+], PatientsController.prototype, "updateObservations", null);
+__decorate([
+    (0, common_1.Get)(":id/observations-history"),
+    (0, swagger_1.ApiOperation)({ summary: "Historique des observations médicales d'un patient" }),
+    __param(0, (0, common_1.Param)("id")),
+    __param(1, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], PatientsController.prototype, "getObservationsHistory", null);
+__decorate([
     (0, common_1.Patch)(":id"),
     (0, swagger_1.ApiOperation)({ summary: "Mettre à jour le profil patient" }),
+    (0, common_1.UseInterceptors)(dossier_historique_interceptor_1.DossierHistoriqueInterceptor),
     __param(0, (0, common_1.Param)("id")),
     __param(1, (0, common_1.Body)()),
     __param(2, (0, common_1.Req)()),

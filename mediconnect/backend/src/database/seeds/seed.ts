@@ -11,11 +11,11 @@ async function seed() {
 
   const users = [
     { email: "patient@test.com", firstName: "Ahmed", lastName: "Mansouri", role: "PATIENT" },
-    { email: "medecin@test.com", firstName: "Kamel", lastName: "Jebali", role: "MEDECIN_GENERALISTE" },
-    { email: "pharmacien@test.com", firstName: "Leila", lastName: "Baccouche", role: "PHARMACIEN_TITULAIRE" },
-    { email: "biologiste@test.com", firstName: "Raouf", lastName: "Boubaker", role: "BIOLOGISTE" },
-    { email: "radiologue@test.com", firstName: "Samy", lastName: "Rezgui", role: "RADIOLOGUE" },
-    { email: "admin@test.com", firstName: "Admin", lastName: "System", role: "ADMIN_SYSTEM" },
+    { email: "medecin@test.com",     firstName: "Kamel",  lastName: "Jebali",    role: "MEDECIN" },
+    { email: "pharmacien@test.com",  firstName: "Leila",  lastName: "Baccouche", role: "PHARMACIEN" },
+    { email: "biologiste@test.com",  firstName: "Raouf",  lastName: "Boubaker",  role: "MEDECIN" },
+    { email: "radiologue@test.com",  firstName: "Samy",   lastName: "Rezgui",    role: "MEDECIN" },
+    { email: "admin@test.com",       firstName: "Admin",  lastName: "System",    role: "ADMIN" },
   ];
 
   const hashedPassword = await bcrypt.hash("Test1234!", 12);

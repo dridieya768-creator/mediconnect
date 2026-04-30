@@ -18,12 +18,12 @@ type PlanningView = "calendar" | "requests" | "slots" | "conges";
       <!-- HEADER -->
       <div class="page-header">
         <div>
-          <h1 class="page-title">📅 Mon Planning</h1>
+          <h1 class="page-title"> Mon Planning</h1>
           <p class="page-subtitle">Gérez vos disponibilités et demandes de RDV</p>
         </div>
         <div class="header-actions">
           <button class="btn-outline" (click)="activeView.set('slots')">
-            ⚙️ Gérer disponibilités
+             Gérer disponibilités
           </button>
           <div class="notif-badge" *ngIf="pendingCount() > 0">
             {{ pendingCount() }} demande(s) en attente
@@ -33,22 +33,22 @@ type PlanningView = "calendar" | "requests" | "slots" | "conges";
 
       <!-- MESSAGES -->
       <div class="alert-success" *ngIf="successMsg()">✅ {{ successMsg() }}</div>
-      <div class="alert-error"   *ngIf="errorMsg()">❌ {{ errorMsg() }}</div>
+      <div class="alert-error"   *ngIf="errorMsg()"> {{ errorMsg() }}</div>
 
       <!-- NAV TABS -->
       <div class="tabs-bar">
         <button class="tab-btn" [class.active]="activeView() === 'calendar'" (click)="activeView.set('calendar')">
-          📆 Calendrier
+           Calendrier
         </button>
         <button class="tab-btn" [class.active]="activeView() === 'requests'" (click)="activeView.set('requests')">
-          📥 Demandes
+           Demandes
           <span class="tab-count pending" *ngIf="pendingCount() > 0">{{ pendingCount() }}</span>
         </button>
         <button class="tab-btn" [class.active]="activeView() === 'slots'" (click)="activeView.set('slots')">
-          🕐 Disponibilités
+           Disponibilités
         </button>
         <button class="tab-btn" [class.active]="activeView() === 'conges'" (click)="activeView.set('conges')">
-          🏖️ Congés
+           Congés
           <span class="tab-count" *ngIf="conges().length > 0">{{ conges().length }}</span>
         </button>
       </div>
@@ -87,7 +87,7 @@ type PlanningView = "calendar" | "requests" | "slots" | "conges";
                      (click)="openApptModal(appt)">
                   <div class="cal-appt-time">{{ formatTime(appt.appointmentDate) }}</div>
                   <div class="cal-appt-name">{{ getPatientName(appt) }}</div>
-                  <div class="cal-appt-type">{{ appt.consultationType === 'TELECONSULTATION' ? '💻' : '🏥' }}</div>
+                  <div class="cal-appt-type">{{ appt.consultationType === 'TELECONSULTATION' ? '' : '' }}</div>
                 </div>
                 <div class="cal-empty-day" *ngIf="day.appointments.length === 0">
                   <span>—</span>
@@ -99,7 +99,7 @@ type PlanningView = "calendar" | "requests" | "slots" | "conges";
           <!-- Legend -->
           <div class="cal-legend">
             <span class="legend-item confirmed">✓ Confirmé</span>
-            <span class="legend-item pending">⏳ En attente</span>
+            <span class="legend-item pending"> En attente</span>
             <span class="legend-item completed">✔ Terminé</span>
             <span class="legend-item cancelled">✕ Annulé</span>
           </div>
@@ -114,11 +114,11 @@ type PlanningView = "calendar" | "requests" | "slots" | "conges";
             </div>
             <div class="modal-body">
               <div class="detail-row">
-                <span class="detail-label">👤 Patient</span>
+                <span class="detail-label"> Patient</span>
                 <span class="detail-value">{{ getPatientName(modalAppt()!) }}</span>
               </div>
               <div class="detail-row">
-                <span class="detail-label">📅 Date</span>
+                <span class="detail-label">Date</span>
                 <span class="detail-value">{{ formatFullDate(modalAppt()!.appointmentDate) }}</span>
               </div>
               <div class="detail-row">
@@ -126,15 +126,15 @@ type PlanningView = "calendar" | "requests" | "slots" | "conges";
                 <span class="detail-value">{{ modalAppt()!.durationMinutes }} min</span>
               </div>
               <div class="detail-row">
-                <span class="detail-label">🏥 Type</span>
+                <span class="detail-label"> Type</span>
                 <span class="detail-value">{{ getTypeLabel(modalAppt()!.consultationType) }}</span>
               </div>
               <div class="detail-row" *ngIf="modalAppt()!.reason">
-                <span class="detail-label">📝 Motif</span>
+                <span class="detail-label"> Motif</span>
                 <span class="detail-value">{{ modalAppt()!.reason }}</span>
               </div>
               <div class="detail-row">
-                <span class="detail-label">📌 Statut</span>
+                <span class="detail-label"> Statut</span>
                 <span class="status-pill" [ngClass]="getStatusClass(modalAppt()!.status)">
                   {{ getStatusLabel(modalAppt()!.status) }}
                 </span>
@@ -146,7 +146,7 @@ type PlanningView = "calendar" | "requests" | "slots" | "conges";
             </div>
             <div class="modal-actions" *ngIf="modalAppt()!.status === 'CONFIRMED'">
               <button class="btn-video" *ngIf="modalAppt()!.consultationType === 'TELECONSULTATION'"
-                      (click)="joinVideo(modalAppt()!)">📹 Démarrer téléconsult.</button>
+                      (click)="joinVideo(modalAppt()!)"> Démarrer téléconsult.</button>
               <button class="btn-complete" (click)="completeAppt(modalAppt()!)">✔ Marquer terminé</button>
             </div>
           </div>
@@ -158,7 +158,7 @@ type PlanningView = "calendar" | "requests" | "slots" | "conges";
            ══════════════════════════════════════════ -->
       <ng-container *ngIf="activeView() === 'requests'">
         <div class="section-title">
-          📥 Demandes de rendez-vous en attente
+           Demandes de rendez-vous en attente
           <span class="badge-count">{{ pendingAppointments().length }}</span>
         </div>
 
@@ -174,17 +174,17 @@ type PlanningView = "calendar" | "requests" | "slots" | "conges";
               <div class="req-info">
                 <div class="req-name">{{ getPatientName(req) }}</div>
                 <div class="req-meta">
-                  <span>📅 {{ formatFullDate(req.appointmentDate) }}</span>
+                  <span> {{ formatFullDate(req.appointmentDate) }}</span>
                   <span>⏱ {{ req.durationMinutes }} min</span>
-                  <span>{{ req.consultationType === 'TELECONSULTATION' ? '💻 Téléconsultation' : '🏥 Présentiel' }}</span>
+                  <span>{{ req.consultationType === 'TELECONSULTATION' ? ' Téléconsultation' : ' Présentiel' }}</span>
                 </div>
-                <div class="req-reason" *ngIf="req.reason">📝 {{ req.reason }}</div>
+                <div class="req-reason" *ngIf="req.reason"> {{ req.reason }}</div>
               </div>
             </div>
             <div class="req-actions">
               <button class="btn-refuse" (click)="openRefuse(req)">✕ Refuser</button>
               <button class="btn-accept" (click)="acceptRequest(req)" [disabled]="processingId() === req.id">
-                {{ processingId() === req.id ? '⏳' : '✓ Confirmer' }}
+                {{ processingId() === req.id ? '' : '✓ Confirmer' }}
               </button>
             </div>
           </div>
@@ -221,14 +221,14 @@ type PlanningView = "calendar" | "requests" | "slots" | "conges";
               <div class="modal-actions">
                 <button class="btn-outline" (click)="refuseTarget.set(null)">Annuler</button>
                 <button class="btn-danger" (click)="confirmRefuse()" [disabled]="!refuseReason || isProcessing()">
-                  {{ isProcessing() ? '⏳' : '✕ Confirmer le refus' }}
+                  {{ isProcessing() ? '' : '✕ Confirmer le refus' }}
                 </button>
               </div>
             </div>
           </div>
 
           <div class="empty-state" *ngIf="pendingAppointments().length === 0">
-            <div style="font-size:48px">✅</div>
+            <div style="font-size:48px"></div>
             <p>Aucune demande en attente</p>
           </div>
         </div>
@@ -239,7 +239,7 @@ type PlanningView = "calendar" | "requests" | "slots" | "conges";
            ══════════════════════════════════════════ -->
       <ng-container *ngIf="activeView() === 'slots'">
         <div class="form-card">
-          <h2 class="section-title">🕐 Gérer mes disponibilités</h2>
+          <h2 class="section-title"> Gérer mes disponibilités</h2>
           <p style="color:#64748b; font-size:14px; margin-bottom:24px;">
             Définissez vos plages horaires de travail. Les créneaux seront automatiquement proposés aux patients.
           </p>
@@ -301,7 +301,7 @@ type PlanningView = "calendar" | "requests" | "slots" | "conges";
           </div>
 
           <button class="btn-primary" style="margin-top:28px;" (click)="saveAvailability()" [disabled]="isSavingSlots()">
-            {{ isSavingSlots() ? '⏳ Enregistrement...' : '💾 Enregistrer les disponibilités' }}
+            {{ isSavingSlots() ? ' Enregistrement...' : ' Enregistrer les disponibilités' }}
           </button>
         </div>
       </ng-container>
@@ -313,7 +313,7 @@ type PlanningView = "calendar" | "requests" | "slots" | "conges";
         <div class="form-card">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
             <div>
-              <h2 class="section-title" style="margin:0;">🏖️ Gestion des Congés</h2>
+              <h2 class="section-title" style="margin:0;"> Gestion des Congés</h2>
               <p style="color:#64748b; font-size:14px; margin:4px 0 0;">Bloquez des périodes d'indisponibilité. Les patients ne pourront pas réserver pendant ces dates.</p>
             </div>
             <button class="btn-primary" (click)="addConge()">+ Ajouter une période</button>
@@ -322,7 +322,7 @@ type PlanningView = "calendar" | "requests" | "slots" | "conges";
           <!-- Liste des congés -->
           <div class="conges-list" *ngIf="conges().length > 0">
             <div class="conge-item" *ngFor="let c of conges(); let i = index">
-              <div class="conge-icon">🏖️</div>
+              <div class="conge-icon"></div>
               <div class="conge-info">
                 <div class="conge-label">{{ c.label || 'Congé' }}</div>
                 <div class="conge-dates">
@@ -342,7 +342,7 @@ type PlanningView = "calendar" | "requests" | "slots" | "conges";
           </div>
 
           <div class="empty-state" *ngIf="conges().length === 0" style="background:#f8fafc; border-radius:12px; padding:40px; text-align:center; color:#94a3b8;">
-            <div style="font-size:48px; margin-bottom:12px;">🏖️</div>
+            <div style="font-size:48px; margin-bottom:12px;"></div>
             <p>Aucune période de congé définie</p>
           </div>
 
@@ -372,7 +372,7 @@ type PlanningView = "calendar" | "requests" | "slots" | "conges";
               <button class="btn-outline" (click)="showCongeForm.set(false)">Annuler</button>
               <button class="btn-primary" (click)="saveConge()"
                       [disabled]="!newConge.startDate || !newConge.endDate || isSavingConge()">
-                {{ isSavingConge() ? '⏳ Enregistrement...' : '✅ Confirmer le congé' }}
+                {{ isSavingConge() ? 'Enregistrement...' : ' Confirmer le congé' }}
               </button>
             </div>
           </div>

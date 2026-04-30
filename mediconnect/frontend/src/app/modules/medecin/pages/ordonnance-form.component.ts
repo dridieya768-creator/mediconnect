@@ -15,7 +15,7 @@ import { AuthService } from '../../../core/services/auth.service';
       <p class="page-subtitle">Rédigez une prescription médicale pour votre patient</p>
     </div>
     <div class="alert-success" *ngIf="successMsg()"> {{ successMsg() }}</div>
-    <div class="alert-error" *ngIf="errorMsg()">❌ {{ errorMsg() }}</div>
+    <div class="alert-error" *ngIf="errorMsg()"> {{ errorMsg() }}</div>
     <form [formGroup]="form" (ngSubmit)="submit()" class="rx-form">
       <div class="rx-card">
         <h3 class="card-title"> Patient</h3>

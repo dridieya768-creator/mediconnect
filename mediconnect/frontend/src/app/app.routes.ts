@@ -59,7 +59,7 @@ export const routes: Routes = [
   {
     path: "admin",
     canActivate: [authGuard],
-    data: { role: "ADMIN_SYSTEM" },
+    data: { role: "ADMIN" },
     loadChildren: () =>
       import("./features/admin/admin.routes").then((m) => m.ADMIN_ROUTES),
   },
@@ -68,6 +68,12 @@ export const routes: Routes = [
     path: "procedure/:slug",
     loadComponent: () =>
       import("./pages/procedure/procedure.component").then((m) => m.ProcedureComponent),
+  },
+
+  {
+    path: "partage-dossier",
+    loadComponent: () =>
+      import("./pages/partage-dossier/partage-dossier.component").then((m) => m.PartageDossierComponent),
   },
 
   // ⚠️ Wildcard TOUJOURS EN DERNIER

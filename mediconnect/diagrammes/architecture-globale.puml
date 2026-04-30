@@ -1,0 +1,147 @@
+@startuml
+title Architecture Globale MediConnect - Pattern Controller-Service-Repository + MVVM
+
+skinparam componentStyle rectangle
+skinparam linetype ortho
+
+package "CLIENT (Navigateur Web)" {
+  
+  package "Angular 17 - MVVM" {
+    
+    [Components\n(View + ViewModel)] as components
+    note right of components
+      - Templates HTML (View)
+      - TypeScript Classes (ViewModel)
+      - Data Binding bidirectionnel
+      - Gestion de l'état local
+    end note
+    
+    [Services\n(Business Logic)] as frontServices
+    note right of frontServices
+      - Appels HTTP vers API
+      - Gestion d'état global
+      - Communication WebSocket
+      - Cache local
+    end note
+    
+    [Models\n(Interfaces)] as models
+    note right of models
+      - Patient, Medecin
+      - Appointment, Prescription
+      - Définition des types
+    end note
+    
+    [Guards & Interceptors] as guards
+    note right of guards
+      - AuthGuard (protection routes)
+      - HTTP Interceptor (JWT)
+      - Error Handling
+    end note
+  }
+  
+  components -down-> frontServices : utilise
+  frontServices -down-> models : utilise
+  guards -left-> components : protège
+}
+
+package "SERVEUR (Backend)" {
+  
+  package "NestJS - Architecture Modulaire" {
+    
+    package "Couche Présentation" {
+      [Controllers\n(Routes HTTP)] as controllers
+      note right of controllers
+        - @Get, @Post, @Put, @Delete
+        - Validation des DTOs
+        - Gestion des requêtes HTTP
+        - Retour des réponses
+      end note
+      
+      [DTOs\n(Data Transfer Objects)] as dtos
+      note right of dtos
+        - Validation (class-validator)
+        - Transformation des données
+        - CreateAppointmentDto
+        - LoginDto, RegisterDto
+      end note
+    }
+    
+    package "Couche Métier" {
+      [Services\n(Business Logic)] as services
+      note right of services
+        - Logique métier
+        - Orchestration
+        - Transactions
+        - Règles de gestion
+      end note
+      
+      [Guards & Interceptors] as backGuards
+      note right of backGuards
+        - JwtAuthGuard
+        - RolesGuard
+        - Logging Interceptor
+        - Transform Interceptor
+      end note
+    }
+    
+    package "Couche Accès Données" {
+      [Repositories\n(TypeORM)] as repositories
+      note right of repositories
+        - CRUD operations
+        - Requêtes personnalisées
+        - QueryBuilder
+        - Relations
+      end note
+      
+      [Entities\n(Modèle de données)] as entities
+      note right of entities
+        - @Entity, @Column
+        - Relations (@ManyToOne, @OneToMany)
+        - Mapping ORM
+        - Validation
+      end note
+    }
+  }
+  
+  controllers -down-> dtos : valide
+  controllers -down-> services : appelle
+  services -down-> repositories : utilise
+  repositories -down-> entities : manipule
+  backGuards -left-> controllers : protège
+}
+
+database "PostgreSQL" {
+  [Tables] as tables
+  note right of tables
+    - users, patients, medecins
+    - appointments, prescriptions
+    - notifications, qr_codes
+    - Contraintes d'intégrité
+  end note
+}
+
+cloud "Services Externes" {
+  [Email Service\n(SMTP)] as email
+  [SMS Service\n(Twilio)] as sms
+  [WebRTC\n(Téléconsultation)] as webrtc
+}
+
+' Connexions principales
+frontServices -down-> controllers : HTTP/REST\nJSON\nJWT Token
+repositories -down-> tables : TypeORM\nSQL Queries
+services -right-> email : Nodemailer
+services -right-> sms : API REST
+components -right-> webrtc : P2P Connection
+
+' Légende
+legend right
+  |= Couche |= Responsabilité |
+  | Controllers | Routing, Validation HTTP |
+  | Services | Logique métier |
+  | Repositories | Accès aux données |
+  | Entities | Modèle de données |
+  | Components | Interface utilisateur |
+  | Services (Front) | Communication API |
+endlegend
+
+@enduml

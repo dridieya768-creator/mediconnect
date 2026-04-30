@@ -5,13 +5,15 @@ import { User } from '../users/entities/user.entity';
 import { Patient } from '../patients/entities/patient.entity';
 import { Appointment, AppointmentStatus } from '../appointments/entities/appointment.entity';
 import { UpdateAvailabilityDto } from './update-availability.dto';
+import { NotificationsService } from '../notifications/notifications.service';
 export declare class MedecinsService {
     private medecinProfileRepository;
     private doctorPatientRepository;
     private userRepository;
     private appointmentRepository;
     private patientRepository;
-    constructor(medecinProfileRepository: Repository<MedecinProfile>, doctorPatientRepository: Repository<DoctorPatient>, userRepository: Repository<User>, appointmentRepository: Repository<Appointment>, patientRepository: Repository<Patient>);
+    private readonly notificationsService;
+    constructor(medecinProfileRepository: Repository<MedecinProfile>, doctorPatientRepository: Repository<DoctorPatient>, userRepository: Repository<User>, appointmentRepository: Repository<Appointment>, patientRepository: Repository<Patient>, notificationsService: NotificationsService);
     getProfile(userId: string): Promise<MedecinProfile>;
     updateProfile(userId: string, updateData: any): Promise<MedecinProfile>;
     getMedecinById(id: string): Promise<{
@@ -83,6 +85,7 @@ export declare class MedecinsService {
         };
         patient: User;
     }>;
+    private resolvePatientUserId;
     getMyPatients(doctorId: string): Promise<User[]>;
     isPatientInDoctorList(doctorId: string, patientId: string): Promise<boolean>;
     getMyPatientsFromAppointments(doctorId: string): Promise<any[]>;

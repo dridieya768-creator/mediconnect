@@ -19,12 +19,13 @@ const typeorm_2 = require("typeorm");
 const appointment_entity_1 = require("./entities/appointment.entity");
 const notifications_service_1 = require("../notifications/notifications.service");
 const notification_entity_1 = require("../notifications/notification.entity");
+const sms_service_1 = require("../notifications/sms.service");
 const uuid_1 = require("uuid");
-const patient_entity_1 = require("../patients/entities/patient.entity");
 let AppointmentsService = class AppointmentsService {
-    constructor(repo, notificationsService) {
+    constructor(repo, notificationsService, smsService) {
         this.repo = repo;
         this.notificationsService = notificationsService;
+        this.smsService = smsService;
     }
     async create(dto) {
         const apptDate = new Date(dto.appointmentDate);
@@ -73,10 +74,13 @@ let AppointmentsService = class AppointmentsService {
     }
     async findByPatient(patientId) {
         try {
-            const appts = await this.repo.find({
-                where: { patientId },
-                order: { appointmentDate: "DESC" },
-            });
+            const userIdFromPatient = await this.resolvePatientUserId(patientId);
+            const idsToSearch = [...new Set([patientId, userIdFromPatient])];
+            const appts = await this.repo
+                .createQueryBuilder("a")
+                .where("a.patientId IN (:...ids)", { ids: idsToSearch })
+                .orderBy("a.appointmentDate", "DESC")
+                .getMany();
             return await Promise.all(appts.map(a => this.findOneSafe(a.id)));
         }
         catch (err) {
@@ -85,6 +89,36 @@ let AppointmentsService = class AppointmentsService {
                 where: { patientId },
                 order: { appointmentDate: "DESC" },
             });
+        }
+    }
+    async findDoctorsByPatient(patientUserId) {
+        try {
+            const resolvedId = await this.resolvePatientUserId(patientUserId);
+            const idsToSearch = [...new Set([patientUserId, resolvedId])];
+            const appts = await this.repo
+                .createQueryBuilder('a')
+                .leftJoinAndSelect('a.doctor', 'doctor')
+                .where('a.patientId IN (:...ids)', { ids: idsToSearch })
+                .andWhere('a.appointmentDate < :now', { now: new Date() })
+                .andWhere('a.status IN (:...statuses)', {
+                statuses: [appointment_entity_1.AppointmentStatus.COMPLETED, appointment_entity_1.AppointmentStatus.CONFIRMED, appointment_entity_1.AppointmentStatus.CANCELLED],
+            })
+                .getMany();
+            const doctorMap = new Map();
+            for (const a of appts) {
+                if (a.doctorId && !doctorMap.has(a.doctorId)) {
+                    doctorMap.set(a.doctorId, {
+                        id: a.doctorId,
+                        firstName: a.doctor?.firstName ?? '',
+                        lastName: a.doctor?.lastName ?? '',
+                    });
+                }
+            }
+            return Array.from(doctorMap.values());
+        }
+        catch (err) {
+            console.error('[AppointmentsService] findDoctorsByPatient error:', err.message);
+            return [];
         }
     }
     async findByDoctor(doctorId, date) {
@@ -143,11 +177,8 @@ let AppointmentsService = class AppointmentsService {
         appt.cancellationReason = reason;
         await this.repo.save(appt);
         try {
-            const patient = await this.repo.manager.findOne(patient_entity_1.Patient, {
-                where: { id: appt.patientId },
-            });
-            const notifUserId = patient?.userId ?? appt.patientId;
-            console.log(`[Notifications] cancel → patientId=${appt.patientId} → userId=${notifUserId}`);
+            const notifUserId = await this.resolvePatientUserId(appt.patientId);
+            console.log(`[Notifications] cancel → patientId=${appt.patientId} → notifUserId=${notifUserId}`);
             const dateStr = new Date(appt.appointmentDate).toLocaleDateString("fr-FR", {
                 weekday: "long", day: "2-digit", month: "long",
             });
@@ -157,7 +188,7 @@ let AppointmentsService = class AppointmentsService {
             await this.notificationsService.create({
                 userId: notifUserId,
                 type: notification_entity_1.NotificationType.APPOINTMENT_CANCELLED,
-                title: "❌ Rendez-vous refusé",
+                title: "Rendez-vous refusé",
                 message: reason
                     ? `Votre demande de RDV du ${dateStr} à ${timeStr} a été refusée. Motif : ${reason}`
                     : `Votre demande de RDV du ${dateStr} à ${timeStr} a été refusée.`,
@@ -176,18 +207,29 @@ let AppointmentsService = class AppointmentsService {
         appt.status = appointment_entity_1.AppointmentStatus.CONFIRMED;
         await this.repo.save(appt);
         try {
-            const patient = await this.repo.manager.findOne(patient_entity_1.Patient, {
-                where: { id: appt.patientId },
-            });
-            const notifUserId = patient?.userId ?? appt.patientId;
-            console.log(`[Notifications] confirm → patientId=${appt.patientId} → userId=${notifUserId}`);
+            const notifUserId = await this.resolvePatientUserId(appt.patientId);
+            console.log(`[Notifications] confirm → patientId=${appt.patientId} → notifUserId=${notifUserId}`);
+            const dateStr = new Date(appt.appointmentDate).toLocaleDateString("fr-FR", { weekday: "long", day: "2-digit", month: "long" });
+            const timeStr = new Date(appt.appointmentDate).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+            const message = `Votre rendez-vous du ${dateStr} à ${timeStr} a été confirmé.`;
             await this.notificationsService.create({
                 userId: notifUserId,
                 type: notification_entity_1.NotificationType.APPOINTMENT_CONFIRMED,
-                title: "✅ Rendez-vous confirmé",
-                message: `Votre rendez-vous du ${new Date(appt.appointmentDate).toLocaleDateString("fr-FR", { weekday: "long", day: "2-digit", month: "long" })} à ${new Date(appt.appointmentDate).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })} a été confirmé.`,
+                title: "Rendez-vous confirmé",
+                message,
                 relatedId: appt.id,
             });
+            const patientPhone = await this.resolvePatientPhone(appt.patientId);
+            if (patientPhone) {
+                await this.smsService.sendSms(patientPhone, `MediConnect: ${message}`);
+                await this.notificationsService.create({
+                    userId: notifUserId,
+                    type: notification_entity_1.NotificationType.SMS_REMINDER,
+                    title: "SMS envoyé",
+                    message: `SMS de confirmation envoyé au ${patientPhone}`,
+                    relatedId: appt.id,
+                });
+            }
         }
         catch (e) {
             console.warn("[Notifications] Impossible de notifier le patient (confirm):", e.message);
@@ -224,6 +266,24 @@ let AppointmentsService = class AppointmentsService {
         }
         return { videoRoomId: appt.videoRoomId, jitsiUrl: `https://meet.jit.si/${appt.videoRoomId}` };
     }
+    async resolvePatientUserId(patientId) {
+        const result = await this.repo.manager.query(`SELECT user_id FROM patients WHERE id = $1 LIMIT 1`, [patientId]);
+        if (result?.length > 0 && result[0].user_id) {
+            return result[0].user_id;
+        }
+        return patientId;
+    }
+    async resolvePatientPhone(patientId) {
+        const fromPatient = await this.repo.manager.query(`SELECT p.telephone, u.phone
+       FROM patients p
+       LEFT JOIN users u ON u.id = p.user_id
+       WHERE p.id = $1 LIMIT 1`, [patientId]);
+        if (fromPatient?.length > 0) {
+            return fromPatient[0].telephone || fromPatient[0].phone || null;
+        }
+        const fromUser = await this.repo.manager.query(`SELECT phone FROM users WHERE id = $1 LIMIT 1`, [patientId]);
+        return fromUser?.[0]?.phone || null;
+    }
     async findOne(id) {
         const appt = await this.repo.findOne({ where: { id } });
         if (!appt)
@@ -254,6 +314,7 @@ exports.AppointmentsService = AppointmentsService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(appointment_entity_1.Appointment)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
-        notifications_service_1.NotificationsService])
+        notifications_service_1.NotificationsService,
+        sms_service_1.SmsService])
 ], AppointmentsService);
 //# sourceMappingURL=appointments.service.js.map
