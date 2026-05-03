@@ -18,7 +18,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
             <span class="room-id" *ngIf="roomId()">Salle : {{ roomId() }}</span>
           </div>
         </div>
-        <button class="btn-end" (click)="endCall()">🔴 Terminer</button>
+        <button class="btn-end" (click)="endCall()"> Terminer</button>
       </div>
 
       <div class="loading-state" *ngIf="loading()">

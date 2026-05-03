@@ -35,12 +35,12 @@ interface Appointment {
       <!-- HEADER -->
       <div class="page-header">
         <div>
-          <h1 class="page-title">👥 Mes Patients</h1>
+          <h1 class="page-title"> Mes Patients</h1>
           <p class="page-subtitle">Patients ayant des rendez-vous confirmés avec vous</p>
         </div>
         <div class="header-actions">
           <div class="search-wrap">
-            <span class="search-icon">🔍</span>
+            <span class="search-icon"></span>
             <input
               type="text"
               #searchInput
@@ -49,7 +49,7 @@ interface Appointment {
               class="search-input"
             />
           </div>
-          <button class="btn-export" (click)="exportData()">📊 Exporter</button>
+          <button class="btn-export" (click)="exportData()"> Exporter</button>
         </div>
       </div>
 
@@ -64,28 +64,28 @@ interface Appointment {
         <!-- STATS -->
         <div class="stats-row">
           <div class="stat-card indigo">
-            <div class="stat-icon">👥</div>
+            <div class="stat-icon"></div>
             <div>
               <div class="stat-val">{{ patients().length }}</div>
               <div class="stat-label">Patients uniques</div>
             </div>
           </div>
           <div class="stat-card green">
-            <div class="stat-icon">✅</div>
+            <div class="stat-icon"></div>
             <div>
               <div class="stat-val">{{ confirmedCount() }}</div>
               <div class="stat-label">RDV confirmés</div>
             </div>
           </div>
           <div class="stat-card blue">
-            <div class="stat-icon">✔️</div>
+            <div class="stat-icon"></div>
             <div>
               <div class="stat-val">{{ completedCount() }}</div>
               <div class="stat-label">Consultations terminées</div>
             </div>
           </div>
           <div class="stat-card orange">
-            <div class="stat-icon">⏳</div>
+            <div class="stat-icon"></div>
             <div>
               <div class="stat-val">{{ pendingCount() }}</div>
               <div class="stat-label">En attente</div>
@@ -96,13 +96,13 @@ interface Appointment {
         <!-- TABS -->
         <div class="tabs-bar">
           <button class="tab-btn" [class.active]="activeTab() === 'patients'" (click)="activeTab.set('patients')">
-            👥 Patients <span class="tab-pill">{{ filteredPatients().length }}</span>
+             Patients <span class="tab-pill">{{ filteredPatients().length }}</span>
           </button>
           <button class="tab-btn" [class.active]="activeTab() === 'rdv'" (click)="activeTab.set('rdv')">
-            📋 Tous les RDV <span class="tab-pill">{{ appointments().length }}</span>
+             Tous les RDV <span class="tab-pill">{{ appointments().length }}</span>
           </button>
           <button class="tab-btn" [class.active]="activeTab() === 'upcoming'" (click)="activeTab.set('upcoming')">
-            📅 À venir <span class="tab-pill">{{ upcomingList().length }}</span>
+            À venir <span class="tab-pill">{{ upcomingList().length }}</span>
           </button>
         </div>
 
@@ -114,19 +114,19 @@ interface Appointment {
               <div class="patient-info">
                 <div class="patient-name">{{ getFullName(p) }}</div>
                 <div class="patient-email">{{ p.email }}</div>
-                <div class="patient-phone" *ngIf="p.phone">📞 {{ p.phone }}</div>
+                <div class="patient-phone" *ngIf="p.phone"> {{ p.phone }}</div>
                 <div class="patient-rdv-count">
                   <span class="rdv-badge">{{ p.rdvCount }} RDV</span>
                 </div>
                 <button class="btn-profile" (click)="$event.stopPropagation(); goToProfile(p.id)">
-                  📋 Dossier & Observations
+                   Dossier & Observations
                 </button>
               </div>
               <div class="patient-arrow">›</div>
             </div>
           </div>
           <div class="empty-state" *ngIf="filteredPatients().length === 0">
-            <div style="font-size:48px">👥</div>
+            <div style="font-size:48px"></div>
             <p>Aucun patient trouvé</p>
             <small *ngIf="searchTerm()">Essayez un autre terme de recherche</small>
             <small *ngIf="!searchTerm()">Vos patients apparaîtront ici après confirmation de RDV</small>
@@ -157,7 +157,7 @@ interface Appointment {
                   <td class="email-cell">{{ getApptPatientEmail(a) }}</td>
                   <td>
                     <span class="type-badge">
-                      {{ a.consultationType === 'TELECONSULTATION' ? '💻 Télé' : '🏥 Présentiel' }}
+                      {{ a.consultationType === 'TELECONSULTATION' ? ' Télé' : ' Présentiel' }}
                     </span>
                   </td>
                   <td>{{ a.durationMinutes }} min</td>
@@ -187,7 +187,7 @@ interface Appointment {
               <div class="upcoming-info">
                 <div class="upcoming-name">{{ getApptPatientName(a) }}</div>
                 <div class="upcoming-meta">
-                  <span>{{ a.consultationType === 'TELECONSULTATION' ? '💻 Téléconsultation' : '🏥 Présentiel' }}</span>
+                  <span>{{ a.consultationType === 'TELECONSULTATION' ? ' Téléconsultation' : ' Présentiel' }}</span>
                   <span>{{ a.durationMinutes }} min</span>
                 </div>
               </div>
@@ -196,7 +196,7 @@ interface Appointment {
               </span>
             </div>
             <div class="empty-state" *ngIf="upcomingList().length === 0">
-              <div style="font-size:48px">📅</div>
+              <div style="font-size:48px"></div>
               <p>Aucun RDV à venir</p>
             </div>
           </div>
@@ -218,18 +218,18 @@ interface Appointment {
             </div>
             <div class="modal-body">
               <div class="detail-row" *ngIf="p.phone">
-                <span class="detail-label">📞 Téléphone</span>
+                <span class="detail-label"> Téléphone</span>
                 <span>{{ p.phone }}</span>
               </div>
               <div class="detail-row">
-                <span class="detail-label">📅 Nombre de RDV</span>
+                <span class="detail-label"> Nombre de RDV</span>
                 <span>{{ p.rdvCount }} rendez-vous</span>
               </div>
               <div class="detail-sub">Historique des RDV</div>
               <div class="patient-appt-list">
                 <div class="patient-appt-item" *ngFor="let a of getPatientAppts(p.id)">
                   <span class="appt-date-sm">{{ formatDate(a.appointmentDate) }} {{ formatTime(a.appointmentDate) }}</span>
-                  <span class="type-badge-sm">{{ a.consultationType === 'TELECONSULTATION' ? '💻' : '🏥' }}</span>
+                  <span class="type-badge-sm">{{ a.consultationType === 'TELECONSULTATION' ? '' : '' }}</span>
                   <span class="status-pill" [ngClass]="getStatusClass(a.status)">{{ getStatusLabel(a.status) }}</span>
                 </div>
               </div>
@@ -251,15 +251,15 @@ interface Appointment {
             </div>
             <div class="modal-body">
               <div class="detail-row">
-                <span class="detail-label">👤 Patient</span>
+                <span class="detail-label"> Patient</span>
                 <span>{{ getApptPatientName(a) }}</span>
               </div>
               <div class="detail-row">
-                <span class="detail-label">📧 Email</span>
+                <span class="detail-label"> Email</span>
                 <span>{{ getApptPatientEmail(a) }}</span>
               </div>
               <div class="detail-row">
-                <span class="detail-label">🏥 Type</span>
+                <span class="detail-label"> Type</span>
                 <span>{{ a.consultationType === 'TELECONSULTATION' ? 'Téléconsultation' : 'Présentiel' }}</span>
               </div>
               <div class="detail-row">
@@ -267,11 +267,11 @@ interface Appointment {
                 <span>{{ a.durationMinutes }} min</span>
               </div>
               <div class="detail-row" *ngIf="a.reason">
-                <span class="detail-label">📝 Motif</span>
+                <span class="detail-label"> Motif</span>
                 <span>{{ a.reason }}</span>
               </div>
               <div class="detail-row">
-                <span class="detail-label">📌 Statut</span>
+                <span class="detail-label"> Statut</span>
                 <span class="status-pill" [ngClass]="getStatusClass(a.status)">
                   {{ getStatusLabel(a.status) }}
                 </span>

@@ -18,7 +18,7 @@ import * as L from "leaflet";
         <h1 class="page-title"> Mon Profil Professionnel</h1>
         <div class="header-actions">
           <button class="btn-save" (click)="saveProfile()" [disabled]="isSaving()">
-            {{ isSaving() ? ' Enregistrement...' : '💾 Enregistrer' }}
+            {{ isSaving() ? ' Enregistrement...' : ' Enregistrer' }}
           </button>
           <button class="btn-logout" (click)="logout()">
              Déconnexion
@@ -26,8 +26,8 @@ import * as L from "leaflet";
         </div>
       </div>
 
-      <div class="alert-success" *ngIf="successMsg()">✅ {{ successMsg() }}</div>
-      <div class="alert-error" *ngIf="errorMsg()">❌ {{ errorMsg() }}</div>
+      <div class="alert-success" *ngIf="successMsg()"> {{ successMsg() }}</div>
+      <div class="alert-error" *ngIf="errorMsg()"> {{ errorMsg() }}</div>
 
       <div class="loading-state" *ngIf="isLoading()">
         <div class="spinner"></div><p>Chargement...</p>
@@ -62,7 +62,7 @@ import * as L from "leaflet";
                            accept="image/jpeg,image/png,image/jpg" hidden>
                   </label>
                   <button *ngIf="form.photoPro || photoPreview" class="remove-photo-btn" 
-                          (click)="removePhoto()" type="button">🗑️ Supprimer</button>
+                          (click)="removePhoto()" type="button"> Supprimer</button>
                 </div>
                 <small class="upload-hint">JPEG, PNG, JPG. Max 5MB</small>
               </div>
@@ -107,7 +107,7 @@ import * as L from "leaflet";
         <!-- ── LOCALISATION ── -->
         <div class="profile-card">
           <div class="card-header">
-            <span class="card-icon">📍</span>
+            <span class="card-icon"></span>
             <h2>Cabinet & Localisation</h2>
           </div>
           <div class="card-body">
@@ -120,11 +120,11 @@ import * as L from "leaflet";
               <input class="form-input" [(ngModel)]="form.adresseCabinet" placeholder="Ex: 12 Rue de la République, Tunis"/>
             </div>
             <div class="form-group">
-              <label class="form-label">📍 Position du cabinet sur la carte</label>
+              <label class="form-label"> Position du cabinet sur la carte</label>
               <div class="map-hint">Cliquez sur la carte pour placer votre cabinet. Les patients vous trouveront à cet emplacement.</div>
               <div id="profile-map" class="profile-leaflet-map"></div>
               <div class="coords-display" *ngIf="form.geoGoogleMaps">
-                <span class="coords-icon">📌</span>
+                <span class="coords-icon"></span>
                 <span class="coords-text">{{ form.geoGoogleMaps }}</span>
                 <button type="button" class="coords-clear" (click)="clearLocation()">✕</button>
               </div>
@@ -158,7 +158,7 @@ import * as L from "leaflet";
         <!-- ── CONTACT PRO ── -->
         <div class="profile-card">
           <div class="card-header">
-            <span class="card-icon">📞</span>
+            <span class="card-icon"></span>
             <h2>Contact Professionnel</h2>
           </div>
           <div class="card-body">
@@ -176,7 +176,7 @@ import * as L from "leaflet";
         <!-- ── TARIFS ── -->
         <div class="profile-card">
           <div class="card-header">
-            <span class="card-icon">💰</span>
+            <span class="card-icon"></span>
             <h2>Tarifs & Actes</h2>
           </div>
           <div class="card-body">

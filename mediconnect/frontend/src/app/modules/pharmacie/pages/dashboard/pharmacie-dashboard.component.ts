@@ -8,7 +8,7 @@ import { RouterLink } from "@angular/router";
   imports: [CommonModule, RouterLink],
   template: `
     <div class="page-header">
-      <h1 class="page-title">💊 Tableau de bord Pharmacie</h1>
+      <h1 class="page-title"> Tableau de bord Pharmacie</h1>
       <p class="page-subtitle">Module en cours de développement</p>
     </div>
     <div class="mc-card">

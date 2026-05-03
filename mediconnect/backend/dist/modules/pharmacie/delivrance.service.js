@@ -79,7 +79,23 @@ let DelivranceService = class DelivranceService {
         catch {
             cip = dto.qrMedCip;
         }
-        const med = prescription.medications.find((m) => m.cip === cip);
+        let med = prescription.medications.find((m) => m.cip === cip);
+        if (!med) {
+            const isTempKey = /^MED_\d+$/.test(cip);
+            let medWithoutCip;
+            if (isTempKey) {
+                const idx = parseInt(cip.replace('MED_', ''), 10);
+                medWithoutCip = prescription.medications[idx];
+            }
+            else {
+                medWithoutCip = prescription.medications.find((m) => !m.cip || m.cip.trim() === '' || /^MED_\d+$/.test(m.cip));
+            }
+            if (medWithoutCip) {
+                medWithoutCip.cip = cip;
+                await this.prescriptionRepo.save(prescription);
+                med = medWithoutCip;
+            }
+        }
         if (!med) {
             throw new common_1.BadRequestException(`Médicament non prescrit : CIP ${cip}`);
         }

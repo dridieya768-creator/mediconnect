@@ -68,7 +68,7 @@ export class AdminService {
 
   async createUser(dto: CreateUserAdminDto) {
     const existing = await this.userRepository.findOne({ where: { email: dto.email } });
-    if (existing) throw new ConflictException('Email déjà utilisé');
+    if (existing) throw new ConflictException('Email deja utilise');
     const hashedPassword = await bcrypt.hash(dto.password, 12);
     const user = this.userRepository.create({
       ...dto,
@@ -92,7 +92,7 @@ export class AdminService {
       try {
         await this.sendDoctorStatusEmail(saved, dto.status);
       } catch (e) {
-        console.warn('[Admin] Erreur envoi email médecin:', e.message);
+        console.warn('[Admin] Erreur envoi email medecin:', e.message);
       }
     }
 
@@ -112,41 +112,22 @@ export class AdminService {
     });
 
     const isApproved = newStatus === 'ACTIVE';
-
     await transporter.sendMail({
       from:    '"MediConnect" <dridieya768@gmail.com>',
       to:      user.email,
-      subject: isApproved
-        ? '✅ Votre compte MediConnect a été approuvé'
-        : '❌ Votre inscription MediConnect a été refusée',
-      html: isApproved ? `
-        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
-          <h2 style="color:#16a34a;">✅ Compte approuvé !</h2>
-          <p>Bonjour Dr. <strong>${user.firstName} ${user.lastName}</strong>,</p>
-          <p>Votre compte MediConnect a été <strong>approuvé</strong> par l'administrateur.</p>
-          <a href="http://localhost:4200/auth/login"
-             style="display:inline-block;background:#16a34a;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;margin:16px 0;">
-            Se connecter
-          </a>
-          <p style="color:#666;font-size:12px;">Bienvenue sur MediConnect 🏥</p>
-        </div>
-      ` : `
-        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
-          <h2 style="color:#dc2626;">❌ Inscription refusée</h2>
-          <p>Bonjour Dr. <strong>${user.firstName} ${user.lastName}</strong>,</p>
-          <p>Votre demande d'inscription sur MediConnect a été <strong>refusée</strong>.</p>
-          <p>Contactez <a href="mailto:support@mediconnect.tn">support@mediconnect.tn</a> pour plus d'infos.</p>
-        </div>
-      `,
+      subject: isApproved ? 'Votre compte MediConnect a ete approuve' : 'Votre inscription MediConnect a ete refusee',
+      html: isApproved
+        ? `<p>Bonjour Dr. ${user.firstName} ${user.lastName}, votre compte a ete approuve.</p>`
+        : `<p>Bonjour Dr. ${user.firstName} ${user.lastName}, votre demande a ete refusee.</p>`,
     });
-    console.log(`[Admin] ✅ Email envoyé à ${user.email} → ${newStatus}`);
+    console.log(`[Admin] Email envoye a ${user.email} -> ${newStatus}`);
   }
 
   async deleteUser(id: string) {
     const user = await this.userRepository.findOne({ where: { id } });
     if (!user) throw new NotFoundException('Utilisateur introuvable');
     await this.userRepository.softDelete(id);
-    return { message: 'Utilisateur supprimé' };
+    return { message: 'Utilisateur supprime' };
   }
 
   async resetPassword(id: string) {
@@ -155,51 +136,103 @@ export class AdminService {
     const tempPassword = Math.random().toString(36).slice(-8) + 'A1!';
     const hashed = await bcrypt.hash(tempPassword, 12);
     await this.userRepository.update(id, { password: hashed } as any);
-    return { message: `Mot de passe réinitialisé pour ${user.email}` };
+    return { message: `Mot de passe reinitialise pour ${user.email}` };
   }
 
-  // ✅ FIX : aliases camelCase pour correspondre exactement à l'interface DoctorDocument du frontend
   async getDoctorDocuments(userId: string) {
     try {
       const docs = await this.userRepository.query(
-        `SELECT
-           id,
-           user_id        AS "userId",
-           type,
-           filename,
-           original_name  AS "originalName",
-           file_path      AS "filePath",
-           base64,
-           status,
-           created_at     AS "createdAt"
-         FROM doctor_documents
-         WHERE user_id = $1
-         ORDER BY created_at ASC`,
+        `SELECT id, user_id AS "userId", type, filename,
+           original_name AS "originalName", file_path AS "filePath",
+           base64, status, created_at AS "createdAt"
+         FROM doctor_documents WHERE user_id = $1 ORDER BY created_at ASC`,
         [userId],
       );
-      console.log(`[Admin] getDoctorDocuments: ${docs.length} doc(s) pour userId=${userId}`);
       return docs;
-    } catch (err) {
+    } catch (err: any) {
       console.error('[Admin] getDoctorDocuments error:', err.message);
       return [];
     }
   }
 
   async getStats() {
-    const total = await this.userRepository.createQueryBuilder('user').getCount();
-    const actifs = await this.userRepository
-      .createQueryBuilder('user')
-      .where('user.status = :status', { status: UserStatus.ACTIVE })
-      .getCount();
-    const patients = await this.userRepository
-      .createQueryBuilder('user')
-      .where('user.role = :role', { role: UserRole.PATIENT })
-      .getCount();
-    const medecins = await this.userRepository
-      .createQueryBuilder('user')
-      .where('user.role = :role', { role: UserRole.MEDECIN })
-      .getCount();
+    const total    = await this.userRepository.createQueryBuilder('user').getCount();
+    const actifs   = await this.userRepository.createQueryBuilder('user').where('user.status = :s', { s: UserStatus.ACTIVE }).getCount();
+    const patients = await this.userRepository.createQueryBuilder('user').where('user.role = :r', { r: UserRole.PATIENT }).getCount();
+    const medecins = await this.userRepository.createQueryBuilder('user').where('user.role = :r', { r: UserRole.MEDECIN }).getCount();
     return { total, actifs, medecins, patients };
+  }
+
+  async getAuditLogs(query: { page: number; limit: number; role?: string; search?: string }) {
+    const { page = 1, limit = 50, role, search } = query;
+    const offset = (page - 1) * limit;
+
+    try {
+      const params: any[] = [];
+      const conditions: string[] = [];
+
+      if (role && role.trim() !== '') {
+        // Normaliser les accents : "Médecin" -> "MEDECIN"
+        const roleNorm = role.trim().toUpperCase()
+          .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        params.push(roleNorm);
+        conditions.push(`h.role_auteur = $${params.length}`);
+      }
+
+      if (search && search.trim() !== '') {
+        params.push(`%${search.toLowerCase()}%`);
+        const idx = params.length;
+        conditions.push(
+          `(LOWER(COALESCE(u.first_name,'')) LIKE $${idx}` +
+          ` OR LOWER(COALESCE(u.last_name,'')) LIKE $${idx}` +
+          ` OR LOWER(COALESCE(h.commentaire,'')) LIKE $${idx})`
+        );
+      }
+
+      const where = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : '';
+
+      const countResult = await this.userRepository.query(
+        `SELECT COUNT(*) AS cnt FROM dossier_historique h
+         LEFT JOIN users u ON u.id = h.modifie_par_id ${where}`,
+        params,
+      );
+      const total = parseInt(countResult[0]?.cnt ?? '0', 10);
+
+      params.push(limit);
+      params.push(offset);
+      const limitIdx  = params.length - 1;
+      const offsetIdx = params.length;
+
+      const logs = await this.userRepository.query(
+        `SELECT
+           h.id,
+           h.patient_id      AS "patientId",
+           h.modifie_par_id  AS "modifieParId",
+           h.role_auteur     AS "roleAuteur",
+           h.champs_modifies AS "champsModifies",
+           h.commentaire,
+           h.created_at      AS "createdAt",
+           u.first_name      AS "auteurPrenom",
+           u.last_name       AS "auteurNom",
+           u.email           AS "auteurEmail",
+           u.role            AS "auteurRole",
+           p.first_name      AS "patientPrenom",
+           p.last_name       AS "patientNom"
+         FROM dossier_historique h
+         LEFT JOIN users u ON u.id = h.modifie_par_id
+         LEFT JOIN patients pat ON pat.id = h.patient_id
+         LEFT JOIN users p ON p.id = pat.user_id
+         ${where}
+         ORDER BY h.created_at DESC
+         LIMIT $${limitIdx} OFFSET $${offsetIdx}`,
+        params,
+      );
+
+      return { data: logs, total, page, limit };
+    } catch (err: any) {
+      console.error('[Admin] getAuditLogs error:', err.message);
+      return { data: [], total: 0, page, limit };
+    }
   }
 
   private sanitize(user: User) {

@@ -1,12 +1,14 @@
 import { Component, inject } from "@angular/core";
 import { RouterOutlet, RouterLink, RouterLinkActive } from "@angular/router";
 import { CommonModule } from "@angular/common";
+import { TranslateModule } from "@ngx-translate/core";
 import { AuthService } from "@core/services/auth.service";
+import { LangSwitcherComponent } from "../../../shared/components/lang-switcher/lang-switcher.component";
 
 @Component({
   selector: "app-patient-layout",
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, TranslateModule, LangSwitcherComponent],
   template: `
     <nav class="top-nav">
       <div class="nav-container">
@@ -23,19 +25,21 @@ import { AuthService } from "@core/services/auth.service";
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
             <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
           </svg>
-          <input type="text" placeholder="Rechercher..." class="search-input" [routerLink]="['/patient/recherche']" readonly/>
+          <input type="text" [placeholder]="'nav.search' | translate" class="search-input" [routerLink]="['/patient/recherche']" readonly/>
         </div>
         <div class="nav-links">
-          <a routerLink="/patient/dashboard" routerLinkActive="active" class="nav-link">Accueil</a>
-          <a routerLink="/patient/recherche" routerLinkActive="active" class="nav-link">Médecins</a>
+          <a routerLink="/patient/dashboard" routerLinkActive="active" class="nav-link">{{ 'nav.home' | translate }}</a>
+          <a routerLink="/patient/recherche" routerLinkActive="active" class="nav-link">{{ 'nav.doctors' | translate }}</a>
           <a routerLink="/patient/appointments" routerLinkActive="active" class="nav-link">
-            Rendez-vous <span class="nav-badge">2</span>
+            {{ 'nav.appointments' | translate }} <span class="nav-badge">2</span>
           </a>
-          <a routerLink="/patient/dossier" routerLinkActive="active" class="nav-link">Dossier</a>
-          <a routerLink="/patient/prescriptions" routerLinkActive="active" class="nav-link">Ordonnances</a>
-          <a routerLink="/patient/paiement" routerLinkActive="active" class="nav-link">💳 Paiement</a>
+          <a routerLink="/patient/dossier" routerLinkActive="active" class="nav-link">{{ 'nav.dossier' | translate }}</a>
+          <a routerLink="/patient/prescriptions" routerLinkActive="active" class="nav-link">{{ 'nav.prescriptions' | translate }}</a>
+          <a routerLink="/patient/paiement" routerLinkActive="active" class="nav-link">💳 {{ 'nav.payment' | translate }}</a>
+          <a routerLink="/patient/famille" routerLinkActive="active" class="nav-link">👨‍👩‍👧 Ma famille</a>
         </div>
         <div class="nav-user">
+          <app-lang-switcher />
           <a routerLink="/patient/notifications" class="notif-btn">
             🔔 <span class="notif-badge">3</span>
           </a>

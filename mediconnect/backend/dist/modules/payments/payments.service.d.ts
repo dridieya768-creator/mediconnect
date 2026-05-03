@@ -25,5 +25,6 @@ export declare class PaymentsService {
         amount: number;
         currency: string;
         paid: boolean;
+        payable: boolean;
     }[]>;
 }

@@ -15,12 +15,12 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
         <div class="header-left">
           <button class="btn-back" (click)="goBack()">← Retour</button>
           <div class="session-info">
-            <span class="session-badge">📹 Téléconsultation en cours</span>
+            <span class="session-badge"> Téléconsultation en cours</span>
             <span class="room-id" *ngIf="roomId()">Salle : {{ roomId() }}</span>
           </div>
         </div>
         <div class="header-right">
-          <button class="btn-end" (click)="endCall()">🔴 Terminer</button>
+          <button class="btn-end" (click)="endCall()"> Terminer</button>
         </div>
       </div>
 

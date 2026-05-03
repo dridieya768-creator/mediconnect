@@ -389,7 +389,7 @@ export class BookAppointmentPanelComponent implements OnChanges {
     this.errorMessage.set(null);
   }
 
-  onConfirmed(formData: { consultationType: string; durationMinutes: number; reason: string }): void {
+  onConfirmed(formData: { consultationType: string; durationMinutes: number; reason: string; beneficiaryId?: string | null; beneficiaryNom?: string | null; beneficiaryPrenom?: string | null }): void {
     const selectedSlot = this.bookingState.selectedSlot();
     if (!selectedSlot) return;
     if (!this.authService.currentUser()) return;
@@ -398,7 +398,7 @@ export class BookAppointmentPanelComponent implements OnChanges {
     this.bookingState.isLoading.set(true);
     this.errorMessage.set(null);
 
-    // RÃ©cupÃ©rer le vrai patient.id depuis /patients/me
+    // Récupérer le vrai patient.id depuis /patients/me
     this.http.get<any>('/api/v1/patients/me').subscribe({
       next: (res) => {
         const outer = res?.data ?? res;
@@ -418,6 +418,9 @@ export class BookAppointmentPanelComponent implements OnChanges {
           durationMinutes: formData.durationMinutes,
           consultationType: formData.consultationType as ConsultationType,
           reason: formData.reason || undefined,
+          beneficiaryId: formData.beneficiaryId || undefined,
+          beneficiaryNom: formData.beneficiaryNom || undefined,
+          beneficiaryPrenom: formData.beneficiaryPrenom || undefined,
         }).subscribe({
           next: () => {
             this.bookingState.isLoading.set(false);

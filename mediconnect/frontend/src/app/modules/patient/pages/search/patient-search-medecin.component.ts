@@ -2,7 +2,7 @@
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { HttpClient } from "@angular/common/http";
-import { Router } from "@angular/router";
+import { Router, ActivatedRoute } from "@angular/router";
 import { catchError, debounceTime, distinctUntilChanged, Subject } from "rxjs";
 import { of } from "rxjs";
 import { AuthService } from "../../../../core/services/auth.service";
@@ -163,8 +163,8 @@ import * as L from "leaflet";
                 <h3>{{ selectedDoc()!.profile?.titre || 'Dr.' }} {{ getFullName(selectedDoc()!) }}</h3>
                 <p class="profile-spec">{{ selectedDoc()!.profile?.specialite || getRoleLabel(selectedDoc()!.role) }}</p>
                 <div class="profile-badges">
-                  <span class="badge-tele" *ngIf="selectedDoc()!.profile?.disponTeleconsult">💻 Téléconsultation</span>
-                  <span class="badge-ville" *ngIf="selectedDoc()!.profile?.ville">📍 {{ selectedDoc()!.profile.ville }}</span>
+                  <span class="badge-tele" *ngIf="selectedDoc()!.profile?.disponTeleconsult"> Téléconsultation</span>
+                  <span class="badge-ville" *ngIf="selectedDoc()!.profile?.ville"> {{ selectedDoc()!.profile.ville }}</span>
                 </div>
               </div>
             </div>
@@ -180,35 +180,35 @@ import * as L from "leaflet";
               <h4>Informations pratiques</h4>
               <div class="info-grid">
                 <div class="info-row" *ngIf="selectedDoc()!.profile?.telephonePro">
-                  <span class="info-label">📞 Téléphone</span><span>{{ selectedDoc()!.profile.telephonePro }}</span>
+                  <span class="info-label"> Téléphone</span><span>{{ selectedDoc()!.profile.telephonePro }}</span>
                 </div>
                 <div class="info-row" *ngIf="selectedDoc()!.profile?.adresseCabinet">
-                  <span class="info-label">🏥 Adresse</span><span>{{ selectedDoc()!.profile.adresseCabinet }}</span>
+                  <span class="info-label"> Adresse</span><span>{{ selectedDoc()!.profile.adresseCabinet }}</span>
                 </div>
                 <div class="info-row" *ngIf="selectedDoc()!.profile?.assurancesAcceptees">
-                  <span class="info-label">🛡️ Assurances</span><span>{{ selectedDoc()!.profile.assurancesAcceptees }}</span>
+                  <span class="info-label">'G Assurances</span><span>{{ selectedDoc()!.profile.assurancesAcceptees }}</span>
                 </div>
                 <div class="info-row" *ngIf="selectedDoc()!.profile?.languesParlees">
-                  <span class="info-label">🌐 Langues</span><span>{{ selectedDoc()!.profile.languesParlees }}</span>
+                  <span class="info-label"> Langues</span><span>{{ selectedDoc()!.profile.languesParlees }}</span>
                 </div>
                 <div class="info-row" *ngIf="selectedDoc()!.profile?.tarifs">
-                  <span class="info-label">💰 Tarifs</span><span>{{ selectedDoc()!.profile.tarifs }}</span>
+                  <span class="info-label"> Tarifs</span><span>{{ selectedDoc()!.profile.tarifs }}</span>
                 </div>
                 <div class="info-row" *ngIf="selectedDoc()!.profile?.actesCouverts">
-                  <span class="info-label">✅ Actes</span><span>{{ selectedDoc()!.profile.actesCouverts }}</span>
+                  <span class="info-label"> Actes</span><span>{{ selectedDoc()!.profile.actesCouverts }}</span>
                 </div>
               </div>
             </div>
 
             <!-- Diplômes -->
             <div class="profile-section" *ngIf="selectedDoc()!.profile?.diplomes">
-              <h4>🎓 Diplômes & Formations</h4>
+              <h4> Diplômes & Formations</h4>
               <p class="diplomes-text">{{ selectedDoc()!.profile.diplomes }}</p>
             </div>
 
             <!-- Photos cabinet -->
             <div class="profile-section" *ngIf="getCabinetPhotos(selectedDoc()!).length > 0">
-              <h4>📸 Photos du cabinet</h4>
+              <h4> Photos du cabinet</h4>
               <div class="cabinet-photos">
                 <img *ngFor="let photo of getCabinetPhotos(selectedDoc()!)"
                      [src]="photo" alt="Photo cabinet"
@@ -345,6 +345,7 @@ import * as L from "leaflet";
 export class PatientSearchMedecinComponent implements OnInit, OnDestroy {
   private http        = inject(HttpClient);
   private router      = inject(Router);
+  private route       = inject(ActivatedRoute);
   private authService = inject(AuthService);
   private zone        = inject(NgZone);
 
@@ -402,6 +403,14 @@ export class PatientSearchMedecinComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.loadDoctors();
     this.searchSubject.pipe(debounceTime(300), distinctUntilChanged()).subscribe(() => this.applyFilters());
+
+    // Lire le query param specialite (depuis le chatbot IA)
+    this.route.queryParams.subscribe(params => {
+      if (params['specialite']) {
+        this.filterSpecialite = params['specialite'];
+        this.applyFilters();
+      }
+    });
   }
 
   ngOnDestroy() {

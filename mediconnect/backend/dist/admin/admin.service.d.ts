@@ -52,5 +52,16 @@ export declare class AdminService {
         medecins: number;
         patients: number;
     }>;
+    getAuditLogs(query: {
+        page: number;
+        limit: number;
+        role?: string;
+        search?: string;
+    }): Promise<{
+        data: any;
+        total: number;
+        page: number;
+        limit: number;
+    }>;
     private sanitize;
 }

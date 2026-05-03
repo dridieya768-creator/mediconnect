@@ -39,6 +39,9 @@ let PaymentsService = class PaymentsService {
         if (appointment.status === appointment_entity_1.AppointmentStatus.CANCELLED) {
             throw new common_1.BadRequestException('Ce rendez-vous est annulé');
         }
+        if (appointment.status === appointment_entity_1.AppointmentStatus.COMPLETED) {
+            throw new common_1.BadRequestException('Ce rendez-vous est déjà terminé');
+        }
         const amountMillimes = 50000;
         if (!this.flouciPublicKey || !this.flouciPrivateKey) {
             return {
@@ -117,6 +120,7 @@ let PaymentsService = class PaymentsService {
             amount: 50,
             currency: 'TND',
             paid: a.status === appointment_entity_1.AppointmentStatus.CONFIRMED || a.status === appointment_entity_1.AppointmentStatus.COMPLETED,
+            payable: a.status === appointment_entity_1.AppointmentStatus.REQUESTED || a.status === appointment_entity_1.AppointmentStatus.CONFIRMED,
         }));
     }
 };

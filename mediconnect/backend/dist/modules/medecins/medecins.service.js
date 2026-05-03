@@ -12,7 +12,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MedecinsService = void 0;
+exports.RevenusService = exports.MedecinsService = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
@@ -458,6 +458,9 @@ let MedecinsService = class MedecinsService {
             return [];
         }
     }
+    async getRevenus(doctorId, from, to) {
+        return RevenusService.getRevenus(this.appointmentRepository, doctorId, from, to);
+    }
     async saveBase64Image(base64String, folder) {
         try {
             const matches = base64String.match(/^data:image\/([A-Za-z-+\/]+);base64,(.+)$/);
@@ -497,4 +500,46 @@ exports.MedecinsService = MedecinsService = __decorate([
         typeorm_2.Repository,
         notifications_service_1.NotificationsService])
 ], MedecinsService);
+class RevenusService {
+    static async getRevenus(appointmentRepo, doctorId, from, to) {
+        const qb = appointmentRepo
+            .createQueryBuilder('a')
+            .leftJoinAndSelect('a.patient', 'patient')
+            .where('a.doctorId = :doctorId', { doctorId })
+            .andWhere('a.status IN (:...statuses)', {
+            statuses: [appointment_entity_1.AppointmentStatus.CONFIRMED, appointment_entity_1.AppointmentStatus.COMPLETED],
+        });
+        if (from)
+            qb.andWhere('a.appointmentDate >= :from', { from: new Date(from) });
+        if (to)
+            qb.andWhere('a.appointmentDate <= :to', { to: new Date(to + 'T23:59:59') });
+        qb.orderBy('a.appointmentDate', 'DESC');
+        const appointments = await qb.getMany();
+        const TARIF = 50;
+        const factures = appointments.map((a, idx) => ({
+            numero: `FAC-${String(idx + 1).padStart(4, '0')}`,
+            date: a.appointmentDate,
+            patientNom: `${a.patient?.firstName ?? ''} ${a.patient?.lastName ?? ''}`.trim() || 'Patient',
+            type: a.consultationType,
+            statut: a.status,
+            montant: TARIF,
+            devise: 'TND',
+        }));
+        const totalRevenu = factures.reduce((s, f) => s + f.montant, 0);
+        const nbConsult = factures.length;
+        const nbTeleconsult = factures.filter(f => f.type === 'TELECONSULTATION').length;
+        const nbPhysique = factures.filter(f => f.type === 'PHYSICAL').length;
+        const parMois = {};
+        for (const f of factures) {
+            const key = new Date(f.date).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' });
+            parMois[key] = (parMois[key] ?? 0) + f.montant;
+        }
+        return {
+            factures,
+            stats: { totalRevenu, nbConsult, nbTeleconsult, nbPhysique, tarif: TARIF },
+            parMois,
+        };
+    }
+}
+exports.RevenusService = RevenusService;
 //# sourceMappingURL=medecins.service.js.map

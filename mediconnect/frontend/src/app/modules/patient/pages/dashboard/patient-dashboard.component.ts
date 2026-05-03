@@ -6,11 +6,12 @@ import { AuthService } from "@core/services/auth.service";
 import { AppointmentStatus } from "@core/models/appointment.model";
 import { forkJoin, of } from "rxjs";
 import { catchError } from "rxjs/operators";
+import { AiChatbotComponent } from "./ai-chatbot/ai-chatbot.component";
 
 @Component({
   selector: "app-patient-dashboard",
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, AiChatbotComponent],
   templateUrl: "./patient-dashboard.component.html",
   styleUrls: ["./patient-dashboard.component.scss"],
 })
@@ -88,16 +89,16 @@ export class PatientDashboardComponent implements OnInit {
   ];
 
   allServices = [
-    { label: 'Chirurgie Plastique', icon: '✂️', desc: 'Chirurgie esthétique et reconstructrice.', color: '#fef3c7', image: 'assets/images/service-plastique.jpg' },
-    { label: 'Fertilité/FIV', icon: '🤰', desc: 'Traitement de l\'infertilité et procréation.', color: '#fce7f3', image: 'assets/images/service-fiv.jpg' },
-    { label: 'Greffe de Cheveux', icon: '💇', desc: 'Techniques FUE, DHI, Saphir FUE.', color: '#dbeafe', image: 'assets/images/service-cheveux.jpg' },
-    { label: 'Chirurgie Orthopédique', icon: '🦴', desc: 'Prothèse de hanche, genou, colonne.', color: '#d1fae5', image: 'assets/images/service-ortho.jpg' },
-    { label: 'Dentisterie', icon: '🦷', desc: 'Soins dentaires et implants.', color: '#ede9fe', image: 'assets/images/service-dentiste.jpg' },
-    { label: 'Traitement du Cancer', icon: '🎗️', desc: 'Oncologie et soins palliatifs.', color: '#fee2e2', image: 'assets/images/service-cancer.jpg' },
-    { label: 'Chirurgie Bariatrique', icon: '⚖️', desc: 'Sleeve, bypass gastrique.', color: '#fef3c7', image: 'assets/images/service-baria.jpg' },
-    { label: 'Neurologie', icon: '🧠', desc: 'Traitement des maladies neurologiques.', color: '#ede9fe', image: 'assets/images/service-neuro.jpg' },
-    { label: 'Cardiologie', icon: '❤️', desc: 'Chirurgie cardiaque et coronaire.', color: '#fee2e2', image: 'assets/images/service-cardio.jpg' },
-    { label: 'Greffe d\'Organe', icon: '🫀', desc: 'Transplantation rénale, hépatique.', color: '#d1fae5', image: 'assets/images/service-greffe.jpg' },
+    { label: 'Chirurgie Plastique', icon: '', desc: 'Chirurgie esthétique et reconstructrice.', color: '#fef3c7', image: 'assets/images/service-plastique.jpg' },
+    { label: 'Fertilité/FIV', icon: '', desc: 'Traitement de l\'infertilité et procréation.', color: '#fce7f3', image: 'assets/images/service-fiv.jpg' },
+    { label: 'Greffe de Cheveux', icon: '', desc: 'Techniques FUE, DHI, Saphir FUE.', color: '#dbeafe', image: 'assets/images/service-cheveux.jpg' },
+    { label: 'Chirurgie Orthopédique', icon: '', desc: 'Prothèse de hanche, genou, colonne.', color: '#d1fae5', image: 'assets/images/service-ortho.jpg' },
+    { label: 'Dentisterie', icon: '', desc: 'Soins dentaires et implants.', color: '#ede9fe', image: 'assets/images/service-dentiste.jpg' },
+    { label: 'Traitement du Cancer', icon: '', desc: 'Oncologie et soins palliatifs.', color: '#fee2e2', image: 'assets/images/service-cancer.jpg' },
+    { label: 'Chirurgie Bariatrique', icon: '', desc: 'Sleeve, bypass gastrique.', color: '#fef3c7', image: 'assets/images/service-baria.jpg' },
+    { label: 'Neurologie', icon: '', desc: 'Traitement des maladies neurologiques.', color: '#ede9fe', image: 'assets/images/service-neuro.jpg' },
+    { label: 'Cardiologie', icon: '', desc: 'Chirurgie cardiaque et coronaire.', color: '#fee2e2', image: 'assets/images/service-cardio.jpg' },
+    { label: 'Greffe d\'Organe', icon: '', desc: 'Transplantation rénale, hépatique.', color: '#d1fae5', image: 'assets/images/service-greffe.jpg' },
   ];
 
   ngOnInit() {

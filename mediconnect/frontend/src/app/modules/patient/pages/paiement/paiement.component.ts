@@ -2,94 +2,95 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-paiement',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslateModule],
   template: `
     <div class="pay-page">
 
       <!-- Succès -->
       <div class="result-card success" *ngIf="paymentStatus() === 'success'">
-        <div class="result-icon">✅</div>
-        <h2>Paiement confirmé</h2>
-        <p>Votre consultation a été payée avec succès. Votre rendez-vous est confirmé.</p>
+        <div class="result-icon"></div>
+        <h2>{{ 'payment.success' | translate }}</h2>
+        <p>{{ 'payment.successMsg' | translate }}</p>
         <button class="btn-primary" (click)="router.navigate(['/patient/appointments'])">
-          Voir mes rendez-vous
+          {{ 'payment.backToAppointments' | translate }}
         </button>
       </div>
 
       <!-- Annulé -->
       <div class="result-card cancelled" *ngIf="paymentStatus() === 'cancelled'">
-        <div class="result-icon">❌</div>
-        <h2>Paiement annulé</h2>
-        <p>Vous avez annulé le paiement. Votre rendez-vous n'est pas encore confirmé.</p>
+        <div class="result-icon"></div>
+        <h2>{{ 'payment.cancelled' | translate }}</h2>
+        <p>{{ 'payment.cancelledMsg' | translate }}</p>
         <button class="btn-secondary" (click)="router.navigate(['/patient/appointments'])">
-          Retour aux rendez-vous
+          {{ 'payment.backBtn' | translate }}
         </button>
       </div>
 
-      <!-- Simulé (mode test sans clé Flouci) -->
+      <!-- Simulé -->
       <div class="result-card simulated" *ngIf="paymentStatus() === 'simulated'">
-        <div class="result-icon">🧪</div>
-        <h2>Mode test — Paiement simulé</h2>
-        <p>Flouci n'est pas configuré. En production, le patient serait redirigé vers la page de paiement Flouci.</p>
+        <div class="result-icon"></div>
+        <h2>{{ 'payment.simulated' | translate }}</h2>
+        <p>{{ 'payment.simulatedMsg' | translate }}</p>
         <button class="btn-primary" (click)="router.navigate(['/patient/appointments'])">
-          Retour aux rendez-vous
+          {{ 'payment.backToAppointments' | translate }}
         </button>
       </div>
 
       <!-- Page principale de paiement -->
       <div class="pay-container" *ngIf="!paymentStatus()">
         <div class="pay-header">
-          <h1>💳 Payer une consultation</h1>
-          <p>Réglez votre consultation en ligne de manière sécurisée</p>
+          <h1> {{ 'payment.title' | translate }}</h1>
+          <p>{{ 'payment.subtitle' | translate }}</p>
         </div>
 
-        <!-- Alerte succès/erreur -->
-        <div class="alert-success" *ngIf="successMsg()">✅ {{ successMsg() }}</div>
-        <div class="alert-error" *ngIf="errorMsg()">❌ {{ errorMsg() }}</div>
+        <div class="alert-success" *ngIf="successMsg()"> {{ successMsg() }}</div>
+        <div class="alert-error" *ngIf="errorMsg()"> {{ errorMsg() }}</div>
 
-        <!-- Chargement -->
         <div class="loading" *ngIf="loading()">
           <div class="spinner"></div>
-          <p>Chargement de vos rendez-vous...</p>
+          <p>{{ 'common.loading' | translate }}</p>
         </div>
 
-        <!-- Liste des RDV à payer -->
         <div class="rdv-list" *ngIf="!loading()">
           <div class="rdv-card" *ngFor="let rdv of rdvAPayer()">
             <div class="rdv-info">
               <div class="rdv-doctor">{{ rdv.doctorName }}</div>
               <div class="rdv-date">{{ formatDate(rdv.date) }}</div>
-              <div class="rdv-type">{{ rdv.consultationType === 'TELECONSULTATION' ? '📹 Téléconsultation' : '🏥 Consultation' }}</div>
+              <div class="rdv-type">
+                {{ rdv.consultationType === 'TELECONSULTATION'
+                  ? ('appointments.type.TELECONSULTATION' | translate)
+                  : ('appointments.type.PHYSICAL' | translate) }}
+              </div>
             </div>
             <div class="rdv-amount">
-              <div class="amount">{{ rdv.amount }} TND</div>
-              <div class="status-badge" [class.paid]="rdv.paid" [class.unpaid]="!rdv.paid">
-                {{ rdv.paid ? '✅ Payé' : '⏳ En attente' }}
+              <div class="amount">{{ rdv.amount }} {{ 'payment.currency' | translate }}</div>
+              <div class="status-badge" [class.paid]="rdv.paid" [class.unpaid]="!rdv.paid && rdv.payable" [class.cancelled]="!rdv.payable && !rdv.paid">
+                {{ rdv.paid ? ('payment.paid' | translate) : rdv.payable ? ('payment.pending' | translate) : ('appointments.status.CANCELLED' | translate) }}
               </div>
             </div>
             <button
               class="btn-pay"
-              *ngIf="!rdv.paid"
+              *ngIf="rdv.payable && !rdv.paid"
               [disabled]="paying() === rdv.appointmentId"
               (click)="payer(rdv.appointmentId)"
             >
-              {{ paying() === rdv.appointmentId ? '⏳ Redirection...' : '💳 Payer' }}
+              {{ paying() === rdv.appointmentId ? ('payment.paying' | translate) : ('payment.pay' | translate) }}
             </button>
           </div>
 
-          <div class="empty" *ngIf="rdvAPayer().length === 0">
-            <div style="font-size:48px;margin-bottom:12px">🎉</div>
-            <p>Aucun paiement en attente</p>
+          <div class="empty" *ngIf="noPayablePending()">
+            <div style="font-size:48px;margin-bottom:12px"></div>
+            <p>{{ 'payment.noPayments' | translate }}</p>
           </div>
         </div>
 
-        <!-- Info sécurité -->
         <div class="security-note">
-          🔒 Paiement sécurisé via Flouci — carte bancaire, e-dinar ou wallet Flouci. Vos données bancaires ne sont jamais stockées sur nos serveurs.
+           {{ 'payment.security' | translate }}
         </div>
       </div>
     </div>
@@ -128,6 +129,7 @@ import { ActivatedRoute, Router } from '@angular/router';
     .status-badge { font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 20px; }
     .status-badge.paid { background: #f0fdf4; color: #16a34a; }
     .status-badge.unpaid { background: #fffbeb; color: #d97706; }
+    .status-badge.cancelled { background: #f1f5f9; color: #94a3b8; }
 
     .btn-pay { padding: 10px 20px; background: #1a56db; color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; flex-shrink: 0; }
     .btn-pay:disabled { opacity: .6; cursor: not-allowed; }
@@ -184,7 +186,9 @@ export class PaiementComponent implements OnInit {
     this.http.get<any>('/api/v1/payments/history').subscribe({
       next: (res) => {
         const data = res?.data ?? res;
-        this.rdvAPayer.set(Array.isArray(data) ? data : []);
+        // Afficher tous les RDV sauf les NO_SHOW
+        const all = Array.isArray(data) ? data : [];
+        this.rdvAPayer.set(all.filter((r: any) => r.status !== 'NO_SHOW'));
         this.loading.set(false);
       },
       error: () => { this.loading.set(false); }
@@ -233,5 +237,10 @@ export class PaiementComponent implements OnInit {
       day: '2-digit', month: 'long', year: 'numeric',
       hour: '2-digit', minute: '2-digit'
     });
+  }
+
+  noPayablePending(): boolean {
+    const list = this.rdvAPayer();
+    return list.length === 0 || list.every((r: any) => r.paid || !r.payable);
   }
 }

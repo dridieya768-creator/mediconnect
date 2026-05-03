@@ -176,7 +176,30 @@ export class DelivranceService {
     }
 
     // 3. Trouver le médicament dans la prescription
-    const med = prescription.medications.find((m) => m.cip === cip);
+    // Si le CIP en base est vide, matcher par nom (ordonnances créées manuellement)
+    let med = prescription.medications.find((m) => m.cip === cip);
+    if (!med) {
+      // Fallback : chercher un médicament sans CIP ou avec clé temporaire MED_X
+      const isTempKey = /^MED_\d+$/.test(cip);
+      let medWithoutCip: typeof prescription.medications[0] | undefined;
+
+      if (isTempKey) {
+        // Extraire l'index depuis MED_0, MED_1, etc.
+        const idx = parseInt(cip.replace('MED_', ''), 10);
+        medWithoutCip = prescription.medications[idx];
+      } else {
+        medWithoutCip = prescription.medications.find(
+          (m) => !m.cip || m.cip.trim() === '' || /^MED_\d+$/.test(m.cip),
+        );
+      }
+
+      if (medWithoutCip) {
+        // Assigner le CIP scanné à ce médicament
+        medWithoutCip.cip = cip;
+        await this.prescriptionRepo.save(prescription);
+        med = medWithoutCip;
+      }
+    }
     if (!med) {
       throw new BadRequestException(`Médicament non prescrit : CIP ${cip}`);
     }

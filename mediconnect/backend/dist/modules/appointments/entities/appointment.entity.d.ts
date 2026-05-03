@@ -29,6 +29,9 @@ export declare class Appointment {
     rating: number;
     ratingComment: string;
     rated: boolean;
+    beneficiaryId: string | null;
+    beneficiaryNom: string | null;
+    beneficiaryPrenom: string | null;
     createdAt: Date;
     updatedAt: Date;
     deletedAt: Date;

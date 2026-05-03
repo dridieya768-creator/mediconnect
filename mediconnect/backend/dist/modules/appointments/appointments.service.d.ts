@@ -13,6 +13,7 @@ export declare class AppointmentsService {
     findByPatient(patientId: string): Promise<any[]>;
     findDoctorsByPatient(patientUserId: string): Promise<any[]>;
     findByDoctor(doctorId: string, date?: string): Promise<Appointment[]>;
+    private enrichWithBeneficiaryDocs;
     cancel(id: string, reason: string): Promise<Appointment>;
     confirm(id: string): Promise<Appointment>;
     complete(id: string, notes?: string): Promise<Appointment>;

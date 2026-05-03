@@ -340,9 +340,7 @@ export class AuthService {
     userId: string,
     documents: Array<{ type: string; filename: string; base64: string }>
   ): Promise<void> {
-    try {
-      const dir = join(process.cwd(), "uploads", "doctor-docs", userId);
-      fs.mkdirSync(dir, { recursive: true });
+      userId: user.id,
 
       for (const doc of documents) {
         const buffer   = Buffer.from(doc.base64, "base64");

@@ -29,27 +29,30 @@ let MedecinsController = class MedecinsController {
         this.medecinsService = medecinsService;
     }
     async updateAvailability(user, dto) {
-        console.log('[availability] body received:', dto);
         return this.medecinsService.updateAvailability(user.id, dto);
     }
     async getAvailability(user) {
         return this.medecinsService.getAvailability(user.id);
     }
     async acceptAppointment(user, appointmentId) {
-        console.log(`[Controller] Accepting appointment ${appointmentId} for doctor ${user.id}`);
-        return this.medecinsService.acceptAppointment(user.id, appointmentId);
+        const result = await this.medecinsService.acceptAppointment(user.id, appointmentId);
+        try {
+            const appt = result.appointment;
+            await this.medecinsService.appointmentRepository?.manager?.query(`INSERT INTO dossier_historique
+           (id, patient_id, modifie_par_id, role_auteur, champs_modifies, snapshot_avant, commentaire, created_at)
+         VALUES (gen_random_uuid(), $1, $2, 'MEDECIN', $3::jsonb, '{}'::jsonb, $4, NOW())`, [
+                appt?.patientId,
+                user.id,
+                JSON.stringify({ rdv_confirme: { avant: { status: 'REQUESTED' }, apres: { status: 'CONFIRMED', appointmentId } } }),
+                'Rendez-vous confirme',
+            ]);
+        }
+        catch { }
+        return result;
     }
     async getMe(user) {
         const profile = await this.medecinsService.getProfile(user.id);
-        return {
-            ...user,
-            id: user.id,
-            data: {
-                ...user,
-                id: user.id,
-                profile: profile,
-            }
-        };
+        return { ...user, id: user.id, data: { ...user, id: user.id, profile } };
     }
     async removePatient(user, patientId) {
         return this.medecinsService.removePatientFromDoctorList(user.id, patientId);
@@ -69,8 +72,10 @@ let MedecinsController = class MedecinsController {
     async getMyPatients(user) {
         return this.medecinsService.getMyPatientsFromAppointments(user.id);
     }
+    async getRevenus(user, from, to) {
+        return this.medecinsService.getRevenus(user.id, from, to);
+    }
     async getMedecinAvailabilityById(id) {
-        console.log(`[Controller] GET availability for medecin: ${id}`);
         return this.medecinsService.getMedecinAvailabilityById(id);
     }
     async getOccupiedSlots(id, query) {
@@ -156,6 +161,15 @@ __decorate([
     __metadata("design:paramtypes", [user_entity_1.User]),
     __metadata("design:returntype", Promise)
 ], MedecinsController.prototype, "getMyPatients", null);
+__decorate([
+    (0, common_1.Get)('revenus/stats'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Query)('from')),
+    __param(2, (0, common_1.Query)('to')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [user_entity_1.User, String, String]),
+    __metadata("design:returntype", Promise)
+], MedecinsController.prototype, "getRevenus", null);
 __decorate([
     (0, common_1.Get)(':id/availability'),
     __param(0, (0, common_1.Param)('id')),

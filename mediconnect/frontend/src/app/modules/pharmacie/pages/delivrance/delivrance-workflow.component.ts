@@ -419,7 +419,11 @@ export class DelivranceWorkflowComponent {
         const data = res?.data ?? res;
         const detail: PrescriptionDetail = data?.data ?? data;
         // Initialiser les prix/taux par défaut
-        (detail.medications ?? []).forEach((med: MedicationDetail) => {
+        (detail.medications ?? []).forEach((med: MedicationDetail, idx: number) => {
+          // Si CIP vide, utiliser l'index comme clé temporaire
+          if (!med.cip || med.cip.trim() === '') {
+            med.cip = `MED_${idx}`;
+          }
           med.prixUnitaire = 0;
           med.tauxCnam = 0.70;
           this.prixInputs[med.cip] = 0;
@@ -485,9 +489,10 @@ export class DelivranceWorkflowComponent {
 
     const lignes: FinancierLigne[] = [];
     for (const med of rx.medications) {
-      // Utiliser les boîtes scannées, ou la quantité restante à délivrer comme fallback
       const scanned = this.boitesScannees()[med.cip] ?? 0;
-      const qte = scanned > 0 ? scanned : (med.quantity - (med.quantityDelivered ?? 0));
+      // Chercher aussi par CIP réel si le CIP a été mis à jour après scan
+      const scannedAlt = Object.values(this.boitesScannees()).reduce((a, b) => a + b, 0);
+      const qte = scanned > 0 ? scanned : (scannedAlt > 0 ? scannedAlt : (med.quantity - (med.quantityDelivered ?? 0)));
       if (qte <= 0) continue;
       const prix = Number(this.prixInputs[med.cip]) || 0;
       const taux = Number(this.tauxInputs[med.cip]) || 0.70;
@@ -495,6 +500,11 @@ export class DelivranceWorkflowComponent {
       const partCnam = montantTotal * taux;
       const partPatient = montantTotal - partCnam;
       lignes.push({ cip: med.cip, nom: med.name, quantite: qte, prixUnitaire: prix, montantTotal, partCnam, partPatient });
+    }
+
+    if (lignes.length === 0) {
+      this.error.set('Aucun médicament à délivrer. Vérifiez les quantités.');
+      return;
     }
 
     const totalCnam = lignes.reduce((s, l) => s + l.partCnam, 0);

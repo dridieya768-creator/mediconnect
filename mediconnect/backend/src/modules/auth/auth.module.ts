@@ -9,13 +9,14 @@ import { JwtStrategy } from "./strategies/jwt.strategy";
 import { LocalStrategy } from "./strategies/local.strategy";
 import { User } from "../users/entities/user.entity";
 import { Patient } from "../patients/entities/patient.entity";
+import { PharmacienProfile } from "../pharmacie/entities/pharmacien-profile.entity";
 import { NotificationsModule } from "../notifications/notifications.module";
 import { MulterModule } from "@nestjs/platform-express";
 @Module({
   imports: [
     MulterModule.register({ dest: "./uploads" }),
     PassportModule,
-    TypeOrmModule.forFeature([User, Patient]),
+    TypeOrmModule.forFeature([User, Patient, PharmacienProfile]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({

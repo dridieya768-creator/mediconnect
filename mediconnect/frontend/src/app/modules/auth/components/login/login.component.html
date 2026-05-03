@@ -4,23 +4,26 @@
   <div class="auth-left">
     <div class="auth-card">
 
-      <div class="brand">
-        <div class="brand-icon">
-          <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
-            <rect width="32" height="32" rx="8" fill="#1a56db"/>
-            <path d="M16 7v18M7 16h18" stroke="white" stroke-width="3" stroke-linecap="round"/>
-          </svg>
+      <div class="auth-top-bar">
+        <div class="brand">
+          <div class="brand-icon">
+            <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
+              <rect width="32" height="32" rx="8" fill="#1a56db"/>
+              <path d="M16 7v18M7 16h18" stroke="white" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span class="brand-name">MediConnect</span>
         </div>
-        <span class="brand-name">MediConnect</span>
+        <app-lang-switcher />
       </div>
 
       <div class="auth-tabs">
-        <button class="tab-btn active" routerLink="/auth/login">Connexion</button>
-        <button class="tab-btn" routerLink="/auth/register">Inscription</button>
+        <button class="tab-btn active" routerLink="/auth/login">{{ 'auth.login' | translate }}</button>
+        <button class="tab-btn" routerLink="/auth/register">{{ 'auth.register' | translate }}</button>
       </div>
 
-      <h2 class="card-title">Bon retour</h2>
-      <p class="card-sub">Connectez-vous a votre espace sante</p>
+      <h2 class="card-title">{{ 'auth.loginTitle' | translate }}</h2>
+      <p class="card-sub">{{ 'auth.loginSubtitle' | translate }}</p>
 
       <div class="alert-info" *ngIf="infoMsg"><span>i</span> {{ infoMsg }}</div>
       <div class="alert-error" *ngIf="error"><span>!</span> {{ error }}</div>
@@ -36,11 +39,11 @@
         </button>
       </div>
 
-      <div class="divider"><span>ou continuer avec email</span></div>
+      <div class="divider"><span>{{ 'auth.login' | translate }} {{ 'common.or' | translate }} email</span></div>
 
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
         <div class="field-group">
-          <label class="field-label">Adresse email</label>
+          <label class="field-label">{{ 'auth.email' | translate }}</label>
           <div class="field-wrap">
             <span class="field-icon"></span>
             <input class="field-input" type="email" formControlName="email" placeholder="votre@email.com" autocomplete="email"/>
@@ -48,23 +51,23 @@
         </div>
         <div class="field-group">
           <div class="field-label-row">
-            <label class="field-label">Mot de passe</label>
-            <a routerLink="/auth/forgot-password" class="forgot-link">Oublie ?</a>
+            <label class="field-label">{{ 'auth.password' | translate }}</label>
+            <a routerLink="/auth/forgot-password" class="forgot-link">{{ 'auth.forgotPassword' | translate }}</a>
           </div>
           <div class="field-wrap">
             <span class="field-icon"></span>
             <input class="field-input" [type]="showPassword ? 'text' : 'password'" formControlName="password" placeholder="••••••••" autocomplete="current-password"/>
-            <button type="button" class="eye-btn" (click)="showPassword = !showPassword">{{ showPassword ? '🙈' : '👁️' }}</button>
+            <button type="button" class="eye-btn" (click)="showPassword = !showPassword">{{ showPassword ? 'cacher' : 'voir' }}</button>
           </div>
         </div>
         <button type="submit" class="submit-btn" [disabled]="isLoading || loginForm.invalid">
-          <span *ngIf="!isLoading" class="btn-content"><span>Se connecter</span><span class="btn-arrow">→</span></span>
+          <span *ngIf="!isLoading" class="btn-content"><span>{{ 'auth.loginBtn' | translate }}</span><span class="btn-arrow">→</span></span>
           <span *ngIf="isLoading" class="spinner"></span>
         </button>
       </form>
 
       <div class="test-zone">
-        <div class="test-header">Acces rapide (demo)</div>
+        <div class="test-header">Accès rapide (démo)</div>
         <div class="test-grid">
           <button class="test-btn" *ngFor="let t of testAccounts" (click)="fillTest(t.email)">
             <span class="test-icon">{{ t.icon }}</span>
@@ -81,8 +84,8 @@
   <div class="auth-right">
     <img src="assets/images/téléconsultation.jpg" alt="MediConnect" class="login-photo">
     <div class="photo-overlay">
-      <h2>Votre sante, notre priorite</h2>
-      <p>La plateforme e-sante qui connecte patients et professionnels de sante en Tunisie.</p>
+      <h2>{{ 'landing.hero.title' | translate }}</h2>
+      <p>{{ 'landing.hero.subtitle' | translate }}</p>
     </div>
   </div>
 

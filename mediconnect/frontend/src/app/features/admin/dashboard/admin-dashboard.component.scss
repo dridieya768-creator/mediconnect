@@ -819,3 +819,43 @@ textarea.form-input {
   .doctor-meta-grid { grid-template-columns: 1fr; }
   .mc-modal--doctor { width: 95vw; }
 }
+
+// ── Onglets admin ────────────────────────────────────────
+.admin-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 0;
+}
+
+.admin-tab {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-bottom: -2px;
+
+  &:hover { color: #1a56db; }
+  &.active {
+    color: #1a56db;
+    border-bottom-color: #1a56db;
+  }
+}
+
+// ── Badge action audit ───────────────────────────────────
+.audit-action-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  background: #eff6ff;
+  color: #1a56db;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}

@@ -11,15 +11,16 @@ import { StockItem } from './entities/stock-item.entity';
 import { StockMouvement } from './entities/stock-mouvement.entity';
 import { StockService } from './stock.service';
 import { StockController } from './stock.controller';
+import { PharmacienProfile } from './entities/pharmacien-profile.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Prescription, DossierHistorique, StockItem, StockMouvement]),
+    TypeOrmModule.forFeature([Prescription, DossierHistorique, StockItem, StockMouvement, PharmacienProfile]),
     QrCodesModule,
     DossierMedicalModule,
   ],
   controllers: [DelivranceController, StockController],
   providers: [DelivranceService, TicketPdfService, StockService],
-  exports: [StockService],
+  exports: [StockService, TypeOrmModule],
 })
 export class PharmacieModule {}

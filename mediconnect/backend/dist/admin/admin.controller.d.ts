@@ -27,4 +27,10 @@ export declare class AdminController {
         message: string;
     }>;
     getDoctorDocuments(id: string): Promise<any>;
+    getAuditLogs(page?: number, limit?: number, role?: string, search?: string): Promise<{
+        data: any;
+        total: number;
+        page: number;
+        limit: number;
+    }>;
 }

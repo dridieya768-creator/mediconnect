@@ -53,6 +53,9 @@ let AppointmentsService = class AppointmentsService {
             reason: dto.reason,
             status: appointment_entity_1.AppointmentStatus.REQUESTED,
             reminderSent: false,
+            beneficiaryId: dto.beneficiaryId ?? null,
+            beneficiaryNom: dto.beneficiaryNom ?? null,
+            beneficiaryPrenom: dto.beneficiaryPrenom ?? null,
             videoRoomId: dto.consultationType === appointment_entity_1.ConsultationType.TELECONSULTATION
                 ? `mediconnect-${(0, uuid_1.v4)().slice(0, 8)}`
                 : null,
@@ -154,7 +157,8 @@ let AppointmentsService = class AppointmentsService {
             });
             const map = new Map();
             [...pending, ...scheduled].forEach(a => map.set(a.id, a));
-            return Array.from(map.values()).sort((a, b) => new Date(a.appointmentDate).getTime() - new Date(b.appointmentDate).getTime());
+            const list = Array.from(map.values()).sort((a, b) => new Date(a.appointmentDate).getTime() - new Date(b.appointmentDate).getTime());
+            return await this.enrichWithBeneficiaryDocs(list);
         }
         catch (err) {
             console.error("[AppointmentsService] findByDoctor error:", err.message);
@@ -163,6 +167,30 @@ let AppointmentsService = class AppointmentsService {
                 order: { appointmentDate: "ASC" },
             });
         }
+    }
+    async enrichWithBeneficiaryDocs(appointments) {
+        const withBeneficiary = appointments.filter(a => a.beneficiaryId);
+        if (withBeneficiary.length === 0)
+            return appointments;
+        const ids = [...new Set(withBeneficiary.map(a => a.beneficiaryId))];
+        const rows = await this.repo.manager.query(`SELECT id, doc_membre_path, doc_patient_path FROM family_members WHERE id = ANY($1)`, [ids]);
+        const docsMap = new Map();
+        for (const row of rows) {
+            docsMap.set(row.id, {
+                docMembrePath: row.doc_membre_path,
+                docPatientPath: row.doc_patient_path,
+            });
+        }
+        return appointments.map(a => {
+            if (!a.beneficiaryId)
+                return a;
+            const docs = docsMap.get(a.beneficiaryId);
+            return {
+                ...a,
+                beneficiaryDocMembrePath: docs?.docMembrePath ?? null,
+                beneficiaryDocPatientPath: docs?.docPatientPath ?? null,
+            };
+        });
     }
     async cancel(id, reason) {
         const appt = await this.findOne(id);

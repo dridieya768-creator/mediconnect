@@ -73,7 +73,7 @@ import { of } from "rxjs";
                 <div class="appt-name appt-name-link" (click)="viewPatient(a)">{{ getPatientName(a) }}</div>
                 <div class="appt-meta">
                   <span class="appt-type-badge">
-                    {{ a.consultationType === 'TELECONSULTATION' ? '💻 Téléconsult.' : '🏥 Présentiel' }}
+                    {{ a.consultationType === 'TELECONSULTATION' ? ' Téléconsult.' : ' Présentiel' }}
                   </span>
                   <span class="appt-dur">{{ a.durationMinutes }} min</span>
                 </div>
@@ -98,12 +98,12 @@ import { of } from "rxjs";
         <!-- ── QR Code ─────────────────────────────────────────── -->
         <div class="card card-qr">
           <div class="card-head">
-            <h2>🔖 Mon QR Code</h2>
+            <h2> Mon QR Code</h2>
           </div>
 
           <div class="qr-section">
 
-            <!-- ✅ Le canvas est TOUJOURS dans le DOM, juste caché par CSS -->
+            <!--  Le canvas est TOUJOURS dans le DOM, juste caché par CSS -->
             <!-- Cela permet à ViewChild de toujours le trouver -->
             <div class="qr-loading" [class.hidden]="!qrLoading()">
               <div class="spinner"></div>
@@ -111,13 +111,13 @@ import { of } from "rxjs";
             </div>
 
             <div class="qr-error" *ngIf="qrError()">
-              ⚠️ {{ qrError() }}
+               {{ qrError() }}
             </div>
 
             <!-- Canvas toujours présent dans le DOM -->
             <div class="qr-canvas-wrap" [class.hidden]="qrLoading() || !!qrError()">
               <canvas #qrCanvas></canvas>
-              <div class="qr-logo">🏥</div>
+              <div class="qr-logo"></div>
             </div>
 
             <div class="qr-url" [class.hidden]="qrLoading() || !!qrError()">
@@ -126,11 +126,11 @@ import { of } from "rxjs";
             </div>
 
             <div class="qr-actions" [class.hidden]="qrLoading() || !!qrError()">
-              <button class="btn-qr-dl"    (click)="downloadQr()">⬇️ Télécharger</button>
+              <button class="btn-qr-dl"    (click)="downloadQr()">⬇ Télécharger</button>
               <button class="btn-qr-copy"  (click)="copyUrl()">
                 {{ copied() ? ' Copié !' : ' Copier' }}
               </button>
-              <button class="btn-qr-print" (click)="printQr()">🖨️ Imprimer</button>
+              <button class="btn-qr-print" (click)="printQr()"> Imprimer</button>
             </div>
 
             <p class="qr-hint">

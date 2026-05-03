@@ -60,6 +60,11 @@ export const PATIENT_ROUTES: Routes = [
         loadComponent: () =>
           import("./pages/paiement/paiement.component").then((m) => m.PaiementComponent),
       },
+      {
+        path: "famille",
+        loadComponent: () =>
+          import("./pages/famille/famille.component").then((m) => m.FamilleComponent),
+      },
     ],
   },
 ];

@@ -32,7 +32,7 @@ type PlanningView = "calendar" | "requests" | "slots" | "conges";
       </div>
 
       <!-- MESSAGES -->
-      <div class="alert-success" *ngIf="successMsg()">✅ {{ successMsg() }}</div>
+      <div class="alert-success" *ngIf="successMsg()"> {{ successMsg() }}</div>
       <div class="alert-error"   *ngIf="errorMsg()"> {{ errorMsg() }}</div>
 
       <!-- NAV TABS -->
@@ -173,12 +173,37 @@ type PlanningView = "calendar" | "requests" | "slots" | "conges";
               <div class="req-avatar">{{ getPatientInitials(req) }}</div>
               <div class="req-info">
                 <div class="req-name">{{ getPatientName(req) }}</div>
+                <div class="req-booked-by" *ngIf="getPatientBookedBy(req)">
+                  Réservé par : {{ getPatientBookedBy(req) }}
+                </div>
                 <div class="req-meta">
                   <span> {{ formatFullDate(req.appointmentDate) }}</span>
                   <span>⏱ {{ req.durationMinutes }} min</span>
                   <span>{{ req.consultationType === 'TELECONSULTATION' ? ' Téléconsultation' : ' Présentiel' }}</span>
                 </div>
                 <div class="req-reason" *ngIf="req.reason"> {{ req.reason }}</div>
+                <!-- Documents justificatifs -->
+                <div class="req-docs" *ngIf="req.beneficiaryId">
+                  <span class="req-docs-title"> Documents justificatifs :</span>
+                  <div class="req-docs-links">
+                    <a *ngIf="req.beneficiaryDocMembrePath"
+                       [href]="'/uploads/' + getDocFilename(req.beneficiaryDocMembrePath)"
+                       target="_blank" class="doc-link doc-link-membre">
+                       مضمون ولادة ({{ getPatientName(req) }})
+                    </a>
+                    <span *ngIf="!req.beneficiaryDocMembrePath" class="doc-missing">
+                      ✗ مضمون ولادة ({{ getPatientName(req) }}) — non fourni
+                    </span>
+                    <a *ngIf="req.beneficiaryDocPatientPath"
+                       [href]="'/uploads/' + getDocFilename(req.beneficiaryDocPatientPath)"
+                       target="_blank" class="doc-link doc-link-patient">
+                       مضمون ولادة (patient)
+                    </a>
+                    <span *ngIf="!req.beneficiaryDocPatientPath" class="doc-missing">
+                      ✗ مضمون ولادة (patient) — non fourni
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
             <div class="req-actions">
@@ -442,7 +467,16 @@ type PlanningView = "calendar" | "requests" | "slots" | "conges";
     .req-name   { font-size:15px; font-weight:700; color:#0f172a; }
     .req-meta   { display:flex; flex-wrap:wrap; gap:10px; font-size:12px; color:#64748b; margin:4px 0; }
     .req-reason { font-size:12px; color:#475569; background:#f8fafc; padding:4px 8px; border-radius:6px; margin-top:4px; }
-    .req-actions { display:flex; gap:8px; flex-shrink:0; }
+    .req-booked-by { font-size:11px; color:#64748b; margin-bottom:2px; }
+    .req-docs { margin-top:8px; padding:8px 10px; background:#fffbeb; border:1px solid #fde68a; border-radius:8px; }
+    .req-docs-title { font-size:11px; font-weight:700; color:#92400e; display:block; margin-bottom:6px; }
+    .req-docs-links { display:flex; flex-direction:column; gap:4px; }
+    .doc-link { font-size:12px; font-weight:600; padding:4px 10px; border-radius:6px; text-decoration:none; display:inline-flex; align-items:center; gap:4px; }
+    .doc-link-membre  { background:#dbeafe; color:#1d4ed8; }
+    .doc-link-patient { background:#dcfce7; color:#15803d; }
+    .doc-link:hover { opacity:.85; }
+    .doc-missing { font-size:12px; color:#dc2626; }
+    .req-actions { display:flex; gap:8px; flex-shrink:0; flex-direction:column; align-items:flex-end; }
     .btn-accept { padding:8px 18px; background:#16a34a; color:white; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; }
     .btn-accept:disabled { opacity:.6; cursor:not-allowed; }
     .btn-refuse { padding:8px 18px; background:white; color:#dc2626; border:1.5px solid #dc2626; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; }
@@ -856,11 +890,41 @@ saveAvailability() {
 
   // ── Helpers ────────────────────────────────────────────────────────────────
   getPatientName(a: any): string {
+    // Si RDV pour un bénéficiaire, afficher son nom
+    if (a.beneficiaryPrenom || a.beneficiaryNom) {
+      return `${a.beneficiaryPrenom ?? ''} ${a.beneficiaryNom ?? ''}`.trim();
+    }
     const p = a.patient;
     if (!p) return "Patient";
     const prenom = p.prenom || p.firstName || p.first_name || "";
     const nom    = p.nom    || p.lastName  || p.last_name  || "";
     return `${prenom} ${nom}`.trim() || "Patient";
+  }
+
+  getPatientBookedBy(a: any): string | null {
+    // Retourne le nom du patient qui a fait la réservation (si différent du bénéficiaire)
+    if (!a.beneficiaryPrenom && !a.beneficiaryNom) return null;
+    const p = a.patient;
+    if (!p) return null;
+    const prenom = p.prenom || p.firstName || p.first_name || "";
+    const nom    = p.nom    || p.lastName  || p.last_name  || "";
+    return `${prenom} ${nom}`.trim() || null;
+  }
+
+  hasBeneficiaryDocs(a: any): boolean {
+    return !!(a.beneficiaryDocMembrePath || a.beneficiaryDocPatientPath);
+  }
+
+  /** Extrait le nom du fichier depuis un chemin Windows ou Unix */
+  getDocFilename(filePath: string): string {
+    if (!filePath) return '';
+    // Normalise les backslashes et extrait le nom du fichier
+    const normalized = filePath.replace(/\\/g, '/');
+    const parts = normalized.split('/');
+    // Retourne "family-docs/filename.pdf"
+    const idx = parts.indexOf('family-docs');
+    if (idx >= 0) return parts.slice(idx).join('/');
+    return parts[parts.length - 1];
   }
 
   getPatientInitials(a: any): string {

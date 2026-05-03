@@ -1,12 +1,14 @@
 import { Component, inject } from "@angular/core";
 import { RouterOutlet, RouterLink, RouterLinkActive } from "@angular/router";
 import { CommonModule } from "@angular/common";
+import { TranslateModule } from "@ngx-translate/core";
 import { AuthService } from "@core/services/auth.service";
+import { LangSwitcherComponent } from "../../../shared/components/lang-switcher/lang-switcher.component";
 
 @Component({
   selector: "app-pharmacie-layout",
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, TranslateModule, LangSwitcherComponent],
   template: `
     <!-- Navbar horizontale -->
     <nav class="ph-navbar">
@@ -18,26 +20,27 @@ import { AuthService } from "@core/services/auth.service";
 
       <div class="ph-nav-links">
         <a class="ph-nav-link" routerLink="/pharmacie/dashboard" routerLinkActive="active">
-           Tableau de bord
+          {{ 'nav.dashboard' | translate }}
         </a>
         <a class="ph-nav-link" routerLink="/pharmacie/scan" routerLinkActive="active">
-           Scanner
+          Scanner
         </a>
         <a class="ph-nav-link" routerLink="/pharmacie/delivrance" routerLinkActive="active">
-           Délivrance QR
+          {{ 'nav.delivrance' | translate }}
         </a>
         <a class="ph-nav-link" routerLink="/pharmacie/stock" routerLinkActive="active">
-           Stock
+          {{ 'nav.stock' | translate }}
         </a>
       </div>
 
       <div class="ph-nav-user">
+        <app-lang-switcher />
         <div class="ph-user-avatar">{{ initials }}</div>
         <div class="ph-user-info">
           <div class="ph-user-name">{{ fullName }}</div>
           <div class="ph-user-role">PHARMACIEN</div>
         </div>
-        <button class="ph-logout-btn" (click)="logout()">Déconnexion</button>
+        <button class="ph-logout-btn" (click)="logout()">{{ 'auth.logout' | translate }}</button>
       </div>
     </nav>
 

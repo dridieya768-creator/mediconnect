@@ -25,6 +25,8 @@ const qr_codes_module_1 = require("./modules/qr-codes/qr-codes.module");
 const notifications_module_1 = require("./modules/notifications/notifications.module");
 const payments_module_1 = require("./modules/payments/payments.module");
 const dossier_medical_module_1 = require("./modules/dossier-medical/dossier-medical.module");
+const family_members_module_1 = require("./modules/family-members/family-members.module");
+const ai_module_1 = require("./modules/ai/ai.module");
 const admin_module_1 = require("./admin/admin.module");
 let AppModule = class AppModule {
 };
@@ -64,6 +66,8 @@ exports.AppModule = AppModule = __decorate([
             notifications_module_1.NotificationsModule,
             payments_module_1.PaymentsModule,
             dossier_medical_module_1.DossierMedicalModule,
+            family_members_module_1.FamilyMembersModule,
+            ai_module_1.AiModule,
             admin_module_1.AdminModule,
         ],
     })

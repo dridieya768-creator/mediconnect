@@ -109,6 +109,18 @@ __decorate([
     __metadata("design:type", Boolean)
 ], Appointment.prototype, "rated", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ name: "beneficiary_id", type: "uuid", nullable: true }),
+    __metadata("design:type", String)
+], Appointment.prototype, "beneficiaryId", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: "beneficiary_nom", nullable: true, length: 100 }),
+    __metadata("design:type", String)
+], Appointment.prototype, "beneficiaryNom", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: "beneficiary_prenom", nullable: true, length: 100 }),
+    __metadata("design:type", String)
+], Appointment.prototype, "beneficiaryPrenom", void 0);
+__decorate([
     (0, typeorm_1.CreateDateColumn)({ name: "created_at" }),
     __metadata("design:type", Date)
 ], Appointment.prototype, "createdAt", void 0);

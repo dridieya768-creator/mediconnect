@@ -93,6 +93,22 @@ export class AdminController {
   @ApiOperation({ summary: 'Documents soumis par un médecin lors de son inscription' })
   async getDoctorDocuments(@Param('id') id: string) {
     const docs = await this.adminService.getDoctorDocuments(id);
-    return docs; // tableau direct — loadDoctorDocs() dans le frontend gère les deux formats
+    return docs;
+  }
+
+  // ── Logs d'audit ──────────────────────────────────────────────────────────
+  @Get('audit-logs')
+  @ApiOperation({ summary: 'Logs d\'audit du système' })
+  @ApiQuery({ name: 'page',    required: false, type: Number })
+  @ApiQuery({ name: 'limit',   required: false, type: Number })
+  @ApiQuery({ name: 'role',    required: false })
+  @ApiQuery({ name: 'search',  required: false })
+  getAuditLogs(
+    @Query('page')   page  = 1,
+    @Query('limit')  limit = 50,
+    @Query('role')   role?: string,
+    @Query('search') search?: string,
+  ) {
+    return this.adminService.getAuditLogs({ page: +page, limit: +limit, role, search });
   }
 }

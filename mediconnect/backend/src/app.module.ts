@@ -3,7 +3,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { UploadModule } from './modules/upload/upload.module';
-// Feature Modules
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { PatientsModule } from './modules/patients/patients.module';
@@ -17,17 +16,14 @@ import { QrCodesModule } from './modules/qr-codes/qr-codes.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { DossierMedicalModule } from './modules/dossier-medical/dossier-medical.module';
-
-// Admin — après TypeORM
+import { FamilyMembersModule } from './modules/family-members/family-members.module';
+import { AiModule } from './modules/ai/ai.module';
 import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
     UploadModule,
-    // 1️⃣ Config en premier (isGlobal: true)
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
-
-    // 2️⃣ Database
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
@@ -44,11 +40,7 @@ import { AdminModule } from './admin/admin.module';
       }),
       inject: [ConfigService],
     }),
-
-    // 3️⃣ Rate limiting
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
-
-    // 4️⃣ Feature modules
     AuthModule,
     UsersModule,
     PatientsModule,
@@ -62,8 +54,8 @@ import { AdminModule } from './admin/admin.module';
     NotificationsModule,
     PaymentsModule,
     DossierMedicalModule,
-
-    // 5️⃣ Admin — après TypeORM initialisé
+    FamilyMembersModule,
+    AiModule,
     AdminModule,
   ],
 })

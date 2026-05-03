@@ -6,4 +6,7 @@ export declare class CreateAppointmentDto {
     durationMinutes?: number;
     consultationType: ConsultationType;
     reason?: string;
+    beneficiaryId?: string;
+    beneficiaryNom?: string;
+    beneficiaryPrenom?: string;
 }

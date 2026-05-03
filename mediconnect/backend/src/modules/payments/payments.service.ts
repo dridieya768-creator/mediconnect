@@ -46,6 +46,9 @@ export class PaymentsService {
     if (appointment.status === AppointmentStatus.CANCELLED) {
       throw new BadRequestException('Ce rendez-vous est annulé');
     }
+    if (appointment.status === AppointmentStatus.COMPLETED) {
+      throw new BadRequestException('Ce rendez-vous est déjà terminé');
+    }
 
     // Montant en millimes (50 TND = 50000 millimes)
     const amountMillimes = 50000;
@@ -143,6 +146,7 @@ export class PaymentsService {
       amount: 50,
       currency: 'TND',
       paid: a.status === AppointmentStatus.CONFIRMED || a.status === AppointmentStatus.COMPLETED,
+      payable: a.status === AppointmentStatus.REQUESTED || a.status === AppointmentStatus.CONFIRMED,
     }));
   }
 }

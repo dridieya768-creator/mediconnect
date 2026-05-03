@@ -7,6 +7,7 @@ import {
   OnChanges,
   SimpleChanges,
   inject,
+  signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -17,6 +18,8 @@ import {
 } from '@angular/forms';
 import { BookingStateService } from '../../../../../core/services/booking-state.service';
 import { AvailabilityConfig } from '../../../../../core/models/medecin-availability.model';
+import { FamilyMembersService } from '../../../../../core/services/family-members.service';
+import { FamilyMember } from '../../../../../core/models/family-member.model';
 
 @Component({
   selector: 'app-appointment-form',
@@ -67,6 +70,17 @@ import { AvailabilityConfig } from '../../../../../core/models/medecin-availabil
 
       <!-- Formulaire -->
       <form [formGroup]="form" class="form-body" (ngSubmit)="onConfirm()">
+
+        <!-- Pour qui ? -->
+        <div class="form-group">
+          <label class="form-label" for="beneficiary">Pour qui est ce rendez-vous ?</label>
+          <select id="beneficiary" formControlName="beneficiaryId" class="form-select">
+            <option [value]="null">👤 Moi-même</option>
+            <option *ngFor="let m of familyMembers()" [value]="m.id">
+              {{ relationIcon(m.relation) }} {{ m.prenom }} {{ m.nom }} ({{ m.relation | lowercase }})
+            </option>
+          </select>
+        </div>
 
         <!-- Type de consultation -->
         <div class="form-group">
@@ -380,13 +394,18 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
     consultationType: string;
     durationMinutes: number;
     reason: string;
+    beneficiaryId?: string | null;
+    beneficiaryNom?: string | null;
+    beneficiaryPrenom?: string | null;
   }>();
   @Output() cancelled = new EventEmitter<void>();
 
   private fb = inject(FormBuilder);
   private bookingState = inject(BookingStateService);
+  private familyMembersService = inject(FamilyMembersService);
 
   form!: FormGroup;
+  familyMembers = signal<FamilyMember[]>([]);
 
   // Expose signals as methods for template
   selectedSlot = this.bookingState.selectedSlot;
@@ -400,12 +419,23 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
     return type === 'TELECONSULTATION' ? '💻 Téléconsultation' : '🏥 Présentiel';
   }
 
+  relationIcon(relation: string): string {
+    const icons: Record<string, string> = {
+      ENFANT: '👶',
+      CONJOINT: '💑',
+      PARENT: '👴',
+      AUTRE: '👤',
+    };
+    return icons[relation] ?? '👤';
+  }
+
   ngOnInit(): void {
     const defaultDuration = this.availability?.defaultDuration ?? 30;
     const initialType = this.bookingState.consultationType();
     const initialReason = this.bookingState.reason();
 
     this.form = this.fb.group({
+      beneficiaryId: [null],
       consultationType: [
         this.isTeleconsultDisabled && initialType === 'TELECONSULTATION'
           ? 'PHYSICAL'
@@ -425,6 +455,12 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
     this.form.get('reason')?.valueChanges.subscribe(val => {
       this.bookingState.reason.set(val);
     });
+
+    // Charger les membres familiaux
+    this.familyMembersService.getAll().subscribe({
+      next: (members) => this.familyMembers.set(members),
+      error: () => this.familyMembers.set([]),
+    });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -432,7 +468,6 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
       const defaultDuration = this.availability?.defaultDuration ?? 30;
       this.form.patchValue({ durationMinutes: defaultDuration });
 
-      // If teleconsult is now disabled and currently selected, switch to PHYSICAL
       if (
         this.isTeleconsultDisabled &&
         this.form.get('consultationType')?.value === 'TELECONSULTATION'
@@ -444,11 +479,26 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
 
   onConfirm(): void {
     if (!this.selectedSlot() || this.isLoading) return;
-    const { consultationType, durationMinutes, reason } = this.form.value;
+    const { consultationType, durationMinutes, reason, beneficiaryId } = this.form.value;
+
+    // Résoudre les infos du bénéficiaire si sélectionné
+    let beneficiaryNom: string | null = null;
+    let beneficiaryPrenom: string | null = null;
+    if (beneficiaryId) {
+      const member = this.familyMembers().find(m => m.id === beneficiaryId);
+      if (member) {
+        beneficiaryNom = member.nom;
+        beneficiaryPrenom = member.prenom;
+      }
+    }
+
     this.confirmed.emit({
       consultationType,
       durationMinutes: Number(durationMinutes),
       reason: reason ?? '',
+      beneficiaryId: beneficiaryId || null,
+      beneficiaryNom,
+      beneficiaryPrenom,
     });
   }
 

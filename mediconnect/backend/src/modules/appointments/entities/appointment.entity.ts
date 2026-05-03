@@ -93,6 +93,16 @@ export class Appointment {
   @Column({ type: "boolean", default: false })
   rated: boolean;
 
+  // ── Bénéficiaire (membre familial) ─────────────────────────────────────────
+  @Column({ name: "beneficiary_id", type: "uuid", nullable: true })
+  beneficiaryId: string | null;
+
+  @Column({ name: "beneficiary_nom", nullable: true, length: 100 })
+  beneficiaryNom: string | null;
+
+  @Column({ name: "beneficiary_prenom", nullable: true, length: 100 })
+  beneficiaryPrenom: string | null;
+
   // ── Timestamps ─────────────────────────────────────────────────────────────
   @CreateDateColumn({ name: "created_at" })
   createdAt: Date;

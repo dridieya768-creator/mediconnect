@@ -1,4 +1,4 @@
-import { IsString, IsDateString, IsEnum, IsOptional, IsInt, Min, Max } from "class-validator";
+import { IsString, IsDateString, IsEnum, IsOptional, IsInt, Min, Max, IsUUID, MaxLength } from "class-validator";
 import { ConsultationType } from "../entities/appointment.entity";
 
 export class CreateAppointmentDto {
@@ -23,4 +23,18 @@ export class CreateAppointmentDto {
   @IsString()
   @IsOptional()
   reason?: string;
+
+  @IsOptional()
+  @IsUUID()
+  beneficiaryId?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  beneficiaryNom?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  beneficiaryPrenom?: string;
 }

@@ -54,6 +54,11 @@ export const MEDECIN_ROUTES: Routes = [
         loadComponent: () =>
           import("./pages/video/teleconsultation-medecin.component").then((m) => m.TeleconsultationMedecinComponent),
       },
+      {
+        path: "revenus",
+        loadComponent: () =>
+          import("./pages/revenus/medecin-revenus.component").then((m) => m.MedecinRevenusComponent),
+      },
     ],
   },
 ];

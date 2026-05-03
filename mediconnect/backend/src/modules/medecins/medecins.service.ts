@@ -556,6 +556,10 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
     }
   }
 
+  async getRevenus(doctorId: string, from?: string, to?: string) {
+    return RevenusService.getRevenus(this.appointmentRepository, doctorId, from, to);
+  }
+
   private async saveBase64Image(base64String: string, folder: string): Promise<string> {
     try {
       const matches = base64String.match(/^data:image\/([A-Za-z-+\/]+);base64,(.+)$/);
@@ -587,3 +591,57 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
 }
 
 
+
+// ── Revenus médecin ────────────────────────────────────────────────────────
+export class RevenusService {
+  static async getRevenus(
+    appointmentRepo: Repository<Appointment>,
+    doctorId: string,
+    from?: string,
+    to?: string,
+  ) {
+    const qb = appointmentRepo
+      .createQueryBuilder('a')
+      .leftJoinAndSelect('a.patient', 'patient')
+      .where('a.doctorId = :doctorId', { doctorId })
+      .andWhere('a.status IN (:...statuses)', {
+        statuses: [AppointmentStatus.CONFIRMED, AppointmentStatus.COMPLETED],
+      });
+
+    if (from) qb.andWhere('a.appointmentDate >= :from', { from: new Date(from) });
+    if (to)   qb.andWhere('a.appointmentDate <= :to',   { to: new Date(to + 'T23:59:59') });
+
+    qb.orderBy('a.appointmentDate', 'DESC');
+    const appointments = await qb.getMany();
+
+    const TARIF = 50; // TND par consultation (valeur par défaut)
+
+    const factures = appointments.map((a, idx) => ({
+      numero:          `FAC-${String(idx + 1).padStart(4, '0')}`,
+      date:            a.appointmentDate,
+      patientNom:      `${(a.patient as any)?.firstName ?? ''} ${(a.patient as any)?.lastName ?? ''}`.trim() || 'Patient',
+      type:            a.consultationType,
+      statut:          a.status,
+      montant:         TARIF,
+      devise:          'TND',
+    }));
+
+    const totalRevenu   = factures.reduce((s, f) => s + f.montant, 0);
+    const nbConsult     = factures.length;
+    const nbTeleconsult = factures.filter(f => f.type === 'TELECONSULTATION').length;
+    const nbPhysique    = factures.filter(f => f.type === 'PHYSICAL').length;
+
+    // Revenus par mois (12 derniers mois)
+    const parMois: Record<string, number> = {};
+    for (const f of factures) {
+      const key = new Date(f.date).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' });
+      parMois[key] = (parMois[key] ?? 0) + f.montant;
+    }
+
+    return {
+      factures,
+      stats: { totalRevenu, nbConsult, nbTeleconsult, nbPhysique, tarif: TARIF },
+      parMois,
+    };
+  }
+}

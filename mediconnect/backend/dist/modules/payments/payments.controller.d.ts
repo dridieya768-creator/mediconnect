@@ -15,5 +15,6 @@ export declare class PaymentsController {
         amount: number;
         currency: string;
         paid: boolean;
+        payable: boolean;
     }[]>;
 }

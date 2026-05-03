@@ -77,6 +77,9 @@ let AdminController = class AdminController {
         const docs = await this.adminService.getDoctorDocuments(id);
         return docs;
     }
+    getAuditLogs(page = 1, limit = 50, role, search) {
+        return this.adminService.getAuditLogs({ page: +page, limit: +limit, role, search });
+    }
 };
 exports.AdminController = AdminController;
 __decorate([
@@ -147,6 +150,21 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], AdminController.prototype, "getDoctorDocuments", null);
+__decorate([
+    (0, common_1.Get)('audit-logs'),
+    (0, swagger_1.ApiOperation)({ summary: 'Logs d\'audit du système' }),
+    (0, swagger_1.ApiQuery)({ name: 'page', required: false, type: Number }),
+    (0, swagger_1.ApiQuery)({ name: 'limit', required: false, type: Number }),
+    (0, swagger_1.ApiQuery)({ name: 'role', required: false }),
+    (0, swagger_1.ApiQuery)({ name: 'search', required: false }),
+    __param(0, (0, common_1.Query)('page')),
+    __param(1, (0, common_1.Query)('limit')),
+    __param(2, (0, common_1.Query)('role')),
+    __param(3, (0, common_1.Query)('search')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object, String, String]),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "getAuditLogs", null);
 exports.AdminController = AdminController = __decorate([
     (0, swagger_1.ApiTags)('Admin'),
     (0, swagger_1.ApiBearerAuth)(),

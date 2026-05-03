@@ -59,6 +59,15 @@ export class AdminDashboardComponent implements OnInit {
   isLoadingDocs = signal(false);
   rejectReason  = '';
 
+  // ── Audit logs ─────────────────────────────────────────────────────────────
+  activeTab     = signal<'users' | 'audit'>('users');
+  auditLogs     = signal<any[]>([]);
+  auditLoading  = signal(false);
+  auditTotal    = signal(0);
+  auditPage     = signal(1);
+  auditSearch   = signal('');
+  auditRoleFilter = signal('');
+
   readonly ROLES   = ROLES;
   readonly STATUTS = STATUTS;
 
@@ -331,6 +340,38 @@ export class AdminDashboardComponent implements OnInit {
 
   getStatusLabel(status: string): string {
     return STATUS_LABELS[status] ?? status;
+  }
+
+  loadAuditLogs() {
+    this.auditLoading.set(true);
+    const params = new URLSearchParams({
+      page:  String(this.auditPage()),
+      limit: '50',
+    });
+    if (this.auditRoleFilter()) params.set('role', this.auditRoleFilter());
+    if (this.auditSearch())     params.set('search', this.auditSearch());
+
+    this.http.get<any>(`/api/v1/admin/audit-logs?${params}`).pipe(
+      catchError(() => of({ data: [], total: 0 }))
+    ).subscribe((res: any) => {
+      const d = res?.data ?? res;
+      this.auditLogs.set(Array.isArray(d?.data) ? d.data : Array.isArray(d) ? d : []);
+      this.auditTotal.set(d?.total ?? 0);
+      this.auditLoading.set(false);
+    });
+  }
+
+  getAuditAction(log: any): string {
+    const champs = log.champsModifies ?? {};
+    const keys = Object.keys(champs);
+    if (keys.includes('delivrance_pharmacie')) return '💊 Délivrance pharmacie';
+    if (keys.includes('allergies'))            return '🔴 Allergies modifiées';
+    if (keys.includes('maladies_chroniques'))  return '🏥 Maladies chroniques';
+    if (keys.includes('medicaments_actuels'))  return '💊 Médicaments actuels';
+    if (keys.includes('documents'))            return '📄 Document ajouté';
+    if (keys.includes('observations'))         return '📝 Observations';
+    if (keys.length > 0)                       return `✏️ ${keys[0]}`;
+    return '📋 Modification dossier';
   }
 
   showToast(msg: string, type: 'success' | 'error' = 'success') {

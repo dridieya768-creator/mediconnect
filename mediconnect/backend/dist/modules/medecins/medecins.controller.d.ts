@@ -59,6 +59,9 @@ export declare class MedecinsController {
             rating: number;
             ratingComment: string;
             rated: boolean;
+            beneficiaryId: string;
+            beneficiaryNom: string;
+            beneficiaryPrenom: string;
             createdAt: Date;
             updatedAt: Date;
             deletedAt: Date;
@@ -126,6 +129,25 @@ export declare class MedecinsController {
         profile: import("./entities/medecin-profile.entity").MedecinProfile;
     }[]>;
     getMyPatients(user: User): Promise<any[]>;
+    getRevenus(user: User, from?: string, to?: string): Promise<{
+        factures: {
+            numero: string;
+            date: Date;
+            patientNom: string;
+            type: import("../appointments/entities/appointment.entity").ConsultationType;
+            statut: import("../appointments/entities/appointment.entity").AppointmentStatus;
+            montant: number;
+            devise: string;
+        }[];
+        stats: {
+            totalRevenu: number;
+            nbConsult: number;
+            nbTeleconsult: number;
+            nbPhysique: number;
+            tarif: number;
+        };
+        parMois: Record<string, number>;
+    }>;
     getMedecinAvailabilityById(id: string): Promise<{
         workDays: any;
         defaultDuration: any;

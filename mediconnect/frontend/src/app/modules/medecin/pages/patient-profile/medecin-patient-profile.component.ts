@@ -74,7 +74,7 @@ import { of } from 'rxjs';
             </div>
             <p class="empty-text" *ngIf="!patient()?.maladiesChroniques?.length">Aucune maladie chronique</p>
             </ng-container>
-            <div *ngIf="!permissions().allergies" class="no-access-msg">🔒 Accès non autorisé par le patient</div>
+            <div *ngIf="!permissions().allergies" class="no-access-msg"> Accès non autorisé par le patient</div>
           </div>
 
           <!-- Médicaments actuels -->
@@ -91,10 +91,10 @@ import { of } from 'rxjs';
 
           <!-- Documents médicaux -->
           <div class="card card-full" *ngIf="permissions().documents">
-            <div class="card-title">📄 Documents médicaux</div>
+            <div class="card-title"> Documents médicaux</div>
             <div *ngIf="patient()?.documents?.length">
               <div class="doc-item" *ngFor="let d of patient()?.documents">
-                <span class="doc-icon">📄</span>
+                <span class="doc-icon"></span>
                 <div class="doc-info">
                   <div class="doc-name">{{ d.name }}</div>
                   <div class="doc-date">{{ d.uploadedAt ? formatDate(d.uploadedAt) : '' }}</div>
@@ -105,8 +105,8 @@ import { of } from 'rxjs';
             <p class="empty-text" *ngIf="!patient()?.documents?.length">Aucun document partagé</p>
           </div>
           <div class="card card-full" *ngIf="!permissions().documents">
-            <div class="card-title">📄 Documents médicaux</div>
-            <div class="no-access-msg">🔒 Accès non autorisé par le patient</div>
+            <div class="card-title"> Documents médicaux</div>
+            <div class="no-access-msg"> Accès non autorisé par le patient</div>
           </div>
 
           <!-- Observations médecin -->
@@ -130,7 +130,7 @@ import { of } from 'rxjs';
               </button>
             </div>
             </ng-container>
-            <div *ngIf="!permissions().observations" class="no-access-msg">🔒 Accès non autorisé par le patient</div>
+            <div *ngIf="!permissions().observations" class="no-access-msg"> Accès non autorisé par le patient</div>
           </div>
 
         </div>

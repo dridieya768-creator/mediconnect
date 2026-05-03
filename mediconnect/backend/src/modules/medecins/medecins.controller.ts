@@ -7,7 +7,6 @@ import { UpdateAvailabilityDto } from './update-availability.dto';
 import { SearchMedecinsDto } from './dto/search-medecins.dto';
 import { GetSlotsQueryDto } from './dto/get-slots-query.dto';
 
-// DTO
 export class UpdateMedecinProfileDto {
   titre?: string;
   specialite?: string;
@@ -39,7 +38,6 @@ export class MedecinsController {
 
   @Put('availability')
   async updateAvailability(@CurrentUser() user: User, @Body() dto: UpdateAvailabilityDto) {
-    console.log('[availability] body received:', dto);
     return this.medecinsService.updateAvailability(user.id, dto);
   }
 
@@ -48,43 +46,42 @@ export class MedecinsController {
     return this.medecinsService.getAvailability(user.id);
   }
 
-  // ✅ CORRECTION : Utiliser @CurrentUser() au lieu de @Request()
   @Patch('appointments/:appointmentId/accept')
   async acceptAppointment(
     @CurrentUser() user: User,
-    @Param('appointmentId') appointmentId: string
+    @Param('appointmentId') appointmentId: string,
   ) {
-    console.log(`[Controller] Accepting appointment ${appointmentId} for doctor ${user.id}`);
-    return this.medecinsService.acceptAppointment(user.id, appointmentId);
+    const result = await this.medecinsService.acceptAppointment(user.id, appointmentId);
+    try {
+      const appt = result.appointment;
+      await (this.medecinsService as any).appointmentRepository?.manager?.query(
+        `INSERT INTO dossier_historique
+           (id, patient_id, modifie_par_id, role_auteur, champs_modifies, snapshot_avant, commentaire, created_at)
+         VALUES (gen_random_uuid(), $1, $2, 'MEDECIN', $3::jsonb, '{}'::jsonb, $4, NOW())`,
+        [
+          appt?.patientId,
+          user.id,
+          JSON.stringify({ rdv_confirme: { avant: { status: 'REQUESTED' }, apres: { status: 'CONFIRMED', appointmentId } } }),
+          'Rendez-vous confirme',
+        ],
+      );
+    } catch { /* silencieux */ }
+    return result;
   }
 
   @Get('me')
   async getMe(@CurrentUser() user: User) {
     const profile = await this.medecinsService.getProfile(user.id);
-    return {
-      ...user,
-      id: user.id,
-      data: {
-        ...user,
-        id: user.id,
-        profile: profile,
-      }
-    };
+    return { ...user, id: user.id, data: { ...user, id: user.id, profile } };
   }
 
   @Delete('patients/:patientId')
-  async removePatient(
-    @CurrentUser() user: User,
-    @Param('patientId') patientId: string
-  ) {
+  async removePatient(@CurrentUser() user: User, @Param('patientId') patientId: string) {
     return this.medecinsService.removePatientFromDoctorList(user.id, patientId);
   }
 
   @Get('patients/:patientId/check')
-  async checkPatient(
-    @CurrentUser() user: User,
-    @Param('patientId') patientId: string
-  ) {
+  async checkPatient(@CurrentUser() user: User, @Param('patientId') patientId: string) {
     return this.medecinsService.isPatientInDoctorList(user.id, patientId);
   }
 
@@ -98,30 +95,38 @@ export class MedecinsController {
     return this.medecinsService.updateProfile(user.id, updateDto);
   }
 
- @Get()
-async getAllMedecins(@Query() query: SearchMedecinsDto) {
-  return this.medecinsService.getAllMedecinsWithProfiles(query.search, query.specialite, query.ville);
-}
+  @Get()
+  async getAllMedecins(@Query() query: SearchMedecinsDto) {
+    return this.medecinsService.getAllMedecinsWithProfiles(query.search, query.specialite, query.ville);
+  }
 
   @Get('my-patients')
-  async getMyPatients(@CurrentUser() user: User) {
-    return this.medecinsService.getMyPatientsFromAppointments(user.id);
-  }
+async getMyPatients(@CurrentUser() user: User) {
+  return this.medecinsService.getMyPatientsFromAppointments(user.id);
+}
 
-  @Get(':id/availability')
-  async getMedecinAvailabilityById(@Param('id') id: string) {
-    console.log(`[Controller] GET availability for medecin: ${id}`);
-    return this.medecinsService.getMedecinAvailabilityById(id);
-  }
+@Get('revenus/stats')
+async getRevenus(
+  @CurrentUser() user: User,
+  @Query('from') from?: string,
+  @Query('to') to?: string,
+) {
+  return this.medecinsService.getRevenus(user.id, from, to);
+}
 
-  @Get(':id/slots')
-  async getOccupiedSlots(@Param('id') id: string, @Query() query: GetSlotsQueryDto) {
-    return this.medecinsService.getOccupiedSlots(id, query.startDate, query.endDate);
-  }
+// ── Routes :id — TOUJOURS EN DERNIER ──
+@Get(':id/availability')
+async getMedecinAvailabilityById(@Param('id') id: string) {
+  return this.medecinsService.getMedecinAvailabilityById(id);
+}
 
-  @Get(':id')
-  async getMedecinById(@Param('id') id: string) {
-    return this.medecinsService.getMedecinById(id);
-  }
-  
+@Get(':id/slots')
+async getOccupiedSlots(@Param('id') id: string, @Query() query: GetSlotsQueryDto) {
+  return this.medecinsService.getOccupiedSlots(id, query.startDate, query.endDate);
+}
+
+@Get(':id')
+async getMedecinById(@Param('id') id: string) {
+  return this.medecinsService.getMedecinById(id);
+}
 }

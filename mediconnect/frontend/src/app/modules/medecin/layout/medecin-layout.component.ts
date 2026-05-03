@@ -1,12 +1,14 @@
 import { Component, inject } from "@angular/core";
 import { RouterOutlet, RouterLink, RouterLinkActive } from "@angular/router";
 import { CommonModule } from "@angular/common";
+import { TranslateModule } from "@ngx-translate/core";
 import { AuthService } from "@core/services/auth.service";
+import { LangSwitcherComponent } from "../../../shared/components/lang-switcher/lang-switcher.component";
 
 @Component({
   selector: "app-medecin-layout",
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, TranslateModule, LangSwitcherComponent],
   template: `
     <nav class="top-nav">
       <div class="nav-container">
@@ -21,14 +23,16 @@ import { AuthService } from "@core/services/auth.service";
         </a>
 
         <div class="nav-links">
-          <a routerLink="/medecin/dashboard" routerLinkActive="active" class="nav-link">Tableau de bord</a>
-          <a routerLink="/medecin/planning"   routerLinkActive="active" class="nav-link">Planning</a>
-          <a routerLink="/medecin/patients"   routerLinkActive="active" class="nav-link">Patients</a>
-          <a routerLink="/medecin/prescriptions" routerLinkActive="active" class="nav-link">Prescriptions</a>
-          <a routerLink="/medecin/profil"     routerLinkActive="active" class="nav-link">Mon Profil</a>
+          <a routerLink="/medecin/dashboard"     routerLinkActive="active" class="nav-link">{{ 'nav.dashboard' | translate }}</a>
+          <a routerLink="/medecin/planning"      routerLinkActive="active" class="nav-link">{{ 'nav.planning' | translate }}</a>
+          <a routerLink="/medecin/patients"      routerLinkActive="active" class="nav-link">{{ 'nav.patients' | translate }}</a>
+          <a routerLink="/medecin/prescriptions" routerLinkActive="active" class="nav-link">{{ 'nav.prescriptions' | translate }}</a>
+          <a routerLink="/medecin/profil"        routerLinkActive="active" class="nav-link">{{ 'nav.profile' | translate }}</a>
+          <a routerLink="/medecin/revenus"       routerLinkActive="active" class="nav-link"> Revenus</a>
         </div>
 
         <div class="nav-user">
+          <app-lang-switcher />
           <div class="user-avatar-btn">
             <div class="user-avatar">{{ userInitials }}</div>
             <span class="user-name-nav">{{ currentUser()?.firstName }}</span>

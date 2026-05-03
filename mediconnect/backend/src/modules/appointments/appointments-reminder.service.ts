@@ -49,7 +49,7 @@ export class AppointmentsReminderService {
           await this.sendReminderEmail(appt, hoursAhead);
           appt.reminderSent = true;
           await this.appointmentsRepository.save(appt);
-          this.logger.log(`✅ Rappel ${hoursAhead}h envoyé pour RDV ${appt.id}`);
+          this.logger.log(` Rappel ${hoursAhead}h envoyé pour RDV ${appt.id}`);
         } catch (err) {
           this.logger.error(`❌ Erreur rappel RDV ${appt.id}:`, err.message);
         }
@@ -78,7 +78,7 @@ export class AppointmentsReminderService {
       html: `
         <div style="font-family:Arial,sans-serif; max-width:520px; margin:auto; background:#fff; border-radius:12px; overflow:hidden; border:1px solid #e2e8f0;">
           <div style="background:#0d9488; padding:24px 28px;">
-            <h1 style="color:white; margin:0; font-size:20px;">🏥 MediConnect</h1>
+            <h1 style="color:white; margin:0; font-size:20px;"> MediConnect</h1>
             <p style="color:#ccfbf1; margin:6px 0 0; font-size:13px;">Rappel de rendez-vous</p>
           </div>
           <div style="padding:28px;">
@@ -87,19 +87,19 @@ export class AppointmentsReminderService {
 
             <div style="background:#f0fdfa; border:1px solid #99f6e4; border-radius:10px; padding:18px; margin:20px 0;">
               <div style="display:flex; margin-bottom:10px;">
-                <span style="color:#64748b; width:120px; font-size:13px;">👨‍⚕️ Médecin</span>
+                <span style="color:#64748b; width:120px; font-size:13px;"> Médecin</span>
                 <strong style="color:#0f172a; font-size:13px;">${doctorName}</strong>
               </div>
               <div style="display:flex; margin-bottom:10px;">
-                <span style="color:#64748b; width:120px; font-size:13px;">📅 Date</span>
+                <span style="color:#64748b; width:120px; font-size:13px;"> Date</span>
                 <strong style="color:#0f172a; font-size:13px;">${dateStr}</strong>
               </div>
               <div style="display:flex; margin-bottom:10px;">
-                <span style="color:#64748b; width:120px; font-size:13px;">🕙 Heure</span>
+                <span style="color:#64748b; width:120px; font-size:13px;"> Heure</span>
                 <strong style="color:#0f172a; font-size:13px;">${timeStr}</strong>
               </div>
               <div style="display:flex;">
-                <span style="color:#64748b; width:120px; font-size:13px;">🏥 Type</span>
+                <span style="color:#64748b; width:120px; font-size:13px;"> Type</span>
                 <strong style="color:#0f172a; font-size:13px;">${appt.consultationType === 'TELECONSULTATION' ? '💻 Téléconsultation' : '🏥 Présentiel'}</strong>
               </div>
             </div>

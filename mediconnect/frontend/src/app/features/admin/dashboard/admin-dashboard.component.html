@@ -8,19 +8,19 @@
   <!-- SIDEBAR -->
   <aside class="admin-sidebar">
     <div class="sidebar-brand">
-      <span class="brand-icon">🏥</span>
+      <span class="brand-icon"></span>
       <div>
         <div class="brand-name">e-Santé</div>
         <div class="brand-sub">Administration</div>
       </div>
     </div>
     <nav class="sidebar-nav">
-      <a class="nav-item active" routerLink="/admin/dashboard"><span>📊</span> Dashboard</a>
-      <a class="nav-item" routerLink="/admin/securite"><span>🔒</span> Sécurité & Audit</a>
-      <a class="nav-item" routerLink="/admin/monitoring"><span>📈</span> Monitoring</a>
-      <a class="nav-item" routerLink="/admin/sauvegardes"><span>💾</span> Sauvegardes</a>
+      <a class="nav-item active" routerLink="/admin/dashboard"><span></span> Dashboard</a>
+      <a class="nav-item" routerLink="/admin/securite"><span></span> Sécurité & Audit</a>
+      <a class="nav-item" routerLink="/admin/monitoring"><span></span> Monitoring</a>
+      <a class="nav-item" routerLink="/admin/sauvegardes"><span></span> Sauvegardes</a>
       <a class="nav-item" routerLink="/admin/configuration"><span>⚙️</span> Configuration</a>
-      <a class="nav-item" routerLink="/admin/support"><span>🎫</span> Support</a>
+      <a class="nav-item" routerLink="/admin/support"><span></span> Support</a>
     </nav>
     <div class="sidebar-footer">
       <div class="sidebar-user">
@@ -39,19 +39,30 @@
     <div class="admin-page-header">
       <div>
         <div class="admin-breadcrumb">Portail Admin · /admin/dashboard</div>
-        <h1 class="admin-page-title">Gestion des Utilisateurs</h1>
+        <h1 class="admin-page-title">Administration</h1>
       </div>
-      <button class="btn-mc primary" (click)="openAdd()">
+      <button class="btn-mc primary" (click)="openAdd()" *ngIf="activeTab() === 'users'">
         <span>＋</span> Nouvel Utilisateur
       </button>
     </div>
 
+    <!-- Onglets -->
+    <div class="admin-tabs">
+      <button class="admin-tab" [class.active]="activeTab() === 'users'" (click)="activeTab.set('users')">
+         Gestion Utilisateurs
+      </button>
+      <button class="admin-tab" [class.active]="activeTab() === 'audit'" (click)="activeTab.set('audit'); loadAuditLogs()">
+         Logs d'Audit
+      </button>
+    </div>
+
     <div *ngIf="isLoading()" class="admin-loading">
-      <div style="font-size:40px">⏳</div>
+      <div style="font-size:40px"></div>
       <p>Chargement des utilisateurs...</p>
     </div>
 
-    <ng-container *ngIf="!isLoading()">
+    <!-- ═══ ONGLET UTILISATEURS ═══ -->
+    <ng-container *ngIf="!isLoading() && activeTab() === 'users'">
 
       <!-- Médecins en attente -->
       <div class="pending-doctors-section" *ngIf="pendingDoctors().length > 0">
@@ -68,14 +79,14 @@
             <div class="pending-info">
               <div class="pending-name">Dr. {{ doc.firstName }} {{ doc.lastName }}</div>
               <div class="pending-meta">
-                <span>📧 {{ doc.email }}</span>
-                <span>🏷️ {{ doc.role | titlecase }}</span>
-                <span>📅 Inscrit le {{ doc.createdAt | date:'dd/MM/yyyy' }}</span>
+                <span> {{ doc.email }}</span>
+                <span> {{ doc.role | titlecase }}</span>
+                <span> Inscrit le {{ doc.createdAt | date:'dd/MM/yyyy' }}</span>
               </div>
             </div>
             <div class="pending-actions">
               <button class="btn-pending-view" (click)="openDoctorModal(doc)">
-                👁️ Examiner
+                 Examiner
               </button>
             </div>
           </div>
@@ -92,21 +103,21 @@
           </div>
         </div>
         <div class="admin-stat-card">
-          <div class="asc-icon" style="background:#eaf6f0">✅</div>
+          <div class="asc-icon" style="background:#eaf6f0"></div>
           <div>
             <div class="asc-value" style="color:#1a7a4a">{{ stats().actifs }}</div>
             <div class="asc-label">Comptes actifs</div>
           </div>
         </div>
         <div class="admin-stat-card">
-          <div class="asc-icon" style="background:#fef3e2">👨‍⚕️</div>
+          <div class="asc-icon" style="background:#fef3e2"></div>
           <div>
             <div class="asc-value" style="color:#8a5a00">{{ stats().medecins }}</div>
             <div class="asc-label">Médecins</div>
           </div>
         </div>
         <div class="admin-stat-card">
-          <div class="asc-icon" style="background:#f3e8ff">🧑</div>
+          <div class="asc-icon" style="background:#f3e8ff"></div>
           <div>
             <div class="asc-value" style="color:#6b1fa8">{{ stats().patients }}</div>
             <div class="asc-label">Patients</div>
@@ -117,7 +128,7 @@
       <!-- Filtres -->
       <div class="mc-card admin-filters">
         <div class="filter-search">
-          <span class="filter-icon">🔍</span>
+          <span class="filter-icon"></span>
           <input type="text" placeholder="Rechercher par nom ou email..."
             [ngModel]="search()" (ngModelChange)="search.set($event)" />
         </div>
@@ -176,8 +187,8 @@
                   <!-- ✅ $any(u) pour éviter l'erreur NG7 de comparaison de types -->
                   <button
                     *ngIf="(u.role | titlecase).includes('Medecin') && ($any(u).status === 'PENDING_VERIFICATION' || $any(u).status === 'PENDING')"
-                    class="action-btn approve" (click)="openDoctorModal(u)" title="Valider">🩺</button>
-                  <button class="action-btn edit" (click)="openEdit(u)" title="Modifier">✏️</button>
+                    class="action-btn approve" (click)="openDoctorModal(u)" title="Valider"></button>
+                  <button class="action-btn edit" (click)="openEdit(u)" title="Modifier"></button>
                   <button class="action-btn toggle" (click)="toggleStatus(u)"
                     [title]="u.status === 'ACTIVE' ? 'Désactiver' : 'Activer'"
                     [class.deactivate]="u.status === 'ACTIVE'">
@@ -195,6 +206,89 @@
       </div>
 
     </ng-container>
+
+    <!-- ═══ ONGLET LOGS D'AUDIT ═══ -->
+    <ng-container *ngIf="activeTab() === 'audit'">
+
+      <div class="mc-card admin-filters" style="margin-bottom:16px">
+        <div class="filter-search">
+          <span class="filter-icon">🔍</span>
+          <input type="text" placeholder="Rechercher dans les logs..."
+            [ngModel]="auditSearch()" (ngModelChange)="auditSearch.set($event); loadAuditLogs()" />
+        </div>
+        <select [ngModel]="auditRoleFilter()" (ngModelChange)="auditRoleFilter.set($event); loadAuditLogs()">
+          <option value="">Tous les rôles</option>
+          <option value="MEDECIN">Médecin</option>
+          <option value="PATIENT">Patient</option>
+          <option value="PHARMACIEN">Pharmacien</option>
+          <option value="ADMIN">Admin</option>
+        </select>
+        <span class="filter-count">{{ auditTotal() }} log(s)</span>
+      </div>
+
+      <div class="mc-card admin-table-card">
+        <div *ngIf="auditLoading()" style="text-align:center;padding:40px;color:#64748b">
+          <div style="font-size:32px"></div>
+          <p>Chargement des logs...</p>
+        </div>
+
+        <table class="admin-table" *ngIf="!auditLoading()">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Auteur</th>
+              <th>Rôle</th>
+              <th>Patient concerné</th>
+              <th>Action</th>
+              <th>Détails</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="auditLogs().length === 0">
+              <td colspan="6" class="table-empty">
+                <div style="font-size:40px">📭</div>
+                <p>Aucun log d'audit trouvé</p>
+              </td>
+            </tr>
+            <tr *ngFor="let log of auditLogs()">
+              <td class="text-sm text-muted">{{ log.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td>
+                <div class="user-cell">
+                  <div class="user-avatar" style="width:28px;height:28px;font-size:11px">
+                    {{ (log.auteurPrenom?.[0] ?? '') + (log.auteurNom?.[0] ?? '') | uppercase }}
+                  </div>
+                  <span>{{ log.auteurPrenom }} {{ log.auteurNom }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="role-badge" [attr.data-role]="log.auteurRole">{{ log.roleAuteur }}</span>
+              </td>
+              <td class="text-muted">
+                {{ log.patientPrenom ? (log.patientPrenom + ' ' + log.patientNom) : '—' }}
+              </td>
+              <td>
+                <span class="audit-action-badge">{{ getAuditAction(log) }}</span>
+              </td>
+              <td class="text-sm text-muted">{{ log.commentaire || '—' }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="table-footer" *ngIf="!auditLoading()">
+          <button class="btn-mc outline" style="padding:6px 14px;font-size:12px"
+            [disabled]="auditPage() <= 1" (click)="auditPage.set(auditPage() - 1); loadAuditLogs()">
+            ← Précédent
+          </button>
+          <span style="font-size:13px;color:#64748b">Page {{ auditPage() }}</span>
+          <button class="btn-mc outline" style="padding:6px 14px;font-size:12px"
+            [disabled]="auditLogs().length < 50" (click)="auditPage.set(auditPage() + 1); loadAuditLogs()">
+            Suivant →
+          </button>
+        </div>
+      </div>
+
+    </ng-container>
+
   </main>
 </div>
 
@@ -291,19 +385,19 @@
           <h3>Dr. {{ doctorModal()!.firstName }} {{ doctorModal()!.lastName }}</h3>
           <div class="doctor-meta-grid">
             <div class="doctor-meta-item">
-              <span class="meta-label">📧 Email</span>
+              <span class="meta-label"> Email</span>
               <span class="meta-value">{{ doctorModal()!.email }}</span>
             </div>
             <div class="doctor-meta-item">
-              <span class="meta-label">🏷️ Spécialité</span>
+              <span class="meta-label"> Spécialité</span>
               <span class="meta-value">{{ doctorModal()!.role | titlecase }}</span>
             </div>
             <div class="doctor-meta-item">
-              <span class="meta-label">📞 Téléphone</span>
+              <span class="meta-label"> Téléphone</span>
               <span class="meta-value">{{ doctorModal()!.phone || 'Non renseigné' }}</span>
             </div>
             <div class="doctor-meta-item">
-              <span class="meta-label">📅 Inscrit le</span>
+              <span class="meta-label"> Inscrit le</span>
               <span class="meta-value">{{ doctorModal()!.createdAt | date:'dd/MM/yyyy à HH:mm' }}</span>
             </div>
           </div>
@@ -312,7 +406,7 @@
 
       <!-- Documents soumis -->
       <div class="docs-review-section">
-        <div class="docs-review-title">📋 Documents soumis</div>
+        <div class="docs-review-title"> Documents soumis</div>
 
         <div class="docs-loading" *ngIf="isLoadingDocs()">
           <div class="docs-spinner"></div>
@@ -337,7 +431,7 @@
       </div>
 
       <div class="doctor-notice">
-        <strong>ℹ️ Vérification requise</strong>
+        <strong>ℹ Vérification requise</strong>
         <p>Vérifiez les documents et informations du médecin avant d'approuver son compte.</p>
       </div>
 
@@ -352,10 +446,10 @@
     <div class="modal-actions doctor-modal-actions">
       <button class="btn-mc outline" (click)="closeModal()">Annuler</button>
       <button class="btn-mc danger" (click)="rejectDoctor()" [disabled]="isSubmitting()">
-        {{ isSubmitting() ? '⏳' : '❌ Refuser' }}
+        {{ isSubmitting() ? '' : ' Refuser' }}
       </button>
       <button class="btn-mc primary" (click)="approveDoctor()" [disabled]="isSubmitting()">
-        {{ isSubmitting() ? '⏳' : '✅ Approuver' }}
+        {{ isSubmitting() ? '' : ' Approuver' }}
       </button>
     </div>
   </div>

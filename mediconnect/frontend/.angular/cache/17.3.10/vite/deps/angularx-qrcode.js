@@ -1,4 +1,7 @@
 import {
+  require_dijkstra
+} from "./chunk-24JLX5VE.js";
+import {
   DomSanitizer
 } from "./chunk-TLBFLQUL.js";
 import "./chunk-J3WZOASD.js";
@@ -24,12 +27,9 @@ import {
   ɵɵqueryRefresh,
   ɵɵviewQuery
 } from "./chunk-6KGHRGXW.js";
-import "./chunk-SG3BCSKH.js";
 import "./chunk-SAVXX6OM.js";
+import "./chunk-SG3BCSKH.js";
 import "./chunk-PQ7O3X3G.js";
-import {
-  require_dijkstra
-} from "./chunk-24JLX5VE.js";
 import {
   __async,
   __commonJS,

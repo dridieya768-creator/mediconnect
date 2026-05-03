@@ -79,6 +79,9 @@ export declare class MedecinsService {
             rating: number;
             ratingComment: string;
             rated: boolean;
+            beneficiaryId: string;
+            beneficiaryNom: string;
+            beneficiaryPrenom: string;
             createdAt: Date;
             updatedAt: Date;
             deletedAt: Date;
@@ -104,5 +107,45 @@ export declare class MedecinsService {
         appointmentDate: Date;
         durationMinutes: number;
     }[]>;
+    getRevenus(doctorId: string, from?: string, to?: string): Promise<{
+        factures: {
+            numero: string;
+            date: Date;
+            patientNom: string;
+            type: import("../appointments/entities/appointment.entity").ConsultationType;
+            statut: AppointmentStatus;
+            montant: number;
+            devise: string;
+        }[];
+        stats: {
+            totalRevenu: number;
+            nbConsult: number;
+            nbTeleconsult: number;
+            nbPhysique: number;
+            tarif: number;
+        };
+        parMois: Record<string, number>;
+    }>;
     private saveBase64Image;
+}
+export declare class RevenusService {
+    static getRevenus(appointmentRepo: Repository<Appointment>, doctorId: string, from?: string, to?: string): Promise<{
+        factures: {
+            numero: string;
+            date: Date;
+            patientNom: string;
+            type: import("../appointments/entities/appointment.entity").ConsultationType;
+            statut: AppointmentStatus;
+            montant: number;
+            devise: string;
+        }[];
+        stats: {
+            totalRevenu: number;
+            nbConsult: number;
+            nbTeleconsult: number;
+            nbPhysique: number;
+            tarif: number;
+        };
+        parMois: Record<string, number>;
+    }>;
 }

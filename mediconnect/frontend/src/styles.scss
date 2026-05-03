@@ -129,3 +129,27 @@ h1, h2, h3 { font-family: var(--font-heading); font-weight: 300; }
   from { transform: translateX(100%); opacity: 0; }
   to   { transform: translateX(0);    opacity: 1; }
 }
+
+/* ── RTL Support (Arabic) ─────────────────────────────── */
+[dir="rtl"] {
+  font-family: 'Segoe UI', 'Arial', sans-serif;
+
+  .mc-table th { text-align: right; }
+  .mc-alert { border-left: none; border-right: 3px solid; }
+  .mc-alert.info    { border-right-color: var(--mc-primary); }
+  .mc-alert.warning { border-right-color: var(--mc-warning); }
+  .mc-alert.danger  { border-right-color: var(--mc-danger); }
+  .mc-alert.success { border-right-color: var(--mc-success); }
+
+  .nav-links { flex-direction: row-reverse; }
+  .modal-backdrop { justify-content: flex-start; }
+  .modal-card {
+    box-shadow: 8px 0 40px rgba(0,0,0,0.2) !important;
+    animation: slideInLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+}
+
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); opacity: 0; }
+  to   { transform: translateX(0);     opacity: 1; }
+}

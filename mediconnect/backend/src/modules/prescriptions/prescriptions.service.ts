@@ -179,6 +179,32 @@ export class PrescriptionsService implements OnModuleInit {
         console.warn('[PrescriptionsService] QR generation failed:', qrErr?.message);
       }
 
+      // ── Log d'audit ──────────────────────────────────────────────────────
+      try {
+        await this.dataSource.query(
+          `INSERT INTO dossier_historique
+             (id, patient_id, modifie_par_id, role_auteur, champs_modifies, snapshot_avant, commentaire, created_at)
+           VALUES (gen_random_uuid(), $1, $2, 'MEDECIN', $3::jsonb, '{}'::jsonb, $4, NOW())`,
+          [
+            dto.patientId,
+            dto.doctorId,
+            JSON.stringify({
+              ordonnance_creee: {
+                avant: null,
+                apres: {
+                  prescriptionId: saved.id,
+                  medicaments: (dto.medications ?? []).map((m: any) => m.name),
+                  medecinName: dto.medecinName,
+                },
+              },
+            }),
+            `Ordonnance créée — ${(dto.medications ?? []).map((m: any) => m.name).join(', ')}`,
+          ],
+        );
+      } catch (auditErr: any) {
+        console.warn('[PrescriptionsService] Audit log failed:', auditErr?.message);
+      }
+
       return this.findOne(saved.id);
     } catch (err: any) {
       console.error('[PrescriptionsService] create() error:', err?.message, err?.detail);
