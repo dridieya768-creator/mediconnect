@@ -25,13 +25,27 @@ export class RegisterComponent implements OnInit {
   
   uploadedFiles: Record<string, { file: File; base64: string; name: string }> = {};
 
-  requiredDocs = [
+  requiredDocsMedecin = [
     { type: 'DIPLOME',           label: 'Diplôme de Docteur en Médecine',   icon: '', required: true  },
     { type: 'CASIER_JUDICIAIRE', label: 'Casier judiciaire',                icon: '', required: true  },
     { type: 'CARTE_ORDRE',       label: "Carte d'inscription à l'Ordre",    icon: '', required: true  },
     { type: 'CIN',               label: "CIN (Carte d'Identité Nationale)", icon: '', required: true  },
     { type: 'ATTESTATION_SPEC',  label: 'Attestation de spécialité',        icon: '', required: false },
   ];
+
+  requiredDocsPharmacien = [
+    { type: 'ATTESTATION_CNOPT',      label: "Attestation d'inscription CNOPT",          icon: '', required: true  },
+    { type: 'DIPLOME_PHARMACIEN',     label: 'Diplôme de pharmacien (visé Ministère)',   icon: '', required: true  },
+    { type: 'CIN',                    label: "CIN (Carte d'Identité Nationale)",          icon: '', required: true  },
+    { type: 'AUTORISATION_OFFICINE',  label: "Autorisation d'exploitation officine",     icon: '', required: true  },
+    { type: 'CASIER_JUDICIAIRE',      label: 'Extrait casier judiciaire (≤ 90 jours)',   icon: '', required: false },
+    { type: 'PHOTO_FACADE',           label: 'Photo de la façade de la pharmacie',       icon: '', required: false },
+    { type: 'PATENTE_FISCALE',        label: 'Numéro de patente fiscale',                icon: '', required: false },
+  ];
+
+  get requiredDocs() {
+    return this.isPharmacien ? this.requiredDocsPharmacien : this.requiredDocsMedecin;
+  }
 
   roles = [
     { value: 'PATIENT',                label: ' Patient' },
@@ -82,6 +96,8 @@ export class RegisterComponent implements OnInit {
     gender:          [""],
     role:            [UserRole.PATIENT, Validators.required],
     specialite:      [""],
+    rpps:            [""],
+    numeroOrdre:     [""],
     password:        ["", [Validators.required, Validators.minLength(8)]],
     confirmPassword: [""],
     acceptCgu:       [false],
@@ -98,6 +114,10 @@ export class RegisterComponent implements OnInit {
   get isMedecin(): boolean {
     const role = this.form.get('role')?.value ?? '';
     return role.toString().startsWith('MEDECIN');
+  }
+
+  get isPharmacien(): boolean {
+    return this.form.get('role')?.value === 'PHARMACIEN';
   }
 
   ngOnInit(): void {
@@ -144,7 +164,7 @@ export class RegisterComponent implements OnInit {
   onSubmit(): void {
     if (this.form.invalid) return;
 
-    if (this.isMedecin) {
+    if (this.isMedecin || this.isPharmacien) {
       const missingDocs = this.requiredDocs
         .filter(d => d.required && !this.uploadedFiles[d.type]);
       if (missingDocs.length > 0) {
@@ -158,7 +178,7 @@ export class RegisterComponent implements OnInit {
     this.isLoading = true;
     this.error = "";
 
-    if (this.isMedecin) {
+    if (this.isMedecin || this.isPharmacien) {
       const payload = {
         ...dto,
         documents: Object.entries(this.uploadedFiles).map(([type, d]) => ({

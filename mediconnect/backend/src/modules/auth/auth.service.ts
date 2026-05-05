@@ -8,6 +8,7 @@ import { Repository } from "typeorm";
 import { ConfigService } from "@nestjs/config";
 import { User, UserRole, UserStatus } from "../users/entities/user.entity";
 import { Patient } from "../patients/entities/patient.entity";
+import { PharmacienProfile } from "../pharmacie/entities/pharmacien-profile.entity";
 import { LoginDto } from "./dto/login.dto";
 import { RegisterDto } from "./dto/register.dto";
 import { ForgotPasswordDto } from "./dto/forgot-password.dto";
@@ -48,6 +49,8 @@ export class AuthService {
     private userRepository: Repository<User>,
     @InjectRepository(Patient)
     private patientRepository: Repository<Patient>,
+    @InjectRepository(PharmacienProfile)
+    private pharmacienRepository: Repository<PharmacienProfile>,
     private jwtService: JwtService,
     private configService: ConfigService,
     private notificationsService: NotificationsService,
@@ -92,43 +95,72 @@ export class AuthService {
     }
 
     const hashedPassword = await bcrypt.hash(registerDto.password, 12);
-
     const isMedecin = registerDto.role === UserRole.MEDECIN;
+    const isPharmacien = registerDto.role === UserRole.PHARMACIEN;
+    const isProfessionnel = isMedecin || isPharmacien;
+
+    // Verification RPPS (medecin)
+    if (isMedecin && (registerDto as any).rpps) {
+      const rpps = String((registerDto as any).rpps).trim();
+      if (!/^\d{11}$/.test(rpps)) {
+        throw new BadRequestException('Le numero RPPS doit contenir exactement 11 chiffres.');
+      }
+      const rppsExist = await this.userRepository.query(
+        `SELECT id FROM medecins WHERE rpps = $1 LIMIT 1`,
+        [rpps]
+      );
+      if (rppsExist?.length > 0) {
+        throw new ConflictException('Ce numero RPPS est deja utilise par un autre medecin.');
+      }
+    }
+
+    // Verification numero ordre pharmacien
+    if (isPharmacien && (registerDto as any).numeroOrdre) {
+      const numeroOrdre = String((registerDto as any).numeroOrdre).trim();
+      if (!/^(PH-\d{4}|\d{4,8})$/i.test(numeroOrdre)) {
+        throw new BadRequestException("Format du numero d'ordre invalide (ex: PH-1234 ou 12345678).");
+      }
+      const ordreExist = await this.userRepository.query(
+        `SELECT id FROM pharmaciens WHERE numero_ordre = $1 LIMIT 1`,
+        [numeroOrdre]
+      );
+      if (ordreExist?.length > 0) {
+        throw new ConflictException("Ce numero d'ordre est deja utilise par un autre pharmacien.");
+      }
+    }
 
     const user = this.userRepository.create({
       ...registerDto,
-      //// Tronquer le téléphone à 20 caractères max imite DB
       phone: registerDto.phone?.substring(0, 20),
       password: hashedPassword,
-      status: isMedecin ? UserStatus.PENDING_VERIFICATION : UserStatus.ACTIVE,
+      status: isProfessionnel ? UserStatus.PENDING_VERIFICATION : UserStatus.ACTIVE,
     });
     const savedUser = await this.userRepository.save(user);
 
-    // //Sauvegarder les documents du médecin 
-    if (isMedecin && (registerDto as any).documents?.length) {
+    if (isProfessionnel && (registerDto as any).documents?.length) {
       await this.saveDoctorDocuments(savedUser.id, (registerDto as any).documents);
-      console.log(`[Auth] ${(registerDto as any).documents.length} document(s) sauvegardé(s) pour ${savedUser.email}`);
     }
 
     if (savedUser.role === UserRole.PATIENT) {
       await this.createPatientProfile(savedUser);
     }
 
-    if (isMedecin) {
+    if (savedUser.role === UserRole.PHARMACIEN) {
+      await this.createPharmacienProfile(savedUser);
+    }
+
+    if (isProfessionnel) {
       try {
-        const admins = await this.userRepository.find({
-          where: { role: UserRole.ADMIN },
-        });
+        const admins = await this.userRepository.find({ where: { role: UserRole.ADMIN } });
         for (const admin of admins) {
           await this.notificationsService.create({
             userId:    admin.id,
             type:      NotificationType.DOCTOR_PENDING_APPROVAL,
-            title:     ' Nouvelle inscription médecin',
-            message:   `Dr. ${savedUser.firstName} ${savedUser.lastName} a créé un compte et attend votre validation.`,
+            title:     'Nouvelle inscription professionnelle',
+            message:   `${isPharmacien ? 'Pharmacien' : 'Dr.'} ${savedUser.firstName} ${savedUser.lastName} a cree un compte et attend votre validation.`,
             relatedId: savedUser.id,
           });
         }
-        console.log(`[Auth] ${admins.length} admin(s) notifié(s) pour médecin ${savedUser.email}`);
       } catch (e) {
         console.warn('[Auth] Impossible de notifier les admins:', e.message);
       }
@@ -138,10 +170,7 @@ export class AuthService {
     return {
       user: this.sanitizeUser(savedUser),
       ...tokens,
-      ...(isMedecin ? {
-        pendingApproval: true,
-        message: 'Votre compte est en attente de validation par un administrateur.',
-      } : {}),
+      ...(isProfessionnel ? { pendingApproval: true, message: 'Compte en attente de validation.' } : {}),
     };
   }
 
@@ -150,12 +179,10 @@ export class AuthService {
     if (!user) throw new UnauthorizedException("Email ou mot de passe incorrect");
     if (user.status === UserStatus.SUSPENDED) throw new UnauthorizedException("Compte suspendu");
     if (user.status === UserStatus.PENDING_VERIFICATION)
-      throw new UnauthorizedException("Votre compte est en attente de validation par un administrateur.");
-
+      throw new UnauthorizedException("Compte en attente de validation.");
     if (user.mfaEnabled) {
       return { requires2fa: true, userId: user.id, message: "Code 2FA requis" };
     }
-
     await this.userRepository.update(user.id, { lastLoginAt: new Date() });
     const tokens = await this.generateTokens(user);
     return { user: this.sanitizeUser(user), ...tokens };
@@ -169,18 +196,14 @@ export class AuthService {
     const otpauthUrl = `otpauth://totp/${appName}:${user.email}?secret=${secret}&issuer=${appName}`;
     await this.userRepository.update(userId, { mfaSecret: secret });
     return {
-      secret,
-      otpauthUrl,
+      secret, otpauthUrl,
       qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(otpauthUrl)}`,
       instructions: "Scannez ce QR code avec Google Authenticator ou Authy",
     };
   }
 
   async enable2fa(userId: string, dto: Enable2faDto) {
-    const user = await this.userRepository.findOne({
-      where: { id: userId },
-      select: ["id", "mfaSecret"],
-    });
+    const user = await this.userRepository.findOne({ where: { id: userId }, select: ["id", "mfaSecret"] });
     if (!user || !user.mfaSecret) throw new BadRequestException("Configurez d abord le 2FA");
     const isValid = verifyTotpCode(user.mfaSecret, dto.code);
     if (!isValid && dto.code !== "000000") throw new BadRequestException("Code invalide");
@@ -208,13 +231,11 @@ export class AuthService {
 
   async forgotPassword(dto: ForgotPasswordDto) {
     const user = await this.userRepository.findOne({ where: { email: dto.email } });
-    if (!user) return { message: "Si cet email existe, un lien de reinitialisation a ete envoye" };
-
+    if (!user) return { message: "Si cet email existe, un lien a ete envoye" };
     const token = crypto.randomBytes(32).toString("hex");
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
     this.resetTokens.set(token, { userId: user.id, expiresAt });
     const resetUrl = `http://localhost:4200/auth/reset-password?token=${token}`;
-
     try {
       const transporter = nodemailer.createTransport({
         host: this.configService.get('SMTP_HOST'),
@@ -224,24 +245,15 @@ export class AuthService {
         tls: { rejectUnauthorized: false },
       });
       await transporter.sendMail({
-        from: '"MediConnect" <dridieya768@gmail.com>',
+        from: '"MediConnect" <noreply@mediconnect.tn>',
         to: user.email,
-        subject: 'Réinitialisation de votre mot de passe',
-        html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
-          <h2 style="color:#2563eb;">🏥 MediConnect</h2>
-          <p>Bonjour <strong>${user.firstName}</strong>,</p>
-          <p>Cliquez sur le bouton ci-dessous (valable <strong>1 heure</strong>) :</p>
-          <a href="${resetUrl}" style="display:inline-block;background:#2563eb;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;margin:16px 0;">
-            Réinitialiser mon mot de passe
-          </a>
-          <p style="color:#666;font-size:12px;">Si vous n'avez pas fait cette demande, ignorez cet email.</p>
-        </div>`,
+        subject: 'Reinitialisation de votre mot de passe',
+        html: `<p>Bonjour ${user.firstName},</p><p><a href="${resetUrl}">Reinitialiser mon mot de passe</a> (valable 1 heure)</p>`,
       });
-      console.log(`✅ Email envoyé à ${user.email}`);
     } catch (error) {
-      console.error(' Erreur envoi email:', error.message);
+      console.error('Erreur envoi email:', error.message);
     }
-    return { message: "Si cet email existe, un lien de reinitialisation a ete envoye" };
+    return { message: "Si cet email existe, un lien a ete envoye" };
   }
 
   async resetPassword(dto: ResetPasswordDto) {
@@ -249,12 +261,12 @@ export class AuthService {
     if (!tokenData) throw new BadRequestException("Token invalide ou expire");
     if (new Date() > tokenData.expiresAt) {
       this.resetTokens.delete(dto.token);
-      throw new BadRequestException("Token expire. Demandez un nouveau lien.");
+      throw new BadRequestException("Token expire.");
     }
     const hashedPassword = await bcrypt.hash(dto.newPassword, 12);
     await this.userRepository.update(tokenData.userId, { password: hashedPassword });
     this.resetTokens.delete(dto.token);
-    return { message: "Mot de passe reinitialise avec succes. Vous pouvez vous connecter." };
+    return { message: "Mot de passe reinitialise avec succes." };
   }
 
   async handleSsoLogin(ssoData: {
@@ -292,28 +304,24 @@ export class AuthService {
 
   async googleLogin(googleToken: string) {
     if (!googleToken) throw new BadRequestException("Token Google requis");
-    const mockGoogleUser = {
-      provider: "google" as const,
+    return this.handleSsoLogin({
+      provider: "google",
       providerId: "google_" + crypto.randomBytes(8).toString("hex"),
       email: `google_user_${Date.now()}@gmail.com`,
-      firstName: "Google",
-      lastName: "User",
+      firstName: "Google", lastName: "User",
       avatarUrl: "https://lh3.googleusercontent.com/a/default",
-    };
-    return this.handleSsoLogin(mockGoogleUser);
+    });
   }
 
   async facebookLogin(fbToken: string) {
     if (!fbToken) throw new BadRequestException("Token Facebook requis");
-    const mockFbUser = {
-      provider: "facebook" as const,
+    return this.handleSsoLogin({
+      provider: "facebook",
       providerId: "fb_" + crypto.randomBytes(8).toString("hex"),
       email: `fb_user_${Date.now()}@facebook.com`,
-      firstName: "Facebook",
-      lastName: "User",
+      firstName: "Facebook", lastName: "User",
       avatarUrl: "https://graph.facebook.com/default/picture",
-    };
-    return this.handleSsoLogin(mockFbUser);
+    });
   }
 
   private async createPatientProfile(user: User): Promise<Patient> {
@@ -322,10 +330,6 @@ export class AuthService {
     const patient = this.patientRepository.create({
       userId: user.id,
       qrCode,
-      nom: user.lastName,
-      prenom: user.firstName,
-      email: user.email,
-      telephone: user.phone,
       languePreferee: "fr",
       allergies: [],
       maladiesChroniques: [],
@@ -335,25 +339,28 @@ export class AuthService {
     return this.patientRepository.save(patient);
   }
 
-  // ── Sauvegarder les documents du médecin sur disque + BDD ──────────────────
+  private async createPharmacienProfile(user: User): Promise<PharmacienProfile> {
+    const pharmacien = this.pharmacienRepository.create({ userId: user.id });
+    return this.pharmacienRepository.save(pharmacien);
+  }
+
   private async saveDoctorDocuments(
     userId: string,
     documents: Array<{ type: string; filename: string; base64: string }>
   ): Promise<void> {
-      userId: user.id,
-
+    try {
+      const dir = join(process.cwd(), "uploads", "doctor-docs", userId);
+      fs.mkdirSync(dir, { recursive: true });
       for (const doc of documents) {
-        const buffer   = Buffer.from(doc.base64, "base64");
+        const buffer = Buffer.from(doc.base64, "base64");
         const filename = `${doc.type}_${Date.now()}.pdf`;
         const filepath = join(dir, filename);
         fs.writeFileSync(filepath, buffer);
-
         await this.userRepository.query(
           `INSERT INTO doctor_documents(id, user_id, type, filename, original_name, base64, file_path, status, created_at)
            VALUES(uuid_generate_v4(), $1, $2, $3, $4, $5, $6, 'PENDING', now())`,
           [userId, doc.type, filename, doc.filename, doc.base64, filepath]
         );
-        console.log(`[Auth] Document sauvegardé: ${doc.type} pour ${userId}`);
       }
     } catch (e) {
       console.warn("[Auth] Erreur sauvegarde documents:", e.message);

@@ -342,18 +342,18 @@ export class AppointmentsService {
     return patientId;
   }
 
-  // Résout le numéro de téléphone du patient
+  // Résout le numéro de téléphone du patient depuis users.phone
   private async resolvePatientPhone(patientId: string): Promise<string | null> {
-    // Cherche dans patients.telephone
-    const fromPatient = await this.repo.manager.query(
-      `SELECT p.telephone, u.phone
+    // Cherche via la jointure patients → users
+    const result = await this.repo.manager.query(
+      `SELECT u.phone
        FROM patients p
        LEFT JOIN users u ON u.id = p.user_id
        WHERE p.id = $1 LIMIT 1`,
       [patientId]
     );
-    if (fromPatient?.length > 0) {
-      return fromPatient[0].telephone || fromPatient[0].phone || null;
+    if (result?.length > 0 && result[0].phone) {
+      return result[0].phone;
     }
     // patientId est peut-être un user_id directement
     const fromUser = await this.repo.manager.query(

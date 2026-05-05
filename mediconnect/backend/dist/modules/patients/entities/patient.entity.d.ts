@@ -14,13 +14,9 @@ export declare class Patient {
     user: User;
     userId: string;
     qrCode: string;
-    nom: string;
-    prenom: string;
     dateNaissance: Date;
     age: number;
     sexe: string;
-    telephone: string;
-    email: string;
     ville: string;
     localisationGPS: string;
     languePreferee: string;

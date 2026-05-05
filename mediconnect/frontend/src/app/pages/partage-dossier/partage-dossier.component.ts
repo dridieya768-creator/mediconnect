@@ -33,7 +33,7 @@ import { HttpClient } from '@angular/common/http';
         <div class="dossier-header">
           <div class="patient-avatar">{{ initiales() }}</div>
           <div>
-            <h1 class="patient-nom">{{ dossier()!.patient.prenom }} {{ dossier()!.patient.nom }}</h1>
+            <h1 class="patient-nom">{{ dossier()!.patient.prenom || dossier()!.patient.firstName }} {{ dossier()!.patient.nom || dossier()!.patient.lastName }}</h1>
             <div class="expiry-badge">
               ⏱ Accès valide jusqu'au {{ formatDate(dossier()!.expiresAt) }}
             </div>
@@ -182,7 +182,9 @@ export class PartageDossierComponent implements OnInit {
     return () => {
       const p = this.dossier()?.patient;
       if (!p) return '?';
-      return `${p.prenom?.[0] ?? ''}${p.nom?.[0] ?? ''}`.toUpperCase();
+      const first = (p.prenom ?? p.firstName ?? '')[0] ?? '';
+      const last  = (p.nom    ?? p.lastName  ?? '')[0] ?? '';
+      return (first + last).toUpperCase();
     };
   }
 

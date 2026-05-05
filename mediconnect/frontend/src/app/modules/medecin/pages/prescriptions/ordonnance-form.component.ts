@@ -78,14 +78,14 @@ interface DrugInteraction {
             <div class="patient-results" *ngIf="patientResults().length > 0">
               <div class="patient-result-item" *ngFor="let p of patientResults()"
                    (click)="selectPatient(p)">
-                <div class="pr-name">{{ p.prenom }} {{ p.nom }}</div>
+                <div class="pr-name">{{ p.firstName ?? p.prenom }} {{ p.lastName ?? p.nom }}</div>
                 <div class="pr-meta">NSS: {{ p.nss || '—' }} | {{ p.dateNaissance ? formatDate(p.dateNaissance) : '' }}</div>
               </div>
             </div>
             <div class="selected-patient" *ngIf="selectedPatient()">
               <div class="sp-avatar">{{ getInitials(selectedPatient()!) }}</div>
               <div class="sp-info">
-                <div class="sp-name">{{ selectedPatient()!.prenom }} {{ selectedPatient()!.nom }}</div>
+                <div class="sp-name">{{ selectedPatient()!.firstName ?? selectedPatient()!.prenom }} {{ selectedPatient()!.lastName ?? selectedPatient()!.nom }}</div>
                 <div class="sp-meta">
                   <span *ngIf="selectedPatient()!.nss">NSS: {{ selectedPatient()!.nss }}</span>
                   <span *ngIf="selectedPatient()!.groupeSanguin" class="blood-badge">{{ selectedPatient()!.groupeSanguin }}</span>
@@ -257,7 +257,7 @@ interface DrugInteraction {
             <div class="card-title">Recapitulatif</div>
             <div class="recap-row">
               <span>Patient</span>
-              <strong>{{ selectedPatient() ? (selectedPatient()!.prenom + ' ' + selectedPatient()!.nom) : 'Non selectionne' }}</strong>
+              <strong>{{ selectedPatient() ? ((selectedPatient()!.firstName ?? selectedPatient()!.prenom ?? '') + ' ' + (selectedPatient()!.lastName ?? selectedPatient()!.nom ?? '')) : 'Non selectionne' }}</strong>
             </div>
             <div class="recap-row">
               <span>Medicaments</span>
@@ -623,7 +623,7 @@ export class OrdonnanceFormComponent implements OnInit, AfterViewInit {
       notes:        this.notes || undefined,
       pin:          this.pin,
       signatureImage: sigDataUrl || undefined,
-      patientName:  `${patient.prenom ?? ''} ${patient.nom ?? ''}`.trim(),
+      patientName:  `${patient.firstName ?? patient.prenom ?? ''} ${patient.lastName ?? patient.nom ?? ''}`.trim(),
       patientNss:   patient.nss ?? '',
       medecinName:  this.medecinName,
     };
@@ -643,7 +643,9 @@ export class OrdonnanceFormComponent implements OnInit, AfterViewInit {
   }
 
   getInitials(p: any): string {
-    return ((p.prenom?.[0] ?? '') + (p.nom?.[0] ?? '')).toUpperCase() || 'P';
+    const first = (p.firstName ?? p.prenom ?? '')[0] ?? '';
+    const last  = (p.lastName  ?? p.nom    ?? '')[0] ?? '';
+    return (first + last).toUpperCase() || 'P';
   }
 
   formatDate(d: string): string {

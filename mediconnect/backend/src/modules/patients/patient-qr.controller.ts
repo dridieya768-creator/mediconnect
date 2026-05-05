@@ -42,13 +42,13 @@ export class PatientQrController {
       return {
         valid: true,
         patient: {
-          nom: patient.nom,
-          prenom: patient.prenom,
-          dateNaissance: patient.dateNaissance,
-          sexe: patient.sexe,
-          telephone: patient.telephone,
-          groupeSanguin: patient.groupeSanguin,
-          allergies: patient.allergies,
+          nom:              patient.user?.lastName  ?? '',
+          prenom:           patient.user?.firstName ?? '',
+          dateNaissance:    patient.dateNaissance,
+          sexe:             patient.sexe,
+          telephone:        patient.user?.phone     ?? '',
+          groupeSanguin:    patient.groupeSanguin,
+          allergies:        patient.allergies,
           maladiesChroniques: patient.maladiesChroniques,
         }
       };

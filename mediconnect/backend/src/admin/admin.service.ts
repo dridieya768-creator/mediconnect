@@ -87,8 +87,8 @@ export class AdminService {
     Object.assign(user, dto);
     const saved = await this.userRepository.save(user);
 
-    const isMedecin = saved.role === UserRole.MEDECIN;
-    if (isMedecin && dto.status && dto.status !== oldStatus) {
+    const isProfessionnel = saved.role === UserRole.MEDECIN || saved.role === UserRole.PHARMACIEN;
+    if (isProfessionnel && dto.status && dto.status !== oldStatus) {
       try {
         await this.sendDoctorStatusEmail(saved, dto.status);
       } catch (e) {

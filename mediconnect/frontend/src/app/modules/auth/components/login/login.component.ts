@@ -47,7 +47,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     const msg = this.route.snapshot.queryParams['msg'];
     if (msg === 'pending') {
-      this.infoMsg = 'Votre compte médecin est en attente de validation.';
+      this.infoMsg = 'Un email vous sera envoyé après validation de votre compte.';
     }
   }
 

@@ -64,20 +64,20 @@
     <!-- ═══ ONGLET UTILISATEURS ═══ -->
     <ng-container *ngIf="!isLoading() && activeTab() === 'users'">
 
-      <!-- Médecins en attente -->
-      <div class="pending-doctors-section" *ngIf="pendingDoctors().length > 0">
+      <!-- Professionnels en attente (médecins + pharmaciens) -->
+      <div class="pending-doctors-section" *ngIf="pendingProfessionals().length > 0">
         <div class="pending-header">
           <h2 class="pending-title">
-            🩺 Médecins en attente de validation
-            <span class="pending-badge">{{ pendingDoctors().length }}</span>
+            🩺 Professionnels en attente de validation
+            <span class="pending-badge">{{ pendingProfessionals().length }}</span>
           </h2>
-          <p class="pending-subtitle">Ces médecins ont créé un compte et attendent votre approbation.</p>
+          <p class="pending-subtitle">Ces professionnels ont créé un compte et attendent votre approbation.</p>
         </div>
         <div class="pending-list">
-          <div class="pending-card" *ngFor="let doc of pendingDoctors()">
+          <div class="pending-card" *ngFor="let doc of pendingProfessionals()">
             <div class="pending-avatar">{{ getInitials(doc) }}</div>
             <div class="pending-info">
-              <div class="pending-name">Dr. {{ doc.firstName }} {{ doc.lastName }}</div>
+              <div class="pending-name">{{ doc.role === 'PHARMACIEN' ? '' : 'Dr.' }} {{ doc.firstName }} {{ doc.lastName }}</div>
               <div class="pending-meta">
                 <span> {{ doc.email }}</span>
                 <span> {{ doc.role | titlecase }}</span>

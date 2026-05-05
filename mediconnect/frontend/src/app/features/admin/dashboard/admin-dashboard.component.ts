@@ -1,11 +1,12 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '@core/services/auth.service';
 import { AdminUserService, AdminUser, AdminStats, UserRole, UserStatus, DoctorDocument } from './admin-user.service';
-import { catchError, of } from 'rxjs';
+import { AdminWsService } from '@core/services/admin-ws.service';
+import { catchError, of, Subscription } from 'rxjs';
 
 export const ROLES = [
   'PATIENT',
@@ -34,11 +35,13 @@ const STATUS_LABELS: Record<string, string> = {
   templateUrl: './admin-dashboard.component.html',
   styleUrls: ['./admin-dashboard.component.scss'],
 })
-export class AdminDashboardComponent implements OnInit {
+export class AdminDashboardComponent implements OnInit, OnDestroy {
   private auth         = inject(AuthService);
   private adminService = inject(AdminUserService);
   private http         = inject(HttpClient);
   private fb           = inject(FormBuilder);
+  private adminWs      = inject(AdminWsService);
+  private wsSub?: Subscription;
 
   currentUser  = this.auth.currentUser;
   isLoading    = signal(true);
@@ -96,14 +99,41 @@ export class AdminDashboardComponent implements OnInit {
     });
   });
 
-  pendingDoctors = computed(() =>
+  pendingProfessionals = computed(() =>
     this.users().filter(u =>
-      (u.role as string).startsWith('MEDECIN') &&
+      ((u.role as string).startsWith('MEDECIN') || (u.role as string) === 'PHARMACIEN') &&
       ((u.status as string) === 'PENDING' || (u.status as string) === 'PENDING_VERIFICATION')
     )
   );
 
-  ngOnInit() { this.loadUsers(); }
+  // ── WebSocket notifications temps réel ─────────────────────────────────────
+  wsNotifications = signal<Array<{ title: string; message: string; createdAt: string }>>([]);
+
+  ngOnInit() {
+    this.loadUsers();
+    this._connectWs();
+  }
+
+  private _connectWs() {
+    const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
+    if (!token) return;
+    this.adminWs.connect(token);
+    this.wsSub = this.adminWs.newProNotification$.subscribe(notif => {
+      // Ajouter la notification en tête de liste
+      this.wsNotifications.update(list => [
+        { title: notif.title, message: notif.message, createdAt: new Date().toISOString() },
+        ...list,
+      ]);
+      // Recharger la liste des utilisateurs pour afficher le nouveau compte
+      this.loadUsers();
+      this.showToast(`🔔 ${notif.message}`, 'success');
+    });
+  }
+
+  ngOnDestroy() {
+    this.wsSub?.unsubscribe();
+    this.adminWs.disconnect();
+  }
 
   loadUsers() {
     this.isLoading.set(true);

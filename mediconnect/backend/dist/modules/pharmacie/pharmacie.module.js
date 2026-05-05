@@ -20,19 +20,20 @@ const stock_item_entity_1 = require("./entities/stock-item.entity");
 const stock_mouvement_entity_1 = require("./entities/stock-mouvement.entity");
 const stock_service_1 = require("./stock.service");
 const stock_controller_1 = require("./stock.controller");
+const pharmacien_profile_entity_1 = require("./entities/pharmacien-profile.entity");
 let PharmacieModule = class PharmacieModule {
 };
 exports.PharmacieModule = PharmacieModule;
 exports.PharmacieModule = PharmacieModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            typeorm_1.TypeOrmModule.forFeature([prescription_entity_1.Prescription, dossier_historique_entity_1.DossierHistorique, stock_item_entity_1.StockItem, stock_mouvement_entity_1.StockMouvement]),
+            typeorm_1.TypeOrmModule.forFeature([prescription_entity_1.Prescription, dossier_historique_entity_1.DossierHistorique, stock_item_entity_1.StockItem, stock_mouvement_entity_1.StockMouvement, pharmacien_profile_entity_1.PharmacienProfile]),
             qr_codes_module_1.QrCodesModule,
             dossier_medical_module_1.DossierMedicalModule,
         ],
         controllers: [delivrance_controller_1.DelivranceController, stock_controller_1.StockController],
         providers: [delivrance_service_1.DelivranceService, ticket_pdf_service_1.TicketPdfService, stock_service_1.StockService],
-        exports: [stock_service_1.StockService],
+        exports: [stock_service_1.StockService, typeorm_1.TypeOrmModule],
     })
 ], PharmacieModule);
 //# sourceMappingURL=pharmacie.module.js.map

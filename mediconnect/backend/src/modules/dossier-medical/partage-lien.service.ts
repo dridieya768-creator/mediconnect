@@ -78,17 +78,18 @@ export class PartageLienService {
 
     const patient = await this.patientRepo.findOne({
       where: { id: payload.patientId },
+      relations: ['user'],
     });
 
     if (!patient) throw new NotFoundException('Patient introuvable');
 
     // Filtrer les données selon les permissions
-    const dossierFiltre: Partial<Patient> = {
-      id: patient.id,
-      nom: patient.nom,
-      prenom: patient.prenom,
+    const dossierFiltre: any = {
+      id:            patient.id,
+      nom:           patient.user?.lastName  ?? '',
+      prenom:        patient.user?.firstName ?? '',
       dateNaissance: patient.dateNaissance,
-      sexe: patient.sexe,
+      sexe:          patient.sexe,
       groupeSanguin: patient.groupeSanguin,
     };
 

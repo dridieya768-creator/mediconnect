@@ -28,12 +28,8 @@ export class Patient {
   @Column({ name: "qr_code", unique: true })
   qrCode: string;
 
-  // ─── Informations personnelles ───────────────────────────
-  @Column({ nullable: true })
-  nom: string;
-
-  @Column({ nullable: true })
-  prenom: string;
+  // ─── Informations personnelles spécifiques au patient ───────────────────────
+  // nom, prenom, telephone, email → dans users (first_name, last_name, phone, email)
 
   @Column({ name: "date_naissance", type: "date", nullable: true })
   dateNaissance: Date;
@@ -44,11 +40,7 @@ export class Patient {
   @Column({ nullable: true })
   sexe: string; // M / F
 
-  @Column({ nullable: true })
-  telephone: string;
-
-  @Column({ nullable: true })
-  email: string;
+  // telephone et email → dans users.phone et users.email
 
   @Column({ nullable: true })
   ville: string;

@@ -413,12 +413,11 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
       });
       seen.set(appt.patientId, {
         id:        appt.patient.id,
-        // patientId = UUID de la table patients (requis pour crÃ©er une prescription)
         patientId: patientRecord?.id ?? appt.patientId,
-        email:     appt.patient.email,
-        firstName: appt.patient.firstName,
-        lastName:  appt.patient.lastName,
-        phone:     appt.patient.phone,
+        email:     (appt.patient as any).email,
+        firstName: (appt.patient as any).firstName,
+        lastName:  (appt.patient as any).lastName,
+        phone:     (appt.patient as any).phone,
         rdvCount:  appointments.filter(a => a.patientId === appt.patientId).length,
       });
     }

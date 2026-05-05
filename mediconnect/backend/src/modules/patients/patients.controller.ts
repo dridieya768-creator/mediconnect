@@ -27,13 +27,19 @@ export class PatientsController {
     const q = search.trim();
     const patients = await this.patientRepo.find({
       where: [
-        { nom: ILike(`%${q}%`) },
-        { prenom: ILike(`%${q}%`) },
         { nss: ILike(`%${q}%`) },
       ],
+      relations: ['user'],
       take: 10,
     });
-    return { success: true, data: patients };
+    // Filtrer aussi sur le nom/prénom depuis users
+    const all = await this.patientRepo.find({ relations: ['user'], take: 50 });
+    const filtered = all.filter(p =>
+      (p.user?.firstName ?? '').toLowerCase().includes(q.toLowerCase()) ||
+      (p.user?.lastName  ?? '').toLowerCase().includes(q.toLowerCase()) ||
+      (p.nss ?? '').toLowerCase().includes(q.toLowerCase())
+    ).slice(0, 10);
+    return { success: true, data: filtered };
   }
 
   @Get("me")
@@ -65,7 +71,7 @@ export class PatientsController {
         avatarUrl:      user.avatarUrl,
         mfaEnabled:     (user as any).mfaEnabled,
         // Profil patient
-        telephone:      patient.telephone,
+        telephone:      patient.user?.phone ?? null,
         dateNaissance:  patient.dateNaissance,
         sexe:           patient.sexe,
         ville:          patient.ville,
@@ -130,7 +136,7 @@ export class PatientsController {
       lastName: user.lastName,
       email: user.email,
       avatarUrl: user.avatarUrl,
-      telephone: patient.telephone,
+      telephone: patient.user?.phone ?? null,
       dateNaissance: patient.dateNaissance,
       sexe: patient.sexe,
       ville: patient.ville,
@@ -195,9 +201,9 @@ export class PatientsController {
     if (patient.userId !== userId) return { success: false, message: "Non autorisé" };
 
     // Whitelist des champs autorisés — exclure les valeurs null/undefined
-    const allowed = ['telephone','dateNaissance','sexe','ville','languePreferee',
+    const allowed = ['dateNaissance','sexe','ville','languePreferee',
                      'groupeSanguin','allergies','maladiesChroniques','medicamentsActuels',
-                     'rappelsAuto','nom','prenom','documents'];
+                     'rappelsAuto','documents'];
     const updateData: any = {};
     for (const key of allowed) {
       const val = body[key];

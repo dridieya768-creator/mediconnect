@@ -44,14 +44,6 @@ __decorate([
     __metadata("design:type", String)
 ], Patient.prototype, "qrCode", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
-    __metadata("design:type", String)
-], Patient.prototype, "nom", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
-    __metadata("design:type", String)
-], Patient.prototype, "prenom", void 0);
-__decorate([
     (0, typeorm_1.Column)({ name: "date_naissance", type: "date", nullable: true }),
     __metadata("design:type", Date)
 ], Patient.prototype, "dateNaissance", void 0);
@@ -63,14 +55,6 @@ __decorate([
     (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", String)
 ], Patient.prototype, "sexe", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
-    __metadata("design:type", String)
-], Patient.prototype, "telephone", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
-    __metadata("design:type", String)
-], Patient.prototype, "email", void 0);
 __decorate([
     (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", String)

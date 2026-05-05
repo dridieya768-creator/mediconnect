@@ -45,11 +45,11 @@ let PatientQrController = class PatientQrController {
             return {
                 valid: true,
                 patient: {
-                    nom: patient.nom,
-                    prenom: patient.prenom,
+                    nom: patient.user?.lastName ?? '',
+                    prenom: patient.user?.firstName ?? '',
                     dateNaissance: patient.dateNaissance,
                     sexe: patient.sexe,
-                    telephone: patient.telephone,
+                    telephone: patient.user?.phone ?? '',
                     groupeSanguin: patient.groupeSanguin,
                     allergies: patient.allergies,
                     maladiesChroniques: patient.maladiesChroniques,

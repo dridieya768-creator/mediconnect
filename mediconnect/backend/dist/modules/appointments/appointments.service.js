@@ -302,12 +302,12 @@ let AppointmentsService = class AppointmentsService {
         return patientId;
     }
     async resolvePatientPhone(patientId) {
-        const fromPatient = await this.repo.manager.query(`SELECT p.telephone, u.phone
+        const result = await this.repo.manager.query(`SELECT u.phone
        FROM patients p
        LEFT JOIN users u ON u.id = p.user_id
        WHERE p.id = $1 LIMIT 1`, [patientId]);
-        if (fromPatient?.length > 0) {
-            return fromPatient[0].telephone || fromPatient[0].phone || null;
+        if (result?.length > 0 && result[0].phone) {
+            return result[0].phone;
         }
         const fromUser = await this.repo.manager.query(`SELECT phone FROM users WHERE id = $1 LIMIT 1`, [patientId]);
         return fromUser?.[0]?.phone || null;

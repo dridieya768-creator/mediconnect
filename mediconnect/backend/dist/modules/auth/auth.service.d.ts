@@ -3,6 +3,7 @@ import { Repository } from "typeorm";
 import { ConfigService } from "@nestjs/config";
 import { User } from "../users/entities/user.entity";
 import { Patient } from "../patients/entities/patient.entity";
+import { PharmacienProfile } from "../pharmacie/entities/pharmacien-profile.entity";
 import { LoginDto } from "./dto/login.dto";
 import { RegisterDto } from "./dto/register.dto";
 import { ForgotPasswordDto } from "./dto/forgot-password.dto";
@@ -13,11 +14,12 @@ import { NotificationsService } from '../notifications/notifications.service';
 export declare class AuthService {
     private userRepository;
     private patientRepository;
+    private pharmacienRepository;
     private jwtService;
     private configService;
     private notificationsService;
     private resetTokens;
-    constructor(userRepository: Repository<User>, patientRepository: Repository<Patient>, jwtService: JwtService, configService: ConfigService, notificationsService: NotificationsService);
+    constructor(userRepository: Repository<User>, patientRepository: Repository<Patient>, pharmacienRepository: Repository<PharmacienProfile>, jwtService: JwtService, configService: ConfigService, notificationsService: NotificationsService);
     validateUser(email: string, password: string): Promise<User | null>;
     register(registerDto: RegisterDto): Promise<{
         pendingApproval?: boolean;
@@ -84,6 +86,7 @@ export declare class AuthService {
         user: any;
     }>;
     private createPatientProfile;
+    private createPharmacienProfile;
     private saveDoctorDocuments;
     generateTokens(user: User): Promise<{
         access_token: string;

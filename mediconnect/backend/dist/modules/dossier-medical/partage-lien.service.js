@@ -56,13 +56,14 @@ let PartageLienService = class PartageLienService {
         }
         const patient = await this.patientRepo.findOne({
             where: { id: payload.patientId },
+            relations: ['user'],
         });
         if (!patient)
             throw new common_1.NotFoundException('Patient introuvable');
         const dossierFiltre = {
             id: patient.id,
-            nom: patient.nom,
-            prenom: patient.prenom,
+            nom: patient.user?.lastName ?? '',
+            prenom: patient.user?.firstName ?? '',
             dateNaissance: patient.dateNaissance,
             sexe: patient.sexe,
             groupeSanguin: patient.groupeSanguin,

@@ -171,8 +171,8 @@ let DelivranceService = class DelivranceService {
                 const totalCnam = financierLignes.reduce((s, l) => s + l.partCnam, 0);
                 const totalPatient = financierLignes.reduce((s, l) => s + l.partPatient, 0);
                 const totalGeneral = financierLignes.reduce((s, l) => s + l.montantTotal, 0);
-                const patientNom = prescription.patient?.nom ?? '';
-                const patientPrenom = prescription.patient?.prenom ?? '';
+                const patientNom = prescription.patient?.user?.lastName ?? '';
+                const patientPrenom = prescription.patient?.user?.firstName ?? '';
                 const patientNss = prescription.patient?.nss ?? '';
                 const pharmacienUser = await em.findOne(user_entity_1.User, { where: { id: pharmacienId } });
                 const pharmacienNom = pharmacienUser?.lastName ?? '';
@@ -275,8 +275,8 @@ let DelivranceService = class DelivranceService {
             expiresAt: prescription.expiresAt,
             patient: {
                 id: patient?.id ?? prescription.patientId,
-                nom: patient?.nom ?? '',
-                prenom: patient?.prenom ?? '',
+                nom: patient?.user?.lastName ?? '',
+                prenom: patient?.user?.firstName ?? '',
                 nss: patient?.nss ?? '',
             },
             medecin: {

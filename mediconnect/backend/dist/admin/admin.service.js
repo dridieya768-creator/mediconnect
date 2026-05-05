@@ -68,8 +68,8 @@ let AdminService = class AdminService {
         const oldStatus = user.status;
         Object.assign(user, dto);
         const saved = await this.userRepository.save(user);
-        const isMedecin = saved.role === user_entity_1.UserRole.MEDECIN;
-        if (isMedecin && dto.status && dto.status !== oldStatus) {
+        const isProfessionnel = saved.role === user_entity_1.UserRole.MEDECIN || saved.role === user_entity_1.UserRole.PHARMACIEN;
+        if (isProfessionnel && dto.status && dto.status !== oldStatus) {
             try {
                 await this.sendDoctorStatusEmail(saved, dto.status);
             }

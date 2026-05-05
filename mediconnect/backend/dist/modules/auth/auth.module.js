@@ -18,6 +18,7 @@ const jwt_strategy_1 = require("./strategies/jwt.strategy");
 const local_strategy_1 = require("./strategies/local.strategy");
 const user_entity_1 = require("../users/entities/user.entity");
 const patient_entity_1 = require("../patients/entities/patient.entity");
+const pharmacien_profile_entity_1 = require("../pharmacie/entities/pharmacien-profile.entity");
 const notifications_module_1 = require("../notifications/notifications.module");
 const platform_express_1 = require("@nestjs/platform-express");
 let AuthModule = class AuthModule {
@@ -28,7 +29,7 @@ exports.AuthModule = AuthModule = __decorate([
         imports: [
             platform_express_1.MulterModule.register({ dest: "./uploads" }),
             passport_1.PassportModule,
-            typeorm_1.TypeOrmModule.forFeature([user_entity_1.User, patient_entity_1.Patient]),
+            typeorm_1.TypeOrmModule.forFeature([user_entity_1.User, patient_entity_1.Patient, pharmacien_profile_entity_1.PharmacienProfile]),
             jwt_1.JwtModule.registerAsync({
                 imports: [config_1.ConfigModule],
                 useFactory: (configService) => ({

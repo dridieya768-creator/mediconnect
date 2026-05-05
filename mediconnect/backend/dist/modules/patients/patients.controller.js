@@ -32,13 +32,16 @@ let PatientsController = class PatientsController {
         const q = search.trim();
         const patients = await this.patientRepo.find({
             where: [
-                { nom: (0, typeorm_2.ILike)(`%${q}%`) },
-                { prenom: (0, typeorm_2.ILike)(`%${q}%`) },
                 { nss: (0, typeorm_2.ILike)(`%${q}%`) },
             ],
+            relations: ['user'],
             take: 10,
         });
-        return { success: true, data: patients };
+        const all = await this.patientRepo.find({ relations: ['user'], take: 50 });
+        const filtered = all.filter(p => (p.user?.firstName ?? '').toLowerCase().includes(q.toLowerCase()) ||
+            (p.user?.lastName ?? '').toLowerCase().includes(q.toLowerCase()) ||
+            (p.nss ?? '').toLowerCase().includes(q.toLowerCase())).slice(0, 10);
+        return { success: true, data: filtered };
     }
     async getMe(req) {
         const userId = req.user?.sub || req.user?.id || req.user?.userId;
@@ -65,7 +68,7 @@ let PatientsController = class PatientsController {
                 role: user.role,
                 avatarUrl: user.avatarUrl,
                 mfaEnabled: user.mfaEnabled,
-                telephone: patient.telephone,
+                telephone: patient.user?.phone ?? null,
                 dateNaissance: patient.dateNaissance,
                 sexe: patient.sexe,
                 ville: patient.ville,
@@ -125,7 +128,7 @@ let PatientsController = class PatientsController {
             lastName: user.lastName,
             email: user.email,
             avatarUrl: user.avatarUrl,
-            telephone: patient.telephone,
+            telephone: patient.user?.phone ?? null,
             dateNaissance: patient.dateNaissance,
             sexe: patient.sexe,
             ville: patient.ville,
@@ -175,9 +178,9 @@ let PatientsController = class PatientsController {
             return { success: false, message: "Patient introuvable" };
         if (patient.userId !== userId)
             return { success: false, message: "Non autorisé" };
-        const allowed = ['telephone', 'dateNaissance', 'sexe', 'ville', 'languePreferee',
+        const allowed = ['dateNaissance', 'sexe', 'ville', 'languePreferee',
             'groupeSanguin', 'allergies', 'maladiesChroniques', 'medicamentsActuels',
-            'rappelsAuto', 'nom', 'prenom', 'documents'];
+            'rappelsAuto', 'documents'];
         const updateData = {};
         for (const key of allowed) {
             const val = body[key];
