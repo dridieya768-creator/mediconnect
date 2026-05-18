@@ -2,6 +2,11 @@ import { webcrypto } from 'crypto';
 // @ts-ignore
 if (!globalThis.crypto) (globalThis as any).crypto = webcrypto;
 
+// Fix SSL pour les APIs externes en développement (Windows)
+if (process.env.NODE_ENV !== 'production') {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+}
+
 import { NestFactory } from "@nestjs/core";
 import { ValidationPipe } from "@nestjs/common";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";

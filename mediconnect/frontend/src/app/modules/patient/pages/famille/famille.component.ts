@@ -59,10 +59,10 @@ const RELATION_LABELS: Record<Relation, string> = {
             <!-- Statut documents (seulement ENFANT/CONJOINT/PARENT) -->
             <div class="docs-status" *ngIf="needsDocs(m.relation)">
               <span class="doc-badge" [class.ok]="m.docMembrePath" [class.missing]="!m.docMembrePath">
-                {{ m.docMembrePath ? '✓' : '✗' }} مضمون ولادة ({{ getRelationLabel(m.relation) }})
+                {{ m.docMembrePath ? '✓' : '✗' }} Contenu de la naissance مضمون ولادة ({{ getRelationLabel(m.relation) }})
               </span>
               <span class="doc-badge" [class.ok]="m.docPatientPath" [class.missing]="!m.docPatientPath">
-                {{ m.docPatientPath ? '✓' : '✗' }} مضمون ولادة (vous)
+                {{ m.docPatientPath ? '✓' : '✗' }} Contenu de la naissance مضمون ولادة (vous)
               </span>
             </div>
           </div>
@@ -134,14 +134,14 @@ const RELATION_LABELS: Record<Relation, string> = {
 
           <!-- Documents justificatifs — uniquement pour ENFANT / CONJOINT / PARENT -->
           <div class="docs-section" *ngIf="needsDocs(form.relation)">
-            <div class="docs-section-title"> Documents justificatifs (مضمون ولادة)</div>
+            <div class="docs-section-title"> Documents justificatifs (Contenu de la naissance مضمون ولادة  )</div>
             <p class="docs-section-hint">Ces documents permettent de vérifier le lien familial.</p>
 
             <div class="doc-upload-block">
               <div class="doc-upload-label">
                 <span class="doc-num">1</span>
                 <div>
-                  <strong>مضمون ولادة</strong> de {{ form.prenom || getRelationLabel(form.relation) }}
+                  <strong>Contenu de la naissance</strong> de {{ form.prenom || getRelationLabel(form.relation) }}
                   <p class="doc-hint">Acte de naissance du {{ getRelationLabel(form.relation) | lowercase }}</p>
                 </div>
                 <span class="doc-status-icon" *ngIf="editingMember()?.docMembrePath && !docMembreFile"></span>
@@ -163,10 +163,10 @@ const RELATION_LABELS: Record<Relation, string> = {
               <div class="doc-upload-label">
                 <span class="doc-num">2</span>
                 <div>
-                  <strong>مضمون ولادة</strong> de vous-même
+                  <strong> Contenu de la naissance </strong> de vous-même
                   <p class="doc-hint">Votre acte de naissance pour prouver le lien familial</p>
                 </div>
-                <span class="doc-status-icon" *ngIf="editingMember()?.docPatientPath && !docPatientFile">✅</span>
+                <span class="doc-status-icon" *ngIf="editingMember()?.docPatientPath && !docPatientFile"></span>
               </div>
               <div class="file-input-row">
                 <label class="file-label" [class.has-file]="docPatientFile">
@@ -195,7 +195,7 @@ const RELATION_LABELS: Record<Relation, string> = {
     <div class="modal-overlay" *ngIf="docsModal()" (click)="closeDocsModal()">
       <div class="modal-card" (click)="$event.stopPropagation()">
         <div class="modal-header">
-          <h2> Documents justificatifs</h2>
+          <h2> Documents justificatifs مضمون ولادة</h2>
           <button class="btn-close" (click)="closeDocsModal()">✕</button>
         </div>
         <div class="modal-body">
@@ -204,15 +204,15 @@ const RELATION_LABELS: Record<Relation, string> = {
             ({{ getRelationLabel(docsModal()!.relation) }}), veuillez fournir :
           </p>
 
-          <!-- Document 1 : مضمون ولادة du membre -->
+          <!-- Document 1 : Contenu de la naissance du membre -->
           <div class="doc-upload-block">
             <div class="doc-upload-label">
               <span class="doc-num">1</span>
               <div>
-                <strong>مضمون ولادة</strong> de {{ docsModal()!.prenom }}
+                <strong> Contenu de la naissance </strong> de {{ docsModal()!.prenom }}
                 <p class="doc-hint">Acte de naissance ou document d'état civil du {{ getRelationLabel(docsModal()!.relation) | lowercase }}</p>
               </div>
-              <span class="doc-status-icon" *ngIf="docsModal()!.docMembrePath">✅</span>
+              <span class="doc-status-icon" *ngIf="docsModal()!.docMembrePath"></span>
             </div>
             <div class="file-input-row">
               <label class="file-label" [class.has-file]="docMembreFile">
@@ -227,12 +227,12 @@ const RELATION_LABELS: Record<Relation, string> = {
             </div>
           </div>
 
-          <!-- Document 2 : مضمون ولادة du patient -->
+          <!-- Document 2 : Contenu de la naissance  du patient -->
           <div class="doc-upload-block">
             <div class="doc-upload-label">
               <span class="doc-num">2</span>
               <div>
-                <strong>مضمون ولادة</strong> de vous-même
+                <strong> Contenu de la naissance </strong> de vous-même
                 <p class="doc-hint">Votre propre acte de naissance pour prouver le lien familial</p>
               </div>
               <span class="doc-status-icon" *ngIf="docsModal()!.docPatientPath"></span>

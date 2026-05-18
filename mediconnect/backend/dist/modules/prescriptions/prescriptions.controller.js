@@ -42,6 +42,9 @@ let PrescriptionsController = class PrescriptionsController {
     sign(id, body) {
         return this.prescriptionsService.signPrescription(id, body.signature);
     }
+    envoyer(id, body) {
+        return this.prescriptionsService.envoyerOrdonnance(id, body.patientEmail);
+    }
 };
 exports.PrescriptionsController = PrescriptionsController;
 __decorate([
@@ -100,6 +103,15 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], PrescriptionsController.prototype, "sign", null);
+__decorate([
+    (0, common_1.Post)(":id/envoyer"),
+    (0, swagger_1.ApiOperation)({ summary: "Envoyer l'ordonnance par email au patient" }),
+    __param(0, (0, common_1.Param)("id")),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], PrescriptionsController.prototype, "envoyer", null);
 exports.PrescriptionsController = PrescriptionsController = __decorate([
     (0, swagger_1.ApiTags)("prescriptions"),
     (0, swagger_1.ApiBearerAuth)(),

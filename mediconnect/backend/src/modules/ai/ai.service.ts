@@ -1,172 +1,209 @@
-import {
-  Injectable,
-  ServiceUnavailableException,
-  InternalServerErrorException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { ChatMessageDto } from './dto/analyze-symptoms.dto';
 
 export const SPECIALITES_VALIDES = [
-  'CARDIOLOGUE', 'DERMATOLOGUE', 'GYNECOLOGUE', 'NEUROLOGUE',
-  'OPHTALMOLOGUE', 'ORL', 'PEDIATRE', 'PSYCHIATRE', 'RHUMATOLOGUE',
-  'UROLOGUE', 'CHIRURGIEN', 'ENDOCRINOLOGUE', 'GASTROLOGUE',
-  'NEPHROLOGUE', 'ONCOLOGUE', 'PNEUMOLOGUE', 'MEDECIN_FAMILLE',
-  'URGENTISTE', 'ANESTHESISTE', 'RADIOLOGUE_SPEC',
+  'CARDIOLOGUE','DERMATOLOGUE','GYNECOLOGUE','NEUROLOGUE','OPHTALMOLOGUE',
+  'ORL','PEDIATRE','PSYCHIATRE','RHUMATOLOGUE','UROLOGUE','CHIRURGIEN',
+  'ENDOCRINOLOGUE','GASTROLOGUE','NEPHROLOGUE','ONCOLOGUE','PNEUMOLOGUE',
+  'MEDECIN_FAMILLE','URGENTISTE','ANESTHESISTE','RADIOLOGUE_SPEC',
 ] as const;
-
 export type Specialite = typeof SPECIALITES_VALIDES[number];
 
-const DISCLAIMER = '⚠️ Ceci est une aide à l\'orientation uniquement. Consultez toujours un médecin pour un diagnostic.';
+const DISCLAIMER = "Ceci est une aide a l'orientation uniquement. Consultez toujours un medecin.";
 
-// Essayer plusieurs modèles en fallback
+const INFERMEDICA_MAP: Record<string, Specialite> = {
+  cardiologist:'CARDIOLOGUE', dermatologist:'DERMATOLOGUE', gynecologist:'GYNECOLOGUE',
+  neurologist:'NEUROLOGUE', ophthalmologist:'OPHTALMOLOGUE', otolaryngologist:'ORL',
+  pediatrician:'PEDIATRE', psychiatrist:'PSYCHIATRE', rheumatologist:'RHUMATOLOGUE',
+  urologist:'UROLOGUE', surgeon:'CHIRURGIEN', endocrinologist:'ENDOCRINOLOGUE',
+  gastroenterologist:'GASTROLOGUE', nephrologist:'NEPHROLOGUE', oncologist:'ONCOLOGUE',
+  pulmonologist:'PNEUMOLOGUE', family_doctor:'MEDECIN_FAMILLE', general_practitioner:'MEDECIN_FAMILLE',
+  internist:'MEDECIN_FAMILLE', emergency_medicine:'URGENTISTE', anesthesiologist:'ANESTHESISTE',
+  radiologist:'RADIOLOGUE_SPEC',
+};
+
 const GEMINI_MODELS = [
-  'https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent',
   'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
-  'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent',
+  'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
 ];
 
 @Injectable()
 export class AiService {
   private readonly logger = new Logger(AiService.name);
+  constructor(private readonly config: ConfigService) {}
 
-  constructor(private readonly configService: ConfigService) {}
+  async analyzeSymptoms(messages: ChatMessageDto[]): Promise<{reply:string; specialite:string|null; conditions?:any[]}> {
+    const appId  = this.config.get<string>('INFERMEDICA_APP_ID');
+    const appKey = this.config.get<string>('INFERMEDICA_APP_KEY');
 
-  async analyzeSymptoms(messages: ChatMessageDto[]): Promise<{
-    reply: string;
-    specialite: string | null;
-  }> {
-    const apiKey = this.configService.get<string>('GEMINI_API_KEY');
-    if (!apiKey) {
-      this.logger.error('GEMINI_API_KEY non configurée');
-      throw new InternalServerErrorException('Service IA non configuré');
+    if (appId && appKey && appId !== 'your_app_id_here') {
+      try { return await this.infermedica(messages, appId, appKey); }
+      catch (e: any) { this.logger.warn(`Infermedica echec: ${e.response?.status} ${e.message}`); }
     }
 
-    const payload = this.buildGeminiPrompt(messages);
-
-    // Essayer chaque modèle en cascade
-    for (const modelUrl of GEMINI_MODELS) {
-      try {
-        this.logger.log(`Tentative avec: ${modelUrl}`);
-        const response = await axios.post(
-          `${modelUrl}?key=${apiKey}`,
-          payload,
-          {
-            headers: { 'Content-Type': 'application/json' },
-            timeout: 15000,
-          },
-        );
-        const rawText: string =
-          response.data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
-        this.logger.log(`Succès avec: ${modelUrl}`);
-        return this.parseGeminiResponse(rawText);
-      } catch (err: any) {
-        const status = err.response?.status;
-        this.logger.warn(`Échec ${modelUrl} — status: ${status} — ${err.message}`);
-        if (status === 400 || status === 401 || status === 403) {
-          this.logger.error('Erreur clé API: ' + JSON.stringify(err.response?.data));
-          // Pas la peine d'essayer les autres modèles si la clé est invalide
-          throw new InternalServerErrorException('Erreur de configuration du service IA');
-        }
-        // 429, 404, timeout → essayer le modèle suivant
-        continue;
-      }
+    const geminiKey = this.config.get<string>('GEMINI_API_KEY');
+    if (geminiKey) {
+      try { return await this.gemini(messages, geminiKey); }
+      catch (e: any) { this.logger.warn(`Gemini echec: ${e.message}`); }
     }
 
-    // Tous les modèles ont échoué → fallback local
-    this.logger.warn('Tous les modèles Gemini indisponibles — utilisation du fallback local');
     return this.localFallback(messages);
   }
 
-  buildGeminiPrompt(messages: ChatMessageDto[]): object {
-    const specialitesList = SPECIALITES_VALIDES.join(', ');
+  private async infermedica(messages: ChatMessageDto[], appId: string, appKey: string) {
+    const headers = {
+      'App-Id': appId, 'App-Key': appKey,
+      'Content-Type': 'application/json',
+      'Interview-Id': `mc-${Date.now()}`,
+      'Language': 'fr',
+    };
 
-    const systemPrompt = `Assistant médical MediConnect. Analyse les symptômes et réponds en JSON: {"reply":"<réponse courte empathique>","specialite":"<ENUM ou null>"}
-Spécialités: ${specialitesList}
-Règles: réponds dans la langue du patient, ne donne pas de diagnostic, recommande de consulter un médecin.`;
+    const lastMsg  = [...messages].reverse().find(m => m.role === 'user')?.content ?? '';
+    const msgCount = messages.filter(m => m.role === 'user').length;
+
+    const nlpRes = await axios.post(
+      'https://api.infermedica.com/v3/parse',
+      { text: lastMsg, age: { value: 30 }, sex: 'male', include_tokens: false },
+      { headers, timeout: 10000 },
+    );
+
+    const mentions: any[] = nlpRes.data?.mentions ?? [];
+    this.logger.log(`Infermedica NLP: ${mentions.length} mentions pour "${lastMsg.substring(0, 60)}"`);
+
+    if (mentions.length === 0) {
+      const geminiKey = this.config.get<string>('GEMINI_API_KEY');
+      if (geminiKey) {
+        try { return await this.gemini(messages, geminiKey); }
+        catch (e: any) { this.logger.warn(`Gemini fallback echec: ${e.message}`); }
+      }
+      return this.localFallback(messages);
+    }
+
+    const evidence = mentions.map((m: any) => ({ id: m.id, choice_id: m.choice_id ?? 'present' }));
+
+    const diagRes = await axios.post(
+      'https://api.infermedica.com/v3/diagnosis',
+      { sex: 'male', age: { value: 30 }, evidence },
+      { headers, timeout: 10000 },
+    );
+
+    const conditions: any[] = diagRes.data?.conditions ?? [];
+    const shouldStop: boolean = diagRes.data?.should_stop ?? true;
+    const triageLevel: string = diagRes.data?.triage?.triage_level ?? '';
+    this.logger.log(`Infermedica diagnosis: ${conditions.length} conditions, triage: ${triageLevel}`);
+
+    let specialite: Specialite | null = null;
+    for (const c of conditions.slice(0, 5)) {
+      const key = (c.specialist ?? '').toLowerCase().replace(/ /g, '_');
+      if (INFERMEDICA_MAP[key]) { specialite = INFERMEDICA_MAP[key]; break; }
+    }
+
+    let reply = '';
+    if (triageLevel === 'emergency' || triageLevel === 'emergency_ambulance') {
+      reply = `Vos symptomes semblent urgents. Appelez le 15 (SAMU) ou rendez-vous aux urgences immediatement.`;
+      specialite = 'URGENTISTE';
+    } else if (conditions.length > 0) {
+      const top = conditions.slice(0, 3).map((c: any) => `- ${c.name} (${Math.round((c.probability ?? 0) * 100)}%)`).join('\n');
+      reply = `D'apres vos symptomes, voici les conditions possibles :\n${top}\n\n`;
+      if (specialite) reply += `Je vous recommande de consulter un ${specialite.toLowerCase().replace(/_/g, ' ')}.\n\n`;
+    } else {
+      reply = `Je n'ai pas trouve de conditions correspondantes. `;
+    }
+
+    reply += !shouldStop && msgCount < 4
+      ? `Avez-vous d'autres symptomes associes ?`
+      : `${DISCLAIMER}`;
+
+    return { reply, specialite, conditions };
+  }
+
+  private async gemini(messages: ChatMessageDto[], apiKey: string) {
+    const specialitesList = SPECIALITES_VALIDES.join(', ');
+    const systemPrompt = `Tu es MediBot, assistant medical de MediConnect. Reponds en JSON strict sans markdown:
+{"reply":"<reponse empathique en langue du patient>","specialite":"<ENUM ou null>"}
+Specialites: ${specialitesList}
+- Pose des questions de suivi si besoin (duree, intensite, localisation)
+- Donne la specialite apres 2-3 echanges
+- Ne donne jamais de diagnostic
+- Si question generale sur quel medecin consulter, demande les symptomes`;
 
     const contents: any[] = [
-      { role: 'user', parts: [{ text: systemPrompt }] },
-      { role: 'model', parts: [{ text: '{"reply":"Bonjour! Décrivez vos symptômes.","specialite":null}' }] },
+      { role: 'user',  parts: [{ text: systemPrompt }] },
+      { role: 'model', parts: [{ text: '{"reply":"Bonjour ! Decrivez vos symptomes.","specialite":null}' }] },
+      ...messages.map(m => ({ role: m.role === 'user' ? 'user' : 'model', parts: [{ text: m.content }] })),
     ];
 
-    for (const msg of messages) {
-      contents.push({
-        role: msg.role === 'user' ? 'user' : 'model',
-        parts: [{ text: msg.content }],
-      });
+    for (const url of GEMINI_MODELS) {
+      try {
+        const res = await axios.post(`${url}?key=${apiKey}`,
+          { contents, generationConfig: { temperature: 0.4, maxOutputTokens: 512 } },
+          { headers: { 'Content-Type': 'application/json' }, timeout: 15000 },
+        );
+        const raw = res.data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+        this.logger.log(`Gemini succes avec ${url}`);
+        return this.parseGemini(raw);
+      } catch (e: any) {
+        this.logger.warn(`Gemini ${url} echec: ${e.response?.status}`);
+        if ([400, 401, 403].includes(e.response?.status)) throw e;
+      }
     }
-
-    return {
-      contents,
-      generationConfig: { temperature: 0.3, maxOutputTokens: 256 },
-    };
+    throw new Error('Gemini indisponible');
   }
 
-  parseGeminiResponse(rawText: string): { reply: string; specialite: string | null } {
+  private parseGemini(raw: string): { reply: string; specialite: string | null } {
     try {
-      const parsed = JSON.parse(rawText);
-
-      const reply =
-        typeof parsed.reply === 'string' && parsed.reply.trim()
-          ? parsed.reply.trim()
-          : 'Je n\'ai pas pu analyser vos symptômes. Veuillez réessayer.';
-
-      const specialite =
-        typeof parsed.specialite === 'string' &&
-        (SPECIALITES_VALIDES as readonly string[]).includes(parsed.specialite)
-          ? parsed.specialite
-          : null;
-
-      return { reply, specialite };
-    } catch {
-      // Gemini a retourné du texte non-JSON
+      const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      const p = JSON.parse(cleaned);
       return {
-        reply: rawText.substring(0, 500) || 'Je n\'ai pas pu analyser vos symptômes. Veuillez réessayer.',
-        specialite: null,
+        reply: typeof p.reply === 'string' ? p.reply.trim() : "Je n'ai pas pu analyser.",
+        specialite: (SPECIALITES_VALIDES as readonly string[]).includes(p.specialite) ? p.specialite : null,
       };
+    } catch {
+      return { reply: raw.substring(0, 500) || "Je n'ai pas pu analyser.", specialite: null };
     }
   }
 
-  getDisclaimer(): string {
-    return DISCLAIMER;
-  }
-
-  /**
-   * Fallback local quand Gemini est indisponible.
-   * Analyse basique par mots-clés pour orienter le patient.
-   */
   localFallback(messages: ChatMessageDto[]): { reply: string; specialite: string | null } {
-    const lastUserMsg = [...messages].reverse().find(m => m.role === 'user')?.content?.toLowerCase() ?? '';
+    const last  = [...messages].reverse().find(m => m.role === 'user')?.content?.toLowerCase() ?? '';
+    const count = messages.filter(m => m.role === 'user').length;
 
-    const rules: Array<{ keywords: string[]; specialite: Specialite; hint: string }> = [
-      { keywords: ['coeur', 'cardiaque', 'palpitation', 'essoufflement', 'poitrine', 'tension'], specialite: 'CARDIOLOGUE', hint: 'des symptômes cardiaques' },
-      { keywords: ['peau', 'bouton', 'éruption', 'démangeaison', 'acné', 'eczéma'], specialite: 'DERMATOLOGUE', hint: 'des problèmes cutanés' },
-      { keywords: ['enfant', 'bébé', 'nourrisson', 'fièvre enfant', 'pédiatrie'], specialite: 'PEDIATRE', hint: 'des symptômes pédiatriques' },
-      { keywords: ['tête', 'migraine', 'maux de tête', 'vertige', 'neurologique', 'convulsion'], specialite: 'NEUROLOGUE', hint: 'des symptômes neurologiques' },
-      { keywords: ['oeil', 'vue', 'vision', 'ophtalmologie', 'lunettes'], specialite: 'OPHTALMOLOGUE', hint: 'des problèmes oculaires' },
-      { keywords: ['oreille', 'nez', 'gorge', 'sinusite', 'otite', 'rhume'], specialite: 'ORL', hint: 'des symptômes ORL' },
-      { keywords: ['ventre', 'estomac', 'digestion', 'diarrhée', 'nausée', 'vomissement', 'foie'], specialite: 'GASTROLOGUE', hint: 'des troubles digestifs' },
-      { keywords: ['poumon', 'toux', 'respiration', 'asthme', 'bronchite'], specialite: 'PNEUMOLOGUE', hint: 'des problèmes respiratoires' },
-      { keywords: ['articulation', 'dos', 'genou', 'rhumatisme', 'douleur musculaire'], specialite: 'RHUMATOLOGUE', hint: 'des douleurs articulaires' },
-      { keywords: ['diabète', 'thyroïde', 'hormone', 'glycémie'], specialite: 'ENDOCRINOLOGUE', hint: 'des troubles endocriniens' },
-      { keywords: ['anxiété', 'dépression', 'stress', 'insomnie', 'psychiatrie', 'mental'], specialite: 'PSYCHIATRE', hint: 'des troubles psychologiques' },
-      { keywords: ['urine', 'rein', 'prostate', 'urologie'], specialite: 'UROLOGUE', hint: 'des troubles urologiques' },
+    if (last.includes('quel medecin') || last.includes('quelle medecin') || last.includes('qui consulter') || last.includes('quel specialiste')) {
+      return { reply: `Pour vous orienter, decrivez-moi vos symptomes. Par exemple : "j'ai des douleurs a la poitrine", "j'ai de la fievre", "j'ai mal au ventre"...`, specialite: null };
+    }
+    if (last.includes('bonjour') || last.includes('salut') || last.includes('hello')) {
+      return { reply: `Bonjour ! Je suis MediBot. Decrivez-moi vos symptomes et je vous orienterai vers le bon specialiste.`, specialite: null };
+    }
+
+    const rules: [string[], Specialite][] = [
+      [['coeur','cardiaque','palpitation','essoufflement','poitrine','tension','thoracique'], 'CARDIOLOGUE'],
+      [['peau','bouton','eruption','demangeaison','acne','eczema'], 'DERMATOLOGUE'],
+      [['enfant','bebe','nourrisson'], 'PEDIATRE'],
+      [['tete','migraine','maux de tete','vertige','convulsion'], 'NEUROLOGUE'],
+      [['oeil','vue','vision','yeux'], 'OPHTALMOLOGUE'],
+      [['oreille','nez','gorge','sinusite','otite','rhume','mal a gorge','fievre','chaud'], 'ORL'],
+      [['ventre','estomac','digestion','diarrhee','nausee','vomissement'], 'GASTROLOGUE'],
+      [['poumon','toux','respiration','asthme','bronchite'], 'PNEUMOLOGUE'],
+      [['articulation','dos','genou','rhumatisme','douleur musculaire','muscle'], 'RHUMATOLOGUE'],
+      [['diabete','thyroide','hormone','glycemie'], 'ENDOCRINOLOGUE'],
+      [['anxiete','depression','stress','insomnie','mental'], 'PSYCHIATRE'],
+      [['urine','rein','prostate'], 'UROLOGUE'],
+      [['femme','gyneco','regles','grossesse'], 'GYNECOLOGUE'],
     ];
 
-    for (const rule of rules) {
-      if (rule.keywords.some(kw => lastUserMsg.includes(kw))) {
-        return {
-          reply: `Je détecte ${rule.hint}. Je vous recommande de consulter un ${rule.specialite.toLowerCase().replace('_', ' ')}. ${DISCLAIMER}`,
-          specialite: rule.specialite,
-        };
+    for (const [keywords, specialite] of rules) {
+      if (keywords.some(kw => last.includes(kw))) {
+        if (count < 2) return { reply: `Je comprends. Depuis combien de temps ressentez-vous ces symptomes ? Avez-vous d'autres symptomes associes ?`, specialite: null };
+        return { reply: `D'apres vos symptomes, je vous recommande de consulter un ${specialite.toLowerCase().replace(/_/g, ' ')}. ${DISCLAIMER}`, specialite };
       }
     }
 
-    return {
-      reply: `Je n'ai pas pu analyser précisément vos symptômes. Pour une orientation fiable, je vous recommande de consulter un médecin généraliste. ${DISCLAIMER}`,
-      specialite: 'MEDECIN_FAMILLE',
-    };
+    if (count < 2) return { reply: `Pouvez-vous preciser vos symptomes ? Ou avez-vous mal, depuis combien de temps ?`, specialite: null };
+    return { reply: `Je vous recommande de consulter un medecin generaliste. ${DISCLAIMER}`, specialite: 'MEDECIN_FAMILLE' };
   }
+
+  buildGeminiPrompt(messages: ChatMessageDto[]) { return {}; }
+  parseGeminiResponse(raw: string) { return this.parseGemini(raw); }
+  getDisclaimer() { return DISCLAIMER; }
 }

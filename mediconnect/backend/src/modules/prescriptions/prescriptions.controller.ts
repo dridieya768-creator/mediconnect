@@ -50,4 +50,10 @@ export class PrescriptionsController {
   sign(@Param("id") id: string, @Body() body: { signature: string }) {
     return this.prescriptionsService.signPrescription(id, body.signature);
   }
+
+  @Post(":id/envoyer")
+  @ApiOperation({ summary: "Envoyer l'ordonnance par email au patient" })
+  envoyer(@Param("id") id: string, @Body() body: { patientEmail: string }) {
+    return this.prescriptionsService.envoyerOrdonnance(id, body.patientEmail);
+  }
 }

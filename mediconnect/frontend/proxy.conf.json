@@ -3,7 +3,9 @@
     "target": "http://127.0.0.1:3000",
     "secure": false,
     "changeOrigin": true,
-    "logLevel": "debug"
+    "logLevel": "debug",
+    "proxyTimeout": 60000,
+    "timeout": 60000
   },
   "/uploads": {
     "target": "http://127.0.0.1:3000",

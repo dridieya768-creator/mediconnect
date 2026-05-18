@@ -16,4 +16,7 @@ export declare class PrescriptionsController {
     sign(id: string, body: {
         signature: string;
     }): Promise<import("./entities/prescription.entity").Prescription>;
+    envoyer(id: string, body: {
+        patientEmail: string;
+    }): Promise<import("./entities/prescription.entity").Prescription>;
 }

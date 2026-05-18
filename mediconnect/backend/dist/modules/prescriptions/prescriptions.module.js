@@ -9,20 +9,22 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PrescriptionsModule = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
+const config_1 = require("@nestjs/config");
 const prescriptions_controller_1 = require("./prescriptions.controller");
 const prescriptions_service_1 = require("./prescriptions.service");
 const prescription_entity_1 = require("./entities/prescription.entity");
 const qr_codes_module_1 = require("../qr-codes/qr-codes.module");
 const interaction_checker_service_1 = require("./interaction-checker.service");
 const pdf_service_1 = require("./pdf.service");
+const email_service_1 = require("../../common/services/email.service");
 let PrescriptionsModule = class PrescriptionsModule {
 };
 exports.PrescriptionsModule = PrescriptionsModule;
 exports.PrescriptionsModule = PrescriptionsModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([prescription_entity_1.Prescription]), qr_codes_module_1.QrCodesModule],
+        imports: [typeorm_1.TypeOrmModule.forFeature([prescription_entity_1.Prescription]), qr_codes_module_1.QrCodesModule, config_1.ConfigModule],
         controllers: [prescriptions_controller_1.PrescriptionsController],
-        providers: [prescriptions_service_1.PrescriptionsService, interaction_checker_service_1.InteractionCheckerService, pdf_service_1.PdfService],
+        providers: [prescriptions_service_1.PrescriptionsService, interaction_checker_service_1.InteractionCheckerService, pdf_service_1.PdfService, email_service_1.EmailService],
         exports: [prescriptions_service_1.PrescriptionsService],
     })
 ], PrescriptionsModule);

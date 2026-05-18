@@ -72,7 +72,8 @@ interface DrugInteraction {
             <div class="search-patient-row">
               <input class="form-input" type="text" [(ngModel)]="patientSearch"
                      placeholder="Rechercher par nom ou NSS..."
-                     (ngModelChange)="searchPatient($event)" />
+                     (ngModelChange)="searchPatient($event)"
+                     (focus)="searchPatient(patientSearch)" />
               <button class="btn-scan-qr" (click)="scanQr = !scanQr">Scanner QR-PAT</button>
             </div>
             <div class="patient-results" *ngIf="patientResults().length > 0">
@@ -413,6 +414,7 @@ export class OrdonnanceFormComponent implements OnInit, AfterViewInit {
   errorMsg       = signal<string|null>(null);
   patientResults = signal<any[]>([]);
   selectedPatient = signal<any>(null);
+  private myPatients: any[] = [];
   drugResults    = signal<any[]>([]);
   medications    = signal<Medication[]>([]);
   imagingRequests = signal<ImagingRequest[]>([]);
@@ -527,6 +529,11 @@ export class OrdonnanceFormComponent implements OnInit, AfterViewInit {
         this.medecinName = `${data.firstName ?? ''} ${data.lastName ?? ''}`.trim();
       }
     });
+    // Charger les patients du médecin pour la recherche
+    this.http.get<any>('/api/v1/medecins/my-patients').pipe(catchError(() => of([]))).subscribe(res => {
+      const list = Array.isArray(res) ? res : Array.isArray(res?.data) ? res.data : [];
+      this.myPatients = list;
+    });
     // Pre-remplir patient depuis query param
     this.route.queryParams.subscribe(p => {
       if (p['patientId']) this.loadPatientById(p['patientId']);
@@ -541,11 +548,18 @@ export class OrdonnanceFormComponent implements OnInit, AfterViewInit {
   }
 
   searchPatient(q: string) {
-    if (!q || q.length < 2) { this.patientResults.set([]); return; }
-    this.http.get<any>(`/api/v1/patients?search=${encodeURIComponent(q)}`).pipe(catchError(() => of([]))).subscribe(res => {
-      const list = Array.isArray(res) ? res : Array.isArray(res?.data) ? res.data : Array.isArray(res?.data?.data) ? res.data.data : [];
-      this.patientResults.set(list.slice(0, 6));
-    });
+    if (!q || q.length < 1) {
+      // Afficher tous les patients du médecin si la recherche est vide
+      this.patientResults.set(this.myPatients.slice(0, 8));
+      return;
+    }
+    const lower = q.toLowerCase();
+    const filtered = this.myPatients.filter(p =>
+      (p.firstName ?? p.user?.firstName ?? '').toLowerCase().includes(lower) ||
+      (p.lastName  ?? p.user?.lastName  ?? '').toLowerCase().includes(lower) ||
+      (p.nss ?? '').toLowerCase().includes(lower)
+    );
+    this.patientResults.set(filtered.slice(0, 8));
   }
 
   selectPatient(p: any) {

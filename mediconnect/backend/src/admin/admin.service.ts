@@ -87,7 +87,11 @@ export class AdminService {
     Object.assign(user, dto);
     const saved = await this.userRepository.save(user);
 
-    const isProfessionnel = saved.role === UserRole.MEDECIN || saved.role === UserRole.PHARMACIEN;
+    const medecinRoles = [
+      UserRole.MEDECIN, UserRole.MEDECIN_GENERALISTE, UserRole.MEDECIN_SPECIALISTE,
+      UserRole.MEDECIN_CHEF_SERVICE, UserRole.PHARMACIEN,
+    ] as string[];
+    const isProfessionnel = medecinRoles.includes(saved.role as string);
     if (isProfessionnel && dto.status && dto.status !== oldStatus) {
       try {
         await this.sendDoctorStatusEmail(saved, dto.status);
@@ -112,13 +116,54 @@ export class AdminService {
     });
 
     const isApproved = newStatus === 'ACTIVE';
+    const isPharma   = user.role === UserRole.PHARMACIEN;
+    const titre      = isPharma ? user.firstName : `Dr. ${user.firstName}`;
+    const loginUrl   = 'https://localhost:4200/auth/login';
+
+    const htmlApproved = `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#f8fafc;padding:32px;border-radius:12px;">
+        <div style="background:linear-gradient(135deg,#1a56db,#2563eb);padding:24px;border-radius:8px;text-align:center;margin-bottom:24px;">
+          <h1 style="color:white;margin:0;font-size:24px;">🏥 MediConnect</h1>
+        </div>
+        <div style="background:white;padding:24px;border-radius:8px;border:1px solid #e2e8f0;">
+          <h2 style="color:#16a34a;margin-top:0;">✅ Compte approuvé !</h2>
+          <p>Bonjour <strong>${titre} ${user.lastName}</strong>,</p>
+          <p>Votre compte professionnel sur <strong>MediConnect</strong> a été <strong>approuvé</strong> par notre équipe d'administration.</p>
+          <p>Vous pouvez maintenant vous connecter et accéder à toutes les fonctionnalités de la plateforme.</p>
+          <div style="text-align:center;margin:24px 0;">
+            <a href="${loginUrl}" style="background:#1a56db;color:white;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:16px;">
+              Se connecter →
+            </a>
+          </div>
+          <p style="color:#64748b;font-size:13px;">Si vous avez des questions, contactez notre support.</p>
+        </div>
+        <p style="text-align:center;color:#94a3b8;font-size:12px;margin-top:16px;">© 2026 MediConnect — Plateforme e-Santé</p>
+      </div>
+    `;
+
+    const htmlRejected = `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#f8fafc;padding:32px;border-radius:12px;">
+        <div style="background:linear-gradient(135deg,#1a56db,#2563eb);padding:24px;border-radius:8px;text-align:center;margin-bottom:24px;">
+          <h1 style="color:white;margin:0;font-size:24px;">🏥 MediConnect</h1>
+        </div>
+        <div style="background:white;padding:24px;border-radius:8px;border:1px solid #e2e8f0;">
+          <h2 style="color:#dc2626;margin-top:0;">❌ Demande refusée</h2>
+          <p>Bonjour <strong>${titre} ${user.lastName}</strong>,</p>
+          <p>Après examen de votre dossier, votre demande d'inscription sur <strong>MediConnect</strong> n'a pas pu être approuvée.</p>
+          <p>Cela peut être dû à des documents manquants ou non conformes. Veuillez contacter notre support pour plus d'informations.</p>
+          <p style="color:#64748b;font-size:13px;">Email support : <a href="mailto:support@mediconnect.tn">support@mediconnect.tn</a></p>
+        </div>
+        <p style="text-align:center;color:#94a3b8;font-size:12px;margin-top:16px;">© 2026 MediConnect — Plateforme e-Santé</p>
+      </div>
+    `;
+
     await transporter.sendMail({
       from:    '"MediConnect" <dridieya768@gmail.com>',
       to:      user.email,
-      subject: isApproved ? 'Votre compte MediConnect a ete approuve' : 'Votre inscription MediConnect a ete refusee',
-      html: isApproved
-        ? `<p>Bonjour Dr. ${user.firstName} ${user.lastName}, votre compte a ete approuve.</p>`
-        : `<p>Bonjour Dr. ${user.firstName} ${user.lastName}, votre demande a ete refusee.</p>`,
+      subject: isApproved
+        ? '✅ Votre compte MediConnect a été approuvé'
+        : '❌ Votre inscription MediConnect a été refusée',
+      html: isApproved ? htmlApproved : htmlRejected,
     });
     console.log(`[Admin] Email envoye a ${user.email} -> ${newStatus}`);
   }

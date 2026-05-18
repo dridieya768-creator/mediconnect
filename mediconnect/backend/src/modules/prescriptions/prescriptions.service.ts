@@ -5,6 +5,7 @@ import { Prescription, PrescriptionStatus } from "./entities/prescription.entity
 import { QrCodesService } from "../qr-codes/qr-codes.service";
 import { InteractionCheckerService, DrugInteraction } from "./interaction-checker.service";
 import { PdfService } from "./pdf.service";
+import { EmailService } from "../../common/services/email.service";
 import { writeFileSync, mkdirSync, existsSync } from "fs";
 import { join } from "path";
 import * as crypto from "crypto";
@@ -19,6 +20,7 @@ export class PrescriptionsService implements OnModuleInit {
     private qrCodesService: QrCodesService,
     private interactionChecker: InteractionCheckerService,
     private pdfService: PdfService,
+    private emailService: EmailService,
   ) {}
 
   // ── Migration automatique au démarrage ───────────────────────────────────
@@ -29,6 +31,9 @@ export class PrescriptionsService implements OnModuleInit {
       );
       await this.dataSource.query(
         `ALTER TABLE prescriptions ADD COLUMN IF NOT EXISTS imaging_requests JSONB;`
+      );
+      await this.dataSource.query(
+        `ALTER TABLE prescriptions ADD COLUMN IF NOT EXISTS analysis_requests JSONB;`
       );
       console.log('[PrescriptionsService] Migrations OK');
     } catch (err: any) {
@@ -97,10 +102,22 @@ export class PrescriptionsService implements OnModuleInit {
       const expiresAt = new Date(now);
       expiresAt.setDate(expiresAt.getDate() + 90);
 
+      // Résoudre le vrai patient.id depuis userId si nécessaire
+      let patientId = dto.patientId;
+      const patientRow = await this.dataSource.query(
+        `SELECT id FROM patients WHERE id = $1 OR user_id = $1 LIMIT 1`,
+        [patientId]
+      );
+      if (patientRow?.length > 0) {
+        patientId = patientRow[0].id;
+      } else {
+        throw new Error(`Patient introuvable pour l'ID: ${patientId}`);
+      }
+
       const tempCode = `PENDING-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
 
       const entity = this.repo.create({
-        patientId:   dto.patientId,
+        patientId,
         doctorId:    dto.doctorId,
         medications: dto.medications ?? [],
         appointmentId: dto.appointmentId,
@@ -124,13 +141,14 @@ export class PrescriptionsService implements OnModuleInit {
           : undefined,
         signatureImage: dto.signatureImage || undefined,
         imagingRequests: dto.imagingRequests?.length ? dto.imagingRequests : undefined,
+        analysisRequests: dto.analysisRequests?.length ? dto.analysisRequests : undefined,
       });
 
       const saved = (await this.repo.save(entity as any)) as unknown as Prescription;
 
       try {
         const qrCode = await this.qrCodesService.generateOrdonnanceQr(saved.id, {
-          patientId:   dto.patientId ?? '',
+          patientId:   patientId ?? '',
           patientName: dto.patientName ?? '',
           patientNss:  dto.patientNss ?? '',
           medecinRpps: dto.medecinRpps ?? '',
@@ -186,7 +204,7 @@ export class PrescriptionsService implements OnModuleInit {
              (id, patient_id, modifie_par_id, role_auteur, champs_modifies, snapshot_avant, commentaire, created_at)
            VALUES (gen_random_uuid(), $1, $2, 'MEDECIN', $3::jsonb, '{}'::jsonb, $4, NOW())`,
           [
-            dto.patientId,
+            patientId,
             dto.doctorId,
             JSON.stringify({
               ordonnance_creee: {
@@ -256,6 +274,19 @@ export class PrescriptionsService implements OnModuleInit {
 
   async signPrescription(id: string, signature: string): Promise<Prescription> {
     await this.repo.update(id, { signedAt: new Date(), electronicSignature: signature });
+    return this.findOne(id);
+  }
+
+  async envoyerOrdonnance(id: string, patientEmail: string): Promise<Prescription> {
+    const prescription = await this.findOne(id);
+
+    try {
+      await this.emailService.sendPrescriptionEmail(patientEmail, prescription);
+    } catch (err: any) {
+      console.warn('[PrescriptionsService] Envoi email ordonnance échoué:', err?.message);
+    }
+
+    await this.repo.update(id, { emailSentAt: new Date() });
     return this.findOne(id);
   }
 }

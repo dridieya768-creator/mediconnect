@@ -507,7 +507,7 @@ class RevenusService {
             .leftJoinAndSelect('a.patient', 'patient')
             .where('a.doctorId = :doctorId', { doctorId })
             .andWhere('a.status IN (:...statuses)', {
-            statuses: [appointment_entity_1.AppointmentStatus.CONFIRMED, appointment_entity_1.AppointmentStatus.COMPLETED],
+            statuses: [appointment_entity_1.AppointmentStatus.COMPLETED],
         });
         if (from)
             qb.andWhere('a.appointmentDate >= :from', { from: new Date(from) });

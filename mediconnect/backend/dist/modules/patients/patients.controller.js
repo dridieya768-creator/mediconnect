@@ -49,7 +49,7 @@ let PatientsController = class PatientsController {
             return { success: false, data: null, message: "Non authentifié" };
         const user = await this.userRepo.findOne({
             where: { id: userId },
-            select: ["id", "firstName", "lastName", "email", "role", "avatarUrl", "mfaEnabled"],
+            select: ["id", "firstName", "lastName", "email", "role", "avatarUrl", "mfaEnabled", "phone"],
         });
         if (!user)
             return { success: false, data: null, message: "Utilisateur introuvable" };
@@ -64,11 +64,13 @@ let PatientsController = class PatientsController {
                 userId: user.id,
                 firstName: user.firstName,
                 lastName: user.lastName,
+                prenom: user.firstName,
+                nom: user.lastName,
                 email: user.email,
                 role: user.role,
                 avatarUrl: user.avatarUrl,
                 mfaEnabled: user.mfaEnabled,
-                telephone: patient.user?.phone ?? null,
+                telephone: user.phone ?? null,
                 dateNaissance: patient.dateNaissance,
                 sexe: patient.sexe,
                 ville: patient.ville,
@@ -178,6 +180,9 @@ let PatientsController = class PatientsController {
             return { success: false, message: "Patient introuvable" };
         if (patient.userId !== userId)
             return { success: false, message: "Non autorisé" };
+        if (body.telephone !== undefined && body.telephone !== null) {
+            await this.userRepo.update(userId, { phone: body.telephone });
+        }
         const allowed = ['dateNaissance', 'sexe', 'ville', 'languePreferee',
             'groupeSanguin', 'allergies', 'maladiesChroniques', 'medicamentsActuels',
             'rappelsAuto', 'documents'];
@@ -193,6 +198,16 @@ let PatientsController = class PatientsController {
         }
         if (body.nss && body.nss.trim())
             updateData.nss = body.nss.trim();
+        for (const field of ['allergies', 'maladiesChroniques', 'medicamentsActuels']) {
+            if (updateData[field] !== undefined) {
+                if (typeof updateData[field] === 'string') {
+                    updateData[field] = updateData[field]
+                        .split(',')
+                        .map((s) => s.trim())
+                        .filter((s) => s.length > 0);
+                }
+            }
+        }
         if (body.documents !== undefined) {
             try {
                 updateData.documents = typeof body.documents === 'string'

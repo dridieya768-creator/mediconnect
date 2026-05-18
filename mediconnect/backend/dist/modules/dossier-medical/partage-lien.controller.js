@@ -63,9 +63,18 @@ let PartageLienController = class PartageLienController {
     }
     async genererLien(dto, req) {
         const userId = req.user?.sub ?? req.user?.id;
-        const patient = await this.patientRepo.findOne({ where: { userId } });
+        const patient = await this.patientRepo.findOne({
+            where: { userId },
+            relations: ['user'],
+        });
         if (!patient) {
             throw new common_1.InternalServerErrorException('Profil patient introuvable pour cet utilisateur');
+        }
+        const patientNom = patient.user
+            ? `${patient.user.firstName ?? ''} ${patient.user.lastName ?? ''}`.trim()
+            : 'Patient';
+        if (dto.medecinEmail) {
+            return this.partageLienService.genererEtEnvoyerLien(patient.id, patientNom, dto.medecinEmail, dto.permissions, dto.dureeHeures);
         }
         return this.partageLienService.genererLien(patient.id, dto.permissions, dto.dureeHeures);
     }

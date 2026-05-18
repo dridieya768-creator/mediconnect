@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Patient } from '../patients/entities/patient.entity';
+import { EmailService } from '../../common/services/email.service';
 
 export interface LienPartagePayload {
   type: 'PARTAGE_DOSSIER';
@@ -23,7 +24,29 @@ export class PartageLienService {
     private readonly jwtService: JwtService,
     @InjectRepository(Patient)
     private readonly patientRepo: Repository<Patient>,
+    private readonly emailService: EmailService,
   ) {}
+
+  // ── Générer un lien chiffré et l'envoyer par email ───────────────────────
+
+  async genererEtEnvoyerLien(
+    patientId: string,
+    patientNom: string,
+    medecinEmail: string,
+    permissions: LienPartagePayload['permissions'],
+    dureeHeures: number,
+  ): Promise<{ token: string; lien: string; expiresAt: string; emailEnvoye: boolean }> {
+    const result = this.genererLien(patientId, permissions, dureeHeures);
+
+    const emailEnvoye = await this.emailService.sendPartageEmail(
+      medecinEmail,
+      patientNom,
+      result.lien,
+      result.expiresAt,
+    );
+
+    return { ...result, emailEnvoye };
+  }
 
   // ── Générer un lien chiffré ───────────────────────────────────────────────
 

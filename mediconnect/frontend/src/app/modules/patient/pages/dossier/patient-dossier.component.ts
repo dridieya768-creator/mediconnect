@@ -467,9 +467,10 @@ export class PatientDossierComponent implements OnInit {
     const payload: any = { ...this.form };
     if (!payload.groupeSanguin) delete payload.groupeSanguin;
     if (!payload.sexe) delete payload.sexe;
-    payload.allergies = payload.allergies.join(', ');
-    payload.maladiesChroniques = payload.maladiesChroniques.join(', ');
-    payload.medicamentsActuels = payload.medicamentsActuels.join(', ');
+    // Envoyer les tableaux directement (le backend gère JSONB)
+    payload.allergies = Array.isArray(payload.allergies) ? payload.allergies : [];
+    payload.maladiesChroniques = Array.isArray(payload.maladiesChroniques) ? payload.maladiesChroniques : [];
+    payload.medicamentsActuels = Array.isArray(payload.medicamentsActuels) ? payload.medicamentsActuels : [];
     payload.documents = JSON.stringify(this.documents());
 
     this.http.patch<any>(`/api/v1/patients/${this.patient()?.id}`, payload).subscribe({

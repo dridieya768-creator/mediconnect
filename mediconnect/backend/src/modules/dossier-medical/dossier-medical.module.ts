@@ -12,10 +12,12 @@ import { DossierAccesService } from './dossier-acces.service';
 import { DossierHistoriqueInterceptor } from './interceptors/dossier-historique.interceptor';
 import { PartageLienService } from './partage-lien.service';
 import { PartageLienController } from './partage-lien.controller';
+import { EmailService } from '../../common/services/email.service';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([DossierHistorique, DossierAccesMedecin, Patient]),
+    ConfigModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({
@@ -32,6 +34,7 @@ import { PartageLienController } from './partage-lien.controller';
     DossierAccesService,
     DossierHistoriqueInterceptor,
     PartageLienService,
+    EmailService,
   ],
   exports: [DossierHistoriqueService, DossierAccesService, DossierHistoriqueInterceptor],
 })

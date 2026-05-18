@@ -50,7 +50,7 @@ export class PatientsController {
 
     const user = await this.userRepo.findOne({
       where:  { id: userId },
-      select: ["id", "firstName", "lastName", "email", "role", "avatarUrl", "mfaEnabled"] as any,
+      select: ["id", "firstName", "lastName", "email", "role", "avatarUrl", "mfaEnabled", "phone"] as any,
     });
     if (!user) return { success: false, data: null, message: "Utilisateur introuvable" };
 
@@ -66,12 +66,14 @@ export class PatientsController {
         userId:         user.id,
         firstName:      user.firstName,
         lastName:       user.lastName,
+        prenom:         user.firstName,
+        nom:            user.lastName,
         email:          user.email,
         role:           user.role,
         avatarUrl:      user.avatarUrl,
         mfaEnabled:     (user as any).mfaEnabled,
         // Profil patient
-        telephone:      patient.user?.phone ?? null,
+        telephone:      (user as any).phone ?? null,
         dateNaissance:  patient.dateNaissance,
         sexe:           patient.sexe,
         ville:          patient.ville,
@@ -200,6 +202,11 @@ export class PatientsController {
     if (!patient) return { success: false, message: "Patient introuvable" };
     if (patient.userId !== userId) return { success: false, message: "Non autorisé" };
 
+    // Mettre à jour le téléphone dans la table users si fourni
+    if (body.telephone !== undefined && body.telephone !== null) {
+      await this.userRepo.update(userId, { phone: body.telephone } as any);
+    }
+
     // Whitelist des champs autorisés — exclure les valeurs null/undefined
     const allowed = ['dateNaissance','sexe','ville','languePreferee',
                      'groupeSanguin','allergies','maladiesChroniques','medicamentsActuels',
@@ -216,6 +223,19 @@ export class PatientsController {
     }
     // nss séparé — ne pas écraser si vide
     if (body.nss && body.nss.trim()) updateData.nss = body.nss.trim();
+
+    // Convertir les champs liste (string CSV → array pour JSONB, ou garder array)
+    for (const field of ['allergies', 'maladiesChroniques', 'medicamentsActuels']) {
+      if (updateData[field] !== undefined) {
+        if (typeof updateData[field] === 'string') {
+          updateData[field] = updateData[field]
+            .split(',')
+            .map((s: string) => s.trim())
+            .filter((s: string) => s.length > 0);
+        }
+        // Si c'est déjà un array, on le garde tel quel
+      }
+    }
 
     // documents — parser si c'est une string JSON
     if (body.documents !== undefined) {

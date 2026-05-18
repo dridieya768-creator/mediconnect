@@ -22,11 +22,13 @@ export declare class PatientsController {
             userId: string;
             firstName: string;
             lastName: string;
+            prenom: string;
+            nom: string;
             email: string;
             role: import("../users/entities/user.entity").UserRole;
             avatarUrl: string;
             mfaEnabled: any;
-            telephone: string;
+            telephone: any;
             dateNaissance: Date;
             sexe: string;
             ville: string;

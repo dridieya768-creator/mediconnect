@@ -20,6 +20,7 @@ import * as crypto from "crypto";
 import { v4 as uuidv4 } from "uuid";
 import * as nodemailer from 'nodemailer';
 import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationsGateway } from '../notifications/notifications.gateway';
 import { NotificationType } from '../notifications/notification.entity';
 import * as fs from "fs";
 import { join } from "path";
@@ -30,8 +31,8 @@ function generateTotpSecret(): string {
 
 function verifyTotpCode(secret: string, code: string): boolean {
   const timeStep = Math.floor(Date.now() / 1000 / 30);
-  const hmac = crypto.createHmac("sha1", Buffer.from(secret, "hex"));
-  hmac.update(Buffer.alloc(8));
+  const hmac = crypto.createHmac("sha1", Buffer.from(secret, "hex") as any);
+  hmac.update(Buffer.alloc(8) as any);
   const hash = hmac.digest();
   const offset = hash[hash.length - 1] & 0x0f;
   const otp = ((hash.readUInt32BE(offset) & 0x7fffffff) % 1000000)
@@ -54,6 +55,7 @@ export class AuthService {
     private jwtService: JwtService,
     private configService: ConfigService,
     private notificationsService: NotificationsService,
+    private notificationsGateway: NotificationsGateway,
   ) {}
 
   async validateUser(email: string, password: string): Promise<User | null> {
@@ -95,34 +97,38 @@ export class AuthService {
     }
 
     const hashedPassword = await bcrypt.hash(registerDto.password, 12);
-    const isMedecin = registerDto.role === UserRole.MEDECIN;
+    const medecinRoles = [
+      UserRole.MEDECIN, UserRole.MEDECIN_GENERALISTE, UserRole.MEDECIN_SPECIALISTE,
+      UserRole.MEDECIN_CHEF_SERVICE, UserRole.RADIOLOGUE, UserRole.BIOLOGISTE_RESPONSABLE,
+      UserRole.BIOLOGISTE_MEDICAL, UserRole.TECHNICIEN_LABO, UserRole.MANIPULATEUR_RADIO,
+      UserRole.SECRETAIRE_RADIO,
+    ];
+    const isMedecin    = medecinRoles.includes(registerDto.role as UserRole);
     const isPharmacien = registerDto.role === UserRole.PHARMACIEN;
     const isProfessionnel = isMedecin || isPharmacien;
 
-    // Verification RPPS (medecin)
+    // Vérification RPPS (médecin)
     if (isMedecin && (registerDto as any).rpps) {
       const rpps = String((registerDto as any).rpps).trim();
       if (!/^\d{11}$/.test(rpps)) {
         throw new BadRequestException('Le numero RPPS doit contenir exactement 11 chiffres.');
       }
       const rppsExist = await this.userRepository.query(
-        `SELECT id FROM medecins WHERE rpps = $1 LIMIT 1`,
-        [rpps]
+        `SELECT id FROM medecins WHERE rpps = $1 LIMIT 1`, [rpps]
       );
       if (rppsExist?.length > 0) {
         throw new ConflictException('Ce numero RPPS est deja utilise par un autre medecin.');
       }
     }
 
-    // Verification numero ordre pharmacien
+    // Vérification numéro d'ordre pharmacien
     if (isPharmacien && (registerDto as any).numeroOrdre) {
       const numeroOrdre = String((registerDto as any).numeroOrdre).trim();
       if (!/^(PH-\d{4}|\d{4,8})$/i.test(numeroOrdre)) {
         throw new BadRequestException("Format du numero d'ordre invalide (ex: PH-1234 ou 12345678).");
       }
       const ordreExist = await this.userRepository.query(
-        `SELECT id FROM pharmaciens WHERE numero_ordre = $1 LIMIT 1`,
-        [numeroOrdre]
+        `SELECT id FROM pharmaciens WHERE numero_ordre = $1 LIMIT 1`, [numeroOrdre]
       );
       if (ordreExist?.length > 0) {
         throw new ConflictException("Ce numero d'ordre est deja utilise par un autre pharmacien.");
@@ -161,6 +167,15 @@ export class AuthService {
             relatedId: savedUser.id,
           });
         }
+        // Notification temps réel via WebSocket
+        this.notificationsGateway.sendToAdmins('admin:new-pro', {
+          type:      NotificationType.DOCTOR_PENDING_APPROVAL,
+          title:     'Nouveau compte pro a valider',
+          message:   `${isPharmacien ? 'Pharmacien' : 'Dr.'} ${savedUser.firstName} ${savedUser.lastName} attend votre validation.`,
+          userId:    savedUser.id,
+          role:      savedUser.role,
+          createdAt: new Date(),
+        });
       } catch (e) {
         console.warn('[Auth] Impossible de notifier les admins:', e.message);
       }
@@ -179,7 +194,7 @@ export class AuthService {
     if (!user) throw new UnauthorizedException("Email ou mot de passe incorrect");
     if (user.status === UserStatus.SUSPENDED) throw new UnauthorizedException("Compte suspendu");
     if (user.status === UserStatus.PENDING_VERIFICATION)
-      throw new UnauthorizedException("Compte en attente de validation.");
+      throw new UnauthorizedException("Votre compte est en attente de validation par un administrateur.");
     if (user.mfaEnabled) {
       return { requires2fa: true, userId: user.id, message: "Code 2FA requis" };
     }
@@ -196,7 +211,8 @@ export class AuthService {
     const otpauthUrl = `otpauth://totp/${appName}:${user.email}?secret=${secret}&issuer=${appName}`;
     await this.userRepository.update(userId, { mfaSecret: secret });
     return {
-      secret, otpauthUrl,
+      secret,
+      otpauthUrl,
       qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(otpauthUrl)}`,
       instructions: "Scannez ce QR code avec Google Authenticator ou Authy",
     };
@@ -235,7 +251,7 @@ export class AuthService {
     const token = crypto.randomBytes(32).toString("hex");
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
     this.resetTokens.set(token, { userId: user.id, expiresAt });
-    const resetUrl = `http://localhost:4200/auth/reset-password?token=${token}`;
+   const resetUrl = `${process.env.FRONTEND_URL}/auth/reset-password?token=${token}`;
     try {
       const transporter = nodemailer.createTransport({
         host: this.configService.get('SMTP_HOST'),
@@ -245,13 +261,14 @@ export class AuthService {
         tls: { rejectUnauthorized: false },
       });
       await transporter.sendMail({
-        from: '"MediConnect" <noreply@mediconnect.tn>',
+        from: '"MediConnect" <a41638001@smtp-brevo.com>',
         to: user.email,
         subject: 'Reinitialisation de votre mot de passe',
         html: `<p>Bonjour ${user.firstName},</p><p><a href="${resetUrl}">Reinitialiser mon mot de passe</a> (valable 1 heure)</p>`,
       });
+      console.log(`[Auth] Email envoye a ${user.email}`);
     } catch (error) {
-      console.error('Erreur envoi email:', error.message);
+      console.error('[Auth] Erreur envoi email:', error.message);
     }
     return { message: "Si cet email existe, un lien a ete envoye" };
   }
@@ -261,7 +278,7 @@ export class AuthService {
     if (!tokenData) throw new BadRequestException("Token invalide ou expire");
     if (new Date() > tokenData.expiresAt) {
       this.resetTokens.delete(dto.token);
-      throw new BadRequestException("Token expire.");
+      throw new BadRequestException("Token expire. Demandez un nouveau lien.");
     }
     const hashedPassword = await bcrypt.hash(dto.newPassword, 12);
     await this.userRepository.update(tokenData.userId, { password: hashedPassword });
@@ -308,7 +325,8 @@ export class AuthService {
       provider: "google",
       providerId: "google_" + crypto.randomBytes(8).toString("hex"),
       email: `google_user_${Date.now()}@gmail.com`,
-      firstName: "Google", lastName: "User",
+      firstName: "Google",
+      lastName: "User",
       avatarUrl: "https://lh3.googleusercontent.com/a/default",
     });
   }
@@ -319,7 +337,8 @@ export class AuthService {
       provider: "facebook",
       providerId: "fb_" + crypto.randomBytes(8).toString("hex"),
       email: `fb_user_${Date.now()}@facebook.com`,
-      firstName: "Facebook", lastName: "User",
+      firstName: "Facebook",
+      lastName: "User",
       avatarUrl: "https://graph.facebook.com/default/picture",
     });
   }
@@ -352,14 +371,14 @@ export class AuthService {
       const dir = join(process.cwd(), "uploads", "doctor-docs", userId);
       fs.mkdirSync(dir, { recursive: true });
       for (const doc of documents) {
-        const buffer = Buffer.from(doc.base64, "base64");
+        const buffer   = Buffer.from(doc.base64, "base64");
         const filename = `${doc.type}_${Date.now()}.pdf`;
         const filepath = join(dir, filename);
-        fs.writeFileSync(filepath, buffer);
+        fs.writeFileSync(filepath, buffer as any);
         await this.userRepository.query(
-          `INSERT INTO doctor_documents(id, user_id, type, filename, original_name, base64, file_path, status, created_at)
-           VALUES(uuid_generate_v4(), $1, $2, $3, $4, $5, $6, 'PENDING', now())`,
-          [userId, doc.type, filename, doc.filename, doc.base64, filepath]
+          `INSERT INTO doctor_documents(id, user_id, type, filename, original_name, file_path, status, created_at)
+           VALUES(uuid_generate_v4(), $1, $2, $3, $4, $5, 'PENDING', now())`,
+          [userId, doc.type, filename, doc.filename, filepath]
         );
       }
     } catch (e) {

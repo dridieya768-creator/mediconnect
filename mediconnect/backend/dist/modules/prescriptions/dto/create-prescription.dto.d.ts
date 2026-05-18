@@ -1,10 +1,15 @@
 import { CreateMedicationDto } from './create-medication.dto';
+export declare class AnalyseRequestDto {
+    typeAnalyse: string;
+    motif: string;
+}
 export declare class CreatePrescriptionDto {
     patientId: string;
     doctorId: string;
     appointmentId?: string;
     medications: CreateMedicationDto[];
     notes?: string;
+    analysisRequests?: AnalyseRequestDto[];
     patientName?: string;
     patientNss?: string;
     medecinRpps?: string;

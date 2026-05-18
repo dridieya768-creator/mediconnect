@@ -2,6 +2,14 @@ import { IsUUID, IsArray, ValidateNested, ArrayMinSize, IsOptional, IsString } f
 import { Type } from 'class-transformer';
 import { CreateMedicationDto } from './create-medication.dto';
 
+export class AnalyseRequestDto {
+  @IsString()
+  typeAnalyse: string;
+
+  @IsString()
+  motif: string;
+}
+
 export class CreatePrescriptionDto {
   @IsUUID()
   patientId: string;
@@ -20,6 +28,12 @@ export class CreatePrescriptionDto {
 
   @IsOptional() @IsString()
   notes?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => AnalyseRequestDto)
+  analysisRequests?: AnalyseRequestDto[];
 
   // Métadonnées résolues côté service pour le QR
   @IsOptional() @IsString() patientName?: string;

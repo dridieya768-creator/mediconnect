@@ -36,13 +36,29 @@ export class PartageLienController {
   @Post('generer')
   @UseGuards(JwtAuthGuard)
   async genererLien(@Body() dto: GenererLienDto, @Req() req: any) {
-    // Le JWT contient sub = userId, pas patientId
     const userId = req.user?.sub ?? req.user?.id;
 
-    // Résoudre le patientId depuis le userId
-    const patient = await this.patientRepo.findOne({ where: { userId } });
+    const patient = await this.patientRepo.findOne({
+      where: { userId },
+      relations: ['user'],
+    });
     if (!patient) {
       throw new InternalServerErrorException('Profil patient introuvable pour cet utilisateur');
+    }
+
+    const patientNom = patient.user
+      ? `${patient.user.firstName ?? ''} ${patient.user.lastName ?? ''}`.trim()
+      : 'Patient';
+
+    // Si medecinEmail fourni → générer + envoyer email
+    if ((dto as any).medecinEmail) {
+      return this.partageLienService.genererEtEnvoyerLien(
+        patient.id,
+        patientNom,
+        (dto as any).medecinEmail,
+        dto.permissions,
+        dto.dureeHeures,
+      );
     }
 
     return this.partageLienService.genererLien(

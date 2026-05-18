@@ -21,6 +21,7 @@ const dossier_acces_service_1 = require("./dossier-acces.service");
 const dossier_historique_interceptor_1 = require("./interceptors/dossier-historique.interceptor");
 const partage_lien_service_1 = require("./partage-lien.service");
 const partage_lien_controller_1 = require("./partage-lien.controller");
+const email_service_1 = require("../../common/services/email.service");
 let DossierMedicalModule = class DossierMedicalModule {
 };
 exports.DossierMedicalModule = DossierMedicalModule;
@@ -28,6 +29,7 @@ exports.DossierMedicalModule = DossierMedicalModule = __decorate([
     (0, common_1.Module)({
         imports: [
             typeorm_1.TypeOrmModule.forFeature([dossier_historique_entity_1.DossierHistorique, dossier_acces_medecin_entity_1.DossierAccesMedecin, patient_entity_1.Patient]),
+            config_1.ConfigModule,
             jwt_1.JwtModule.registerAsync({
                 imports: [config_1.ConfigModule],
                 useFactory: (config) => ({
@@ -44,6 +46,7 @@ exports.DossierMedicalModule = DossierMedicalModule = __decorate([
             dossier_acces_service_1.DossierAccesService,
             dossier_historique_interceptor_1.DossierHistoriqueInterceptor,
             partage_lien_service_1.PartageLienService,
+            email_service_1.EmailService,
         ],
         exports: [dossier_historique_service_1.DossierHistoriqueService, dossier_acces_service_1.DossierAccesService, dossier_historique_interceptor_1.DossierHistoriqueInterceptor],
     })

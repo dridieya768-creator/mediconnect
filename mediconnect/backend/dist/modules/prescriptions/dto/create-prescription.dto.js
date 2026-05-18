@@ -9,10 +9,21 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CreatePrescriptionDto = void 0;
+exports.CreatePrescriptionDto = exports.AnalyseRequestDto = void 0;
 const class_validator_1 = require("class-validator");
 const class_transformer_1 = require("class-transformer");
 const create_medication_dto_1 = require("./create-medication.dto");
+class AnalyseRequestDto {
+}
+exports.AnalyseRequestDto = AnalyseRequestDto;
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], AnalyseRequestDto.prototype, "typeAnalyse", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], AnalyseRequestDto.prototype, "motif", void 0);
 class CreatePrescriptionDto {
 }
 exports.CreatePrescriptionDto = CreatePrescriptionDto;
@@ -41,6 +52,13 @@ __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreatePrescriptionDto.prototype, "notes", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsArray)(),
+    (0, class_validator_1.ValidateNested)({ each: true }),
+    (0, class_transformer_1.Type)(() => AnalyseRequestDto),
+    __metadata("design:type", Array)
+], CreatePrescriptionDto.prototype, "analysisRequests", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),

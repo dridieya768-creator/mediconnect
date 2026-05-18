@@ -15,7 +15,16 @@ var UserRole;
 (function (UserRole) {
     UserRole["PATIENT"] = "PATIENT";
     UserRole["MEDECIN"] = "MEDECIN";
+    UserRole["MEDECIN_GENERALISTE"] = "MEDECIN_GENERALISTE";
+    UserRole["MEDECIN_SPECIALISTE"] = "MEDECIN_SPECIALISTE";
+    UserRole["MEDECIN_CHEF_SERVICE"] = "MEDECIN_CHEF_SERVICE";
     UserRole["PHARMACIEN"] = "PHARMACIEN";
+    UserRole["BIOLOGISTE_RESPONSABLE"] = "BIOLOGISTE_RESPONSABLE";
+    UserRole["BIOLOGISTE_MEDICAL"] = "BIOLOGISTE_MEDICAL";
+    UserRole["TECHNICIEN_LABO"] = "TECHNICIEN_LABO";
+    UserRole["RADIOLOGUE"] = "RADIOLOGUE";
+    UserRole["MANIPULATEUR_RADIO"] = "MANIPULATEUR_RADIO";
+    UserRole["SECRETAIRE_RADIO"] = "SECRETAIRE_RADIO";
     UserRole["ADMIN"] = "ADMIN";
 })(UserRole || (exports.UserRole = UserRole = {}));
 var UserStatus;
@@ -24,6 +33,7 @@ var UserStatus;
     UserStatus["INACTIVE"] = "INACTIVE";
     UserStatus["SUSPENDED"] = "SUSPENDED";
     UserStatus["PENDING_VERIFICATION"] = "PENDING_VERIFICATION";
+    UserStatus["REJECTED"] = "REJECTED";
 })(UserStatus || (exports.UserStatus = UserStatus = {}));
 let User = class User {
 };

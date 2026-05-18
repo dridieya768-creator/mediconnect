@@ -98,17 +98,20 @@ export class AppointmentsService {
 
   async findDoctorsByPatient(patientUserId: string): Promise<any[]> {
     try {
-      // Résoudre les deux IDs possibles (user.id et patient.id)
       const resolvedId = await this.resolvePatientUserId(patientUserId);
       const idsToSearch = [...new Set([patientUserId, resolvedId])];
 
+      // Inclure tous les RDV (passés et futurs) sauf CANCELLED
       const appts = await this.repo
         .createQueryBuilder('a')
         .leftJoinAndSelect('a.doctor', 'doctor')
         .where('a.patientId IN (:...ids)', { ids: idsToSearch })
-        .andWhere('a.appointmentDate < :now', { now: new Date() })
         .andWhere('a.status IN (:...statuses)', {
-          statuses: [AppointmentStatus.COMPLETED, AppointmentStatus.CONFIRMED, AppointmentStatus.CANCELLED],
+          statuses: [
+            AppointmentStatus.COMPLETED,
+            AppointmentStatus.CONFIRMED,
+            AppointmentStatus.REQUESTED,
+          ],
         })
         .getMany();
 
@@ -119,6 +122,7 @@ export class AppointmentsService {
             id:        a.doctorId,
             firstName: (a.doctor as any)?.firstName ?? '',
             lastName:  (a.doctor as any)?.lastName ?? '',
+            email:     (a.doctor as any)?.email ?? '',
           });
         }
       }

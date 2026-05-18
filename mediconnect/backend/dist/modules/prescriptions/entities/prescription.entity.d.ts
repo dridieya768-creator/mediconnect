@@ -41,6 +41,10 @@ export declare class Prescription {
         clinicalReason: string;
         urgency: string;
     }[];
+    analysisRequests: {
+        typeAnalyse: string;
+        motif: string;
+    }[];
     createdAt: Date;
     updatedAt: Date;
 }

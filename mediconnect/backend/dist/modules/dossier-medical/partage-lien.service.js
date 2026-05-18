@@ -18,10 +18,17 @@ const jwt_1 = require("@nestjs/jwt");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const patient_entity_1 = require("../patients/entities/patient.entity");
+const email_service_1 = require("../../common/services/email.service");
 let PartageLienService = class PartageLienService {
-    constructor(jwtService, patientRepo) {
+    constructor(jwtService, patientRepo, emailService) {
         this.jwtService = jwtService;
         this.patientRepo = patientRepo;
+        this.emailService = emailService;
+    }
+    async genererEtEnvoyerLien(patientId, patientNom, medecinEmail, permissions, dureeHeures) {
+        const result = this.genererLien(patientId, permissions, dureeHeures);
+        const emailEnvoye = await this.emailService.sendPartageEmail(medecinEmail, patientNom, result.lien, result.expiresAt);
+        return { ...result, emailEnvoye };
     }
     genererLien(patientId, permissions, dureeHeures) {
         const expiresAt = new Date(Date.now() + dureeHeures * 60 * 60 * 1000).toISOString();
@@ -92,6 +99,7 @@ exports.PartageLienService = PartageLienService = __decorate([
     (0, common_1.Injectable)(),
     __param(1, (0, typeorm_1.InjectRepository)(patient_entity_1.Patient)),
     __metadata("design:paramtypes", [jwt_1.JwtService,
-        typeorm_2.Repository])
+        typeorm_2.Repository,
+        email_service_1.EmailService])
 ], PartageLienService);
 //# sourceMappingURL=partage-lien.service.js.map

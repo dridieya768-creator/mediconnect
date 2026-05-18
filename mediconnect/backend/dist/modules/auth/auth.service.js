@@ -26,6 +26,7 @@ const crypto = require("crypto");
 const uuid_1 = require("uuid");
 const nodemailer = require("nodemailer");
 const notifications_service_1 = require("../notifications/notifications.service");
+const notifications_gateway_1 = require("../notifications/notifications.gateway");
 const notification_entity_1 = require("../notifications/notification.entity");
 const fs = require("fs");
 const path_1 = require("path");
@@ -44,13 +45,14 @@ function verifyTotpCode(secret, code) {
     return otp === code;
 }
 let AuthService = class AuthService {
-    constructor(userRepository, patientRepository, pharmacienRepository, jwtService, configService, notificationsService) {
+    constructor(userRepository, patientRepository, pharmacienRepository, jwtService, configService, notificationsService, notificationsGateway) {
         this.userRepository = userRepository;
         this.patientRepository = patientRepository;
         this.pharmacienRepository = pharmacienRepository;
         this.jwtService = jwtService;
         this.configService = configService;
         this.notificationsService = notificationsService;
+        this.notificationsGateway = notificationsGateway;
         this.resetTokens = new Map();
     }
     async validateUser(email, password) {
@@ -90,7 +92,13 @@ let AuthService = class AuthService {
             throw new common_1.ConflictException("Email deja utilise");
         }
         const hashedPassword = await bcrypt.hash(registerDto.password, 12);
-        const isMedecin = registerDto.role === user_entity_1.UserRole.MEDECIN;
+        const medecinRoles = [
+            user_entity_1.UserRole.MEDECIN, user_entity_1.UserRole.MEDECIN_GENERALISTE, user_entity_1.UserRole.MEDECIN_SPECIALISTE,
+            user_entity_1.UserRole.MEDECIN_CHEF_SERVICE, user_entity_1.UserRole.RADIOLOGUE, user_entity_1.UserRole.BIOLOGISTE_RESPONSABLE,
+            user_entity_1.UserRole.BIOLOGISTE_MEDICAL, user_entity_1.UserRole.TECHNICIEN_LABO, user_entity_1.UserRole.MANIPULATEUR_RADIO,
+            user_entity_1.UserRole.SECRETAIRE_RADIO,
+        ];
+        const isMedecin = medecinRoles.includes(registerDto.role);
         const isPharmacien = registerDto.role === user_entity_1.UserRole.PHARMACIEN;
         const isProfessionnel = isMedecin || isPharmacien;
         if (isMedecin && registerDto.rpps) {
@@ -141,6 +149,14 @@ let AuthService = class AuthService {
                         relatedId: savedUser.id,
                     });
                 }
+                this.notificationsGateway.sendToAdmins('admin:new-pro', {
+                    type: notification_entity_1.NotificationType.DOCTOR_PENDING_APPROVAL,
+                    title: 'Nouveau compte pro a valider',
+                    message: `${isPharmacien ? 'Pharmacien' : 'Dr.'} ${savedUser.firstName} ${savedUser.lastName} attend votre validation.`,
+                    userId: savedUser.id,
+                    role: savedUser.role,
+                    createdAt: new Date(),
+                });
             }
             catch (e) {
                 console.warn('[Auth] Impossible de notifier les admins:', e.message);
@@ -160,7 +176,7 @@ let AuthService = class AuthService {
         if (user.status === user_entity_1.UserStatus.SUSPENDED)
             throw new common_1.UnauthorizedException("Compte suspendu");
         if (user.status === user_entity_1.UserStatus.PENDING_VERIFICATION)
-            throw new common_1.UnauthorizedException("Compte en attente de validation.");
+            throw new common_1.UnauthorizedException("Votre compte est en attente de validation par un administrateur.");
         if (user.mfaEnabled) {
             return { requires2fa: true, userId: user.id, message: "Code 2FA requis" };
         }
@@ -177,7 +193,8 @@ let AuthService = class AuthService {
         const otpauthUrl = `otpauth://totp/${appName}:${user.email}?secret=${secret}&issuer=${appName}`;
         await this.userRepository.update(userId, { mfaSecret: secret });
         return {
-            secret, otpauthUrl,
+            secret,
+            otpauthUrl,
             qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(otpauthUrl)}`,
             instructions: "Scannez ce QR code avec Google Authenticator ou Authy",
         };
@@ -217,7 +234,7 @@ let AuthService = class AuthService {
         const token = crypto.randomBytes(32).toString("hex");
         const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
         this.resetTokens.set(token, { userId: user.id, expiresAt });
-        const resetUrl = `http://localhost:4200/auth/reset-password?token=${token}`;
+        const resetUrl = `${process.env.FRONTEND_URL}/auth/reset-password?token=${token}`;
         try {
             const transporter = nodemailer.createTransport({
                 host: this.configService.get('SMTP_HOST'),
@@ -227,14 +244,15 @@ let AuthService = class AuthService {
                 tls: { rejectUnauthorized: false },
             });
             await transporter.sendMail({
-                from: '"MediConnect" <noreply@mediconnect.tn>',
+                from: '"MediConnect" <a41638001@smtp-brevo.com>',
                 to: user.email,
                 subject: 'Reinitialisation de votre mot de passe',
                 html: `<p>Bonjour ${user.firstName},</p><p><a href="${resetUrl}">Reinitialiser mon mot de passe</a> (valable 1 heure)</p>`,
             });
+            console.log(`[Auth] Email envoye a ${user.email}`);
         }
         catch (error) {
-            console.error('Erreur envoi email:', error.message);
+            console.error('[Auth] Erreur envoi email:', error.message);
         }
         return { message: "Si cet email existe, un lien a ete envoye" };
     }
@@ -244,7 +262,7 @@ let AuthService = class AuthService {
             throw new common_1.BadRequestException("Token invalide ou expire");
         if (new Date() > tokenData.expiresAt) {
             this.resetTokens.delete(dto.token);
-            throw new common_1.BadRequestException("Token expire.");
+            throw new common_1.BadRequestException("Token expire. Demandez un nouveau lien.");
         }
         const hashedPassword = await bcrypt.hash(dto.newPassword, 12);
         await this.userRepository.update(tokenData.userId, { password: hashedPassword });
@@ -284,7 +302,8 @@ let AuthService = class AuthService {
             provider: "google",
             providerId: "google_" + crypto.randomBytes(8).toString("hex"),
             email: `google_user_${Date.now()}@gmail.com`,
-            firstName: "Google", lastName: "User",
+            firstName: "Google",
+            lastName: "User",
             avatarUrl: "https://lh3.googleusercontent.com/a/default",
         });
     }
@@ -295,7 +314,8 @@ let AuthService = class AuthService {
             provider: "facebook",
             providerId: "fb_" + crypto.randomBytes(8).toString("hex"),
             email: `fb_user_${Date.now()}@facebook.com`,
-            firstName: "Facebook", lastName: "User",
+            firstName: "Facebook",
+            lastName: "User",
             avatarUrl: "https://graph.facebook.com/default/picture",
         });
     }
@@ -326,8 +346,8 @@ let AuthService = class AuthService {
                 const filename = `${doc.type}_${Date.now()}.pdf`;
                 const filepath = (0, path_1.join)(dir, filename);
                 fs.writeFileSync(filepath, buffer);
-                await this.userRepository.query(`INSERT INTO doctor_documents(id, user_id, type, filename, original_name, base64, file_path, status, created_at)
-           VALUES(uuid_generate_v4(), $1, $2, $3, $4, $5, $6, 'PENDING', now())`, [userId, doc.type, filename, doc.filename, doc.base64, filepath]);
+                await this.userRepository.query(`INSERT INTO doctor_documents(id, user_id, type, filename, original_name, file_path, status, created_at)
+           VALUES(uuid_generate_v4(), $1, $2, $3, $4, $5, 'PENDING', now())`, [userId, doc.type, filename, doc.filename, filepath]);
             }
         }
         catch (e) {
@@ -360,6 +380,7 @@ exports.AuthService = AuthService = __decorate([
         typeorm_2.Repository,
         jwt_1.JwtService,
         config_1.ConfigService,
-        notifications_service_1.NotificationsService])
+        notifications_service_1.NotificationsService,
+        notifications_gateway_1.NotificationsGateway])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

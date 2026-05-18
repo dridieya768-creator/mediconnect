@@ -604,7 +604,7 @@ export class RevenusService {
       .leftJoinAndSelect('a.patient', 'patient')
       .where('a.doctorId = :doctorId', { doctorId })
       .andWhere('a.status IN (:...statuses)', {
-        statuses: [AppointmentStatus.CONFIRMED, AppointmentStatus.COMPLETED],
+        statuses: [AppointmentStatus.COMPLETED],
       });
 
     if (from) qb.andWhere('a.appointmentDate >= :from', { from: new Date(from) });

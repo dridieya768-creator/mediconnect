@@ -47,7 +47,7 @@ exports.AppModule = AppModule = __decorate([
                     database: configService.get('DB_DATABASE', 'mediconnect'),
                     entities: [__dirname + '/**/*.entity{.ts,.js}'],
                     migrations: [__dirname + '/database/migrations/*{.ts,.js}'],
-                    synchronize: false,
+                    synchronize: true,
                     logging: configService.get('NODE_ENV') === 'development',
                 }),
                 inject: [config_1.ConfigService],

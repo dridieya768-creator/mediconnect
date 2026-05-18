@@ -88,6 +88,12 @@ export class Prescription {
     urgency: string;
   }[];
 
+  @Column({ name: 'analysis_requests', type: 'jsonb', nullable: true })
+  analysisRequests: {
+    typeAnalyse: string;
+    motif: string;
+  }[];
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

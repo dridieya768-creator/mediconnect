@@ -145,8 +145,8 @@ export class PaymentsService {
       consultationType: a.consultationType,
       amount: 50,
       currency: 'TND',
-      paid: a.status === AppointmentStatus.CONFIRMED || a.status === AppointmentStatus.COMPLETED,
-      payable: a.status === AppointmentStatus.REQUESTED || a.status === AppointmentStatus.CONFIRMED,
+      paid: a.status === AppointmentStatus.COMPLETED,
+      payable: a.status === AppointmentStatus.REQUESTED,
     }));
   }
 }

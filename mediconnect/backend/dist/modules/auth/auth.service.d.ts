@@ -11,6 +11,7 @@ import { ResetPasswordDto } from "./dto/reset-password.dto";
 import { Enable2faDto } from "./dto/enable-2fa.dto";
 import { Verify2faDto } from "./dto/verify-2fa.dto";
 import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationsGateway } from '../notifications/notifications.gateway';
 export declare class AuthService {
     private userRepository;
     private patientRepository;
@@ -18,8 +19,9 @@ export declare class AuthService {
     private jwtService;
     private configService;
     private notificationsService;
+    private notificationsGateway;
     private resetTokens;
-    constructor(userRepository: Repository<User>, patientRepository: Repository<Patient>, pharmacienRepository: Repository<PharmacienProfile>, jwtService: JwtService, configService: ConfigService, notificationsService: NotificationsService);
+    constructor(userRepository: Repository<User>, patientRepository: Repository<Patient>, pharmacienRepository: Repository<PharmacienProfile>, jwtService: JwtService, configService: ConfigService, notificationsService: NotificationsService, notificationsGateway: NotificationsGateway);
     validateUser(email: string, password: string): Promise<User | null>;
     register(registerDto: RegisterDto): Promise<{
         pendingApproval?: boolean;

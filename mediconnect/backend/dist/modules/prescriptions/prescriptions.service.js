@@ -20,21 +20,24 @@ const prescription_entity_1 = require("./entities/prescription.entity");
 const qr_codes_service_1 = require("../qr-codes/qr-codes.service");
 const interaction_checker_service_1 = require("./interaction-checker.service");
 const pdf_service_1 = require("./pdf.service");
+const email_service_1 = require("../../common/services/email.service");
 const fs_1 = require("fs");
 const path_1 = require("path");
 const crypto = require("crypto");
 let PrescriptionsService = class PrescriptionsService {
-    constructor(repo, dataSource, qrCodesService, interactionChecker, pdfService) {
+    constructor(repo, dataSource, qrCodesService, interactionChecker, pdfService, emailService) {
         this.repo = repo;
         this.dataSource = dataSource;
         this.qrCodesService = qrCodesService;
         this.interactionChecker = interactionChecker;
         this.pdfService = pdfService;
+        this.emailService = emailService;
     }
     async onModuleInit() {
         try {
             await this.dataSource.query(`ALTER TABLE prescriptions ADD COLUMN IF NOT EXISTS signature_image TEXT;`);
             await this.dataSource.query(`ALTER TABLE prescriptions ADD COLUMN IF NOT EXISTS imaging_requests JSONB;`);
+            await this.dataSource.query(`ALTER TABLE prescriptions ADD COLUMN IF NOT EXISTS analysis_requests JSONB;`);
             console.log('[PrescriptionsService] Migrations OK');
         }
         catch (err) {
@@ -77,9 +80,17 @@ let PrescriptionsService = class PrescriptionsService {
             const now = new Date();
             const expiresAt = new Date(now);
             expiresAt.setDate(expiresAt.getDate() + 90);
+            let patientId = dto.patientId;
+            const patientRow = await this.dataSource.query(`SELECT id FROM patients WHERE id = $1 OR user_id = $1 LIMIT 1`, [patientId]);
+            if (patientRow?.length > 0) {
+                patientId = patientRow[0].id;
+            }
+            else {
+                throw new Error(`Patient introuvable pour l'ID: ${patientId}`);
+            }
             const tempCode = `PENDING-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
             const entity = this.repo.create({
-                patientId: dto.patientId,
+                patientId,
                 doctorId: dto.doctorId,
                 medications: dto.medications ?? [],
                 appointmentId: dto.appointmentId,
@@ -95,11 +106,12 @@ let PrescriptionsService = class PrescriptionsService {
                     : undefined,
                 signatureImage: dto.signatureImage || undefined,
                 imagingRequests: dto.imagingRequests?.length ? dto.imagingRequests : undefined,
+                analysisRequests: dto.analysisRequests?.length ? dto.analysisRequests : undefined,
             });
             const saved = (await this.repo.save(entity));
             try {
                 const qrCode = await this.qrCodesService.generateOrdonnanceQr(saved.id, {
-                    patientId: dto.patientId ?? '',
+                    patientId: patientId ?? '',
                     patientName: dto.patientName ?? '',
                     patientNss: dto.patientNss ?? '',
                     medecinRpps: dto.medecinRpps ?? '',
@@ -138,7 +150,7 @@ let PrescriptionsService = class PrescriptionsService {
                 await this.dataSource.query(`INSERT INTO dossier_historique
              (id, patient_id, modifie_par_id, role_auteur, champs_modifies, snapshot_avant, commentaire, created_at)
            VALUES (gen_random_uuid(), $1, $2, 'MEDECIN', $3::jsonb, '{}'::jsonb, $4, NOW())`, [
-                    dto.patientId,
+                    patientId,
                     dto.doctorId,
                     JSON.stringify({
                         ordonnance_creee: {
@@ -210,6 +222,17 @@ let PrescriptionsService = class PrescriptionsService {
         await this.repo.update(id, { signedAt: new Date(), electronicSignature: signature });
         return this.findOne(id);
     }
+    async envoyerOrdonnance(id, patientEmail) {
+        const prescription = await this.findOne(id);
+        try {
+            await this.emailService.sendPrescriptionEmail(patientEmail, prescription);
+        }
+        catch (err) {
+            console.warn('[PrescriptionsService] Envoi email ordonnance échoué:', err?.message);
+        }
+        await this.repo.update(id, { emailSentAt: new Date() });
+        return this.findOne(id);
+    }
 };
 exports.PrescriptionsService = PrescriptionsService;
 exports.PrescriptionsService = PrescriptionsService = __decorate([
@@ -220,6 +243,7 @@ exports.PrescriptionsService = PrescriptionsService = __decorate([
         typeorm_2.DataSource,
         qr_codes_service_1.QrCodesService,
         interaction_checker_service_1.InteractionCheckerService,
-        pdf_service_1.PdfService])
+        pdf_service_1.PdfService,
+        email_service_1.EmailService])
 ], PrescriptionsService);
 //# sourceMappingURL=prescriptions.service.js.map

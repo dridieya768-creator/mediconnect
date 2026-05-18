@@ -119,8 +119,8 @@ let PaymentsService = class PaymentsService {
             consultationType: a.consultationType,
             amount: 50,
             currency: 'TND',
-            paid: a.status === appointment_entity_1.AppointmentStatus.CONFIRMED || a.status === appointment_entity_1.AppointmentStatus.COMPLETED,
-            payable: a.status === appointment_entity_1.AppointmentStatus.REQUESTED || a.status === appointment_entity_1.AppointmentStatus.CONFIRMED,
+            paid: a.status === appointment_entity_1.AppointmentStatus.COMPLETED,
+            payable: a.status === appointment_entity_1.AppointmentStatus.REQUESTED,
         }));
     }
 };

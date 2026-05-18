@@ -102,9 +102,12 @@ let AppointmentsService = class AppointmentsService {
                 .createQueryBuilder('a')
                 .leftJoinAndSelect('a.doctor', 'doctor')
                 .where('a.patientId IN (:...ids)', { ids: idsToSearch })
-                .andWhere('a.appointmentDate < :now', { now: new Date() })
                 .andWhere('a.status IN (:...statuses)', {
-                statuses: [appointment_entity_1.AppointmentStatus.COMPLETED, appointment_entity_1.AppointmentStatus.CONFIRMED, appointment_entity_1.AppointmentStatus.CANCELLED],
+                statuses: [
+                    appointment_entity_1.AppointmentStatus.COMPLETED,
+                    appointment_entity_1.AppointmentStatus.CONFIRMED,
+                    appointment_entity_1.AppointmentStatus.REQUESTED,
+                ],
             })
                 .getMany();
             const doctorMap = new Map();
@@ -114,6 +117,7 @@ let AppointmentsService = class AppointmentsService {
                         id: a.doctorId,
                         firstName: a.doctor?.firstName ?? '',
                         lastName: a.doctor?.lastName ?? '',
+                        email: a.doctor?.email ?? '',
                     });
                 }
             }

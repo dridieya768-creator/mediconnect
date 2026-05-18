@@ -7,6 +7,8 @@ export declare class EmailService {
     private readonly fromName;
     constructor(configService: ConfigService);
     sendPasswordResetEmail(toEmail: string, toName: string, resetUrl: string): Promise<boolean>;
+    sendPartageEmail(toEmail: string, patientNom: string, lien: string, expiresAt: string): Promise<boolean>;
+    sendPrescriptionEmail(toEmail: string, prescription: any): Promise<boolean>;
     sendWelcomeEmail(toEmail: string, toName: string): Promise<boolean>;
     verifyConnection(): Promise<boolean>;
     private buildResetEmailHtml;

@@ -4,7 +4,7 @@ import { AuthService } from "./auth.service";
 
 declare const google: any;
 
-export const GOOGLE_CLIENT_ID = "337158877628-g5q24v271jr92ubn63rtr1ehq44vh9up.apps.googleusercontent.com";
+export const GOOGLE_CLIENT_ID = "846115411738-f0ntmr833nvh8jp5bv5d958mb75g7sj3.apps.googleusercontent.com";
 
 @Injectable({ providedIn: "root" })
 export class GoogleAuthService {

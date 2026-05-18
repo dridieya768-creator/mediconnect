@@ -91,7 +91,34 @@ export class LoginComponent implements OnInit, AfterViewInit {
   }
 
   loginWithFacebook(): void {
-    this.error = "Connexion Facebook non disponible.";
+    this.isSsoLoading = true;
+    this.error = '';
+    const FB = (window as any).FB;
+    if (!FB) {
+      this.error = 'SDK Facebook non chargé. Réessayez dans quelques secondes.';
+      this.isSsoLoading = false;
+      return;
+    }
+    FB.login((response: any) => {
+      if (response.authResponse) {
+        const accessToken = response.authResponse.accessToken;
+        this.authService.loginWithFacebook(accessToken).subscribe({
+          next: (res: any) => {
+            const unwrapped = res?.data?.data ?? res?.data ?? res;
+            const role = unwrapped?.user?.role ?? unwrapped?.role ?? '';
+            this.isSsoLoading = false;
+            this.router.navigate([this.authService.getRedirectPath(role)]);
+          },
+          error: (err: any) => {
+            this.error = typeof err === 'string' ? err : 'Erreur connexion Facebook';
+            this.isSsoLoading = false;
+          }
+        });
+      } else {
+        this.error = 'Connexion Facebook annulée.';
+        this.isSsoLoading = false;
+      }
+    }, { scope: 'email,public_profile' });
   }
 
   onSubmit(): void {
