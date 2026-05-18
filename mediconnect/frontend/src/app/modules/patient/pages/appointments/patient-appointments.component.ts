@@ -27,8 +27,8 @@ type FilterTab = "upcoming" | "past" | "all";
       </div>
 
       <!-- ── MESSAGES ───────────────────────────────── -->
-      <div class="alert-success" *ngIf="successMsg()">✅ {{ successMsg() }}</div>
-      <div class="alert-error"   *ngIf="errorMsg()">❌ {{ errorMsg() }}</div>
+      <div class="alert-success" *ngIf="successMsg()">✔ {{ successMsg() }}</div>
+      <div class="alert-error"   *ngIf="errorMsg()">✖ {{ errorMsg() }}</div>
 
       <!-- ══════════════════════════════════════════════
            VUE LISTE
@@ -38,13 +38,13 @@ type FilterTab = "upcoming" | "past" | "all";
         <!-- Tabs -->
         <div class="tabs-bar">
           <button class="tab-btn" [class.active]="filterTab() === 'upcoming'" (click)="setFilter('upcoming')">
-            🔜 À venir <span class="tab-count">{{ upcomingCount() }}</span>
+            ➠ À venir <span class="tab-count">{{ upcomingCount() }}</span>
           </button>
           <button class="tab-btn" [class.active]="filterTab() === 'past'" (click)="setFilter('past')">
-            🕐 Passés <span class="tab-count">{{ pastCount() }}</span>
+            ⏱ Passés <span class="tab-count">{{ pastCount() }}</span>
           </button>
           <button class="tab-btn" [class.active]="filterTab() === 'all'" (click)="setFilter('all')">
-            📋 Tous <span class="tab-count">{{ appointments().length }}</span>
+            𓂃🖊 Tous <span class="tab-count">{{ appointments().length }}</span>
           </button>
         </div>
 
@@ -73,10 +73,10 @@ type FilterTab = "upcoming" | "past" | "all";
                 </span>
               </div>
               <div class="appt-meta">
-                <span>{{ isVideo(appt) ? '💻 Téléconsultation' : '🏥 Présentiel' }}</span>
-                <span>🕙 {{ formatTime(appt.appointmentDate) }}</span>
+                <span>{{ isVideo(appt) ? '모 Téléconsultation' : ' Présentiel' }}</span>
+                <span>⏱ {{ formatTime(appt.appointmentDate) }}</span>
                 <span *ngIf="appt.durationMinutes">⏱ {{ appt.durationMinutes }} min</span>
-                <span *ngIf="appt.reason" class="reason-badge">📝 {{ appt.reason }}</span>
+                <span *ngIf="appt.reason" class="reason-badge">𓂃🖊 {{ appt.reason }}</span>
               </div>
               <div class="appt-actions" (click)="$event.stopPropagation()">
                 <button class="btn-sm btn-danger"
@@ -84,7 +84,7 @@ type FilterTab = "upcoming" | "past" | "all";
                         (click)="openCancel(appt)">✕ Annuler</button>
                 <button class="btn-sm btn-video"
                         *ngIf="isVideo(appt) && appt.status === 'CONFIRMED'"
-                        (click)="joinVideo(appt)">📹 Rejoindre</button>
+                        (click)="joinVideo(appt)">📽 Rejoindre</button>
                 <button class="btn-sm btn-rate"
                         *ngIf="appt.status === 'COMPLETED' && !appt.rated"
                         (click)="openRate(appt)">⭐ Évaluer</button>
@@ -94,7 +94,7 @@ type FilterTab = "upcoming" | "past" | "all";
 
           <!-- Empty state -->
           <div class="empty-state" *ngIf="filteredAppointments().length === 0">
-            <div style="font-size:56px">📭</div>
+            <div style="font-size:56px"></div>
             <p>Aucun rendez-vous {{ filterTab() === 'upcoming' ? 'à venir' : filterTab() === 'past' ? 'passé' : '' }}</p>
             <button class="btn-primary" (click)="showView('new')">+ Prendre un RDV</button>
           </div>
@@ -116,7 +116,7 @@ type FilterTab = "upcoming" | "past" | "all";
             <div class="step-label"><span class="step-num">1</span> Trouver un médecin</div>
             <div class="search-bar">
               <input class="form-input" type="text" [(ngModel)]="searchQuery"
-                     placeholder="🔍 Nom du médecin..."
+                     placeholder="🔍︎ Nom du médecin..."
                      (ngModelChange)="onSearchChange($event)" />
               <select class="form-select" [(ngModel)]="searchSpecialty" (change)="searchDoctors()">
                 <option value="">Toutes spécialités</option>
@@ -134,7 +134,7 @@ type FilterTab = "upcoming" | "past" | "all";
                   <div class="doc-spec">{{ doc.specialite || doc.specialty || 'Médecin généraliste' }}</div>
                   <div class="doc-meta">
                     <span *ngIf="doc.ville || doc.city">📍 {{ doc.ville || doc.city }}</span>
-                    <span class="doc-badge video" *ngIf="doc.teleconsultation">💻 Téléconsult.</span>
+                    <span class="doc-badge video" *ngIf="doc.teleconsultation">모 Téléconsult.</span>
                   </div>
                 </div>
                 <div class="doc-check" *ngIf="selectedDoctor()?.id === doc.id">✓</div>
@@ -143,7 +143,7 @@ type FilterTab = "upcoming" | "past" | "all";
             <div class="search-hint" *ngIf="doctors().length === 0 && !searchLoading()">
               Tapez pour rechercher un médecin disponible
             </div>
-            <div class="search-hint" *ngIf="searchLoading()">⏳ Recherche en cours...</div>
+            <div class="search-hint" *ngIf="searchLoading()"> Recherche en cours...</div>
           </div>
 
           <!-- Étape 2 : Créneaux -->
@@ -171,7 +171,7 @@ type FilterTab = "upcoming" | "past" | "all";
           <!-- Message créneau occupé — centré dans l'étape 2 -->
 <div class="slot-taken-overlay" *ngIf="slotTakenError()">
   <div class="slot-taken-box">
-    <div class="slot-taken-icon">⏰</div>
+    <div class="slot-taken-icon">⏱</div>
     <div class="slot-taken-title">Ce créneau est déjà occupé</div>
     <div class="slot-taken-sub">Veuillez choisir un autre horaire disponible</div>
     <button class="slot-taken-btn" (click)="slotTakenError.set(false); selectedSlot.set(null)">
@@ -186,9 +186,9 @@ type FilterTab = "upcoming" | "past" | "all";
               <div class="form-group">
                 <label class="form-label">Type de consultation</label>
                 <select class="form-select" [(ngModel)]="newAppt.consultationType">
-                  <option value="PHYSICAL">🏥 Présentiel</option>
-                  <option value="TELECONSULTATION">💻 Téléconsultation</option>
-                  <option value="HOME_VISIT">🏠 À domicile</option>
+                  <option value="PHYSICAL"> Présentiel</option>
+                  <option value="TELECONSULTATION">모 Téléconsultation</option>
+                  <option value="HOME_VISIT">🏠︎ À domicile</option>
                 </select>
               </div>
               <div class="form-group">
@@ -219,7 +219,7 @@ type FilterTab = "upcoming" | "past" | "all";
                 <strong>{{ formatFullDate(selectedSlot()!) }}</strong>
               </div>
               <div class="recap-row">
-                <span>🏥 Type</span>
+                <span> Type</span>
                 <strong>{{ getTypeLabel(newAppt.consultationType) }}</strong>
               </div>
               <div class="recap-row">
@@ -229,7 +229,7 @@ type FilterTab = "upcoming" | "past" | "all";
             </div>
 
             <button class="btn-primary btn-full" (click)="createAppointment()" [disabled]="isCreating()">
-              {{ isCreating() ? '⏳ Confirmation...' : '✅ Confirmer le rendez-vous' }}
+              {{ isCreating() ? ' Confirmation...' : '✔ Confirmer le rendez-vous' }}
             </button>
           </div>
         </div>
@@ -262,15 +262,15 @@ type FilterTab = "upcoming" | "past" | "all";
               <span class="detail-value">{{ selectedAppt()!.durationMinutes }} min</span>
             </div>
             <div class="detail-row">
-              <span class="detail-label">🏥 Type</span>
+              <span class="detail-label"> Type</span>
               <span class="detail-value">{{ getTypeLabel(selectedAppt()!.consultationType) }}</span>
             </div>
             <div class="detail-row" *ngIf="selectedAppt()!.reason">
-              <span class="detail-label">📝 Motif</span>
+              <span class="detail-label">𓂃🖊 Motif</span>
               <span class="detail-value">{{ selectedAppt()!.reason }}</span>
             </div>
             <div class="detail-row">
-              <span class="detail-label">📌 Statut</span>
+              <span class="detail-label"> Statut</span>
               <span class="status-pill" [ngClass]="getStatusClass(selectedAppt()!.status)">
                 {{ getStatusLabel(selectedAppt()!.status) }}
               </span>
@@ -290,7 +290,7 @@ type FilterTab = "upcoming" | "past" | "all";
                     (click)="openCancel(selectedAppt()!)">✕ Annuler ce RDV</button>
             <button class="btn-video"
                     *ngIf="isVideo(selectedAppt()!) && selectedAppt()!.status === 'CONFIRMED'"
-                    (click)="joinVideo(selectedAppt()!)">📹 Rejoindre la téléconsultation</button>
+                    (click)="joinVideo(selectedAppt()!)">📽 Rejoindre la téléconsultation</button>
             <button class="btn-rate"
                     *ngIf="selectedAppt()!.status === 'COMPLETED' && !selectedAppt()!.rated"
                     (click)="openRate(selectedAppt()!)">⭐ Évaluer la consultation</button>
@@ -336,7 +336,7 @@ type FilterTab = "upcoming" | "past" | "all";
             <button class="btn-danger flex-1"
                     (click)="confirmCancel()"
                     [disabled]="!cancelReason || isCancelling()">
-              {{ isCancelling() ? '⏳ Annulation...' : "✕ Confirmer l'annulation" }}
+              {{ isCancelling() ? ' Annulation...' : "✕ Confirmer l'annulation" }}
             </button>
           </div>
         </div>

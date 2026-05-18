@@ -120,20 +120,20 @@ import { HttpClient } from '@angular/common/http';
     .search-card { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,.06); border: 1px solid #e5e7eb; margin-bottom: 20px; }
     .search-row { display: flex; gap: 12px; }
     .qr-input { flex: 1; padding: 12px 16px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 15px; color: #0f172a; outline: none; font-family: monospace; }
-    .qr-input:focus { border-color: #059669; }
-    .btn-search { padding: 12px 24px; background: #059669; color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+    .qr-input:focus { border-color: #1a56db; }
+    .btn-search { padding: 12px 24px; background: #1a56db; color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; }
     .btn-search:disabled { opacity: .6; cursor: not-allowed; }
     .hint { font-size: 12px; color: #94a3b8; margin: 8px 0 0; }
 
     .alert-error { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; }
-    .alert-success { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; }
+    .alert-success { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; }
 
     .rx-card { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,.06); border: 1px solid #e5e7eb; }
     .rx-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
     .rx-title { font-size: 18px; font-weight: 700; color: #0f172a; font-family: monospace; }
     .rx-meta { font-size: 13px; color: #64748b; margin-top: 4px; }
     .rx-badge { padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-    .status-active { background: #f0fdf4; color: #16a34a; }
+    .status-active { background: #eff6ff; color: #1d4ed8; }
     .status-expired { background: #fef2f2; color: #dc2626; }
     .status-fully_used { background: #f1f5f9; color: #64748b; }
     .status-partially_used { background: #fffbeb; color: #d97706; }
@@ -147,23 +147,23 @@ import { HttpClient } from '@angular/common/http';
     .meds-section { margin-bottom: 20px; }
     .section-title { font-size: 15px; font-weight: 700; color: #0f172a; margin: 0 0 12px; }
     .meds-table { border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; }
-    .table-header { display: grid; grid-template-columns: 2fr 1fr 2fr 80px 80px 100px; gap: 8px; padding: 10px 16px; background: #059669; color: white; font-size: 12px; font-weight: 600; }
+    .table-header { display: grid; grid-template-columns: 2fr 1fr 2fr 80px 80px 100px; gap: 8px; padding: 10px 16px; background: #1a56db; color: white; font-size: 12px; font-weight: 600; }
     .table-row { display: grid; grid-template-columns: 2fr 1fr 2fr 80px 80px 100px; gap: 8px; padding: 12px 16px; border-top: 1px solid #f1f5f9; font-size: 13px; color: #374151; align-items: center; }
     .table-row:nth-child(even) { background: #f8fafc; }
     .med-name { font-weight: 600; color: #0f172a; }
     .qty-badge { background: #eff6ff; color: #1a56db; padding: 2px 8px; border-radius: 12px; font-weight: 600; text-align: center; }
-    .qty-delivered { background: #f0fdf4; color: #16a34a; padding: 2px 8px; border-radius: 12px; font-weight: 600; text-align: center; }
+    .qty-delivered { background: #eff6ff; color: #1d4ed8; padding: 2px 8px; border-radius: 12px; font-weight: 600; text-align: center; }
     .qty-input { width: 70px; padding: 6px 8px; border: 1.5px solid #e2e8f0; border-radius: 6px; font-size: 13px; text-align: center; }
-    .qty-input:focus { border-color: #059669; outline: none; }
+    .qty-input:focus { border-color: #1a56db; outline: none; }
 
     .notes-block { background: #fffbeb; border-radius: 10px; padding: 12px 16px; margin-bottom: 20px; }
     .notes-text { font-size: 14px; color: #374151; font-style: italic; }
 
     .actions-row { display: flex; gap: 12px; justify-content: flex-end; }
-    .btn-dispense { padding: 12px 28px; background: #059669; color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; }
+    .btn-dispense { padding: 12px 28px; background: #1a56db; color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; }
     .btn-dispense:disabled { opacity: .6; cursor: not-allowed; }
     .btn-cancel { padding: 12px 20px; background: white; color: #64748b; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; }
-    .fully-used-msg { color: #16a34a; font-weight: 600; font-size: 14px; display: flex; align-items: center; }
+    .fully-used-msg { color: #1d4ed8; font-weight: 600; font-size: 14px; display: flex; align-items: center; }
   `]
 })
 export class ScannerPharmacieComponent {

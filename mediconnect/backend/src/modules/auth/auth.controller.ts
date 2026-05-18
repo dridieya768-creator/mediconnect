@@ -121,6 +121,15 @@ export class AuthController {
     return this.authService.forgotPassword(dto);
   }
 
+  @Post("change-password")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Changer le mot de passe (utilisateur connecté)" })
+  changePassword(@Request() req: any, @Body() body: { currentPassword: string; newPassword: string }) {
+    return this.authService.changePassword(req.user.id, body.currentPassword, body.newPassword);
+  }
+
   @Post("reset-password")
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "US5 - Réinitialiser le mot de passe" })

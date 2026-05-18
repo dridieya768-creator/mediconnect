@@ -21,8 +21,8 @@ import { of } from "rxjs";
         </div>
       </div>
 
-      <div class="alert-success" *ngIf="successMsg()">✅ {{ successMsg() }}</div>
-      <div class="alert-error" *ngIf="errorMsg()">❌ {{ errorMsg() }}</div>
+      <div class="alert-success" *ngIf="successMsg()"> {{ successMsg() }}</div>
+      <div class="alert-error" *ngIf="errorMsg()"> {{ errorMsg() }}</div>
 
       <div class="loading-state" *ngIf="isLoading()">
         <div class="spinner"></div><p>Chargement...</p>

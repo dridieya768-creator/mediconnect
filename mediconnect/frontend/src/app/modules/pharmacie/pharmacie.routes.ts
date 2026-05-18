@@ -27,6 +27,11 @@ export const PHARMACIE_ROUTES: Routes = [
         loadComponent: () =>
           import("./pages/stock/stock.component").then((m) => m.StockComponent),
       },
+      {
+        path: "profil",
+        loadComponent: () =>
+          import("./pages/profil/pharmacien-profile.component").then((m) => m.PharmacienProfileComponent),
+      },
     ],
   },
 ];

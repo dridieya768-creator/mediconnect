@@ -177,7 +177,7 @@ export class PatientDashboardComponent implements OnInit {
 
   getConsultationType(appt: any): string {
     const type = appt.consultationType || appt.type;
-    return type === 'VIDEO' ? '📹 Téléconsultation' : '🏥 Présentiel';
+    return type === 'VIDEO' ? ' Téléconsultation' : ' Présentiel';
   }
 
   isVideo(appt: any): boolean {
@@ -193,7 +193,7 @@ export class PatientDashboardComponent implements OnInit {
   getStatusLabel(status: string): string {
     const labels: Record<string, string> = {
       CONFIRMED: '✓ Confirmé',
-      REQUESTED: '⏳ En attente',
+      REQUESTED: ' En attente',
       CANCELLED: '✕ Annulé',
       COMPLETED: '✔ Terminé',
       NO_SHOW: '⚠ Absent',
@@ -257,11 +257,11 @@ export class PatientDashboardComponent implements OnInit {
         </style>
       </head><body>
         <div class="card">
-          <div class="logo">🏥 MediConnect</div>
+          <div class="logo"> MediConnect</div>
           <div class="subtitle">Carte d'identification patient</div>
           <img src="${img}" alt="QR Code" />
           <div class="name">${user?.firstName || ''} ${user?.lastName || ''}</div>
-          <div class="info">📧 ${user?.email || ''}</div>
+          <div class="info"> ${user?.email || ''}</div>
           <div class="info">${this.qrDisplayId()}</div>
           <div class="footer">Présentez ce QR code lors de vos consultations<br><strong>Code personnel et confidentiel</strong></div>
         </div>

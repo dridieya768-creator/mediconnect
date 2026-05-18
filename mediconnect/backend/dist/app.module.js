@@ -19,8 +19,6 @@ const medecins_module_1 = require("./modules/medecins/medecins.module");
 const appointments_module_1 = require("./modules/appointments/appointments.module");
 const prescriptions_module_1 = require("./modules/prescriptions/prescriptions.module");
 const pharmacie_module_1 = require("./modules/pharmacie/pharmacie.module");
-const laboratoire_module_1 = require("./modules/laboratoire/laboratoire.module");
-const radiologie_module_1 = require("./modules/radiologie/radiologie.module");
 const qr_codes_module_1 = require("./modules/qr-codes/qr-codes.module");
 const notifications_module_1 = require("./modules/notifications/notifications.module");
 const payments_module_1 = require("./modules/payments/payments.module");
@@ -60,8 +58,6 @@ exports.AppModule = AppModule = __decorate([
             appointments_module_1.AppointmentsModule,
             prescriptions_module_1.PrescriptionsModule,
             pharmacie_module_1.PharmacieModule,
-            laboratoire_module_1.LaboratoireModule,
-            radiologie_module_1.RadiologieModule,
             qr_codes_module_1.QrCodesModule,
             notifications_module_1.NotificationsModule,
             payments_module_1.PaymentsModule,

@@ -22,7 +22,7 @@ import { of } from 'rxjs';
         </div>
         <div class="header-right">
           <button class="btn-dossier" (click)="toggleDossier()" [class.active]="showDossier()">
-            📋 Dossier patient
+            ✎ᝰ. Dossier patient
           </button>
           <button class="btn-end" (click)="endCall()"> Terminer</button>
         </div>
@@ -49,7 +49,7 @@ import { of } from 'rxjs';
         <!-- Panneau dossier patient -->
         <div class="dossier-panel" *ngIf="showDossier()">
           <div class="panel-header">
-            <span>📋 Dossier patient</span>
+            <span>✎ᝰ. Dossier patient</span>
             <button class="btn-close-panel" (click)="toggleDossier()">✕</button>
           </div>
 
@@ -98,7 +98,7 @@ import { of } from 'rxjs';
 
             <!-- Accès refusé -->
             <div class="no-access" *ngIf="!permissions().allergies && !permissions().documents">
-              🔒 Accès limité — le patient n'a pas accordé de permissions
+              ꗃ Accès limité — le patient n'a pas accordé de permissions
             </div>
           </div>
 

@@ -10,8 +10,6 @@ import { MedecinsModule } from './modules/medecins/medecins.module';
 import { AppointmentsModule } from './modules/appointments/appointments.module';
 import { PrescriptionsModule } from './modules/prescriptions/prescriptions.module';
 import { PharmacieModule } from './modules/pharmacie/pharmacie.module';
-import { LaboratoireModule } from './modules/laboratoire/laboratoire.module';
-import { RadiologieModule } from './modules/radiologie/radiologie.module';
 import { QrCodesModule } from './modules/qr-codes/qr-codes.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { PaymentsModule } from './modules/payments/payments.module';
@@ -48,8 +46,6 @@ import { AdminModule } from './admin/admin.module';
     AppointmentsModule,
     PrescriptionsModule,
     PharmacieModule,
-    LaboratoireModule,
-    RadiologieModule,
     QrCodesModule,
     NotificationsModule,
     PaymentsModule,

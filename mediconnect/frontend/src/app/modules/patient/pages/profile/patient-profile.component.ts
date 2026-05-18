@@ -54,7 +54,7 @@ import { AuthService } from "../../../../core/services/auth.service";
                 </span>
               </div>
               <button class="avatar-edit-btn" (click)="fileInput.click()" title="Changer la photo">
-                📷
+                [◉°]
               </button>
               <input #fileInput type="file" accept="image/*" style="display:none"
                      (change)="onAvatarSelected($event)"/>
@@ -100,7 +100,7 @@ import { AuthService } from "../../../../core/services/auth.service";
               <span>Statut du compte</span>
               <span class="badge-on">Actif</span>
             </div>
-            <button class="btn-security" (click)="goTo('/patient/settings')">
+            <button class="btn-security" (click)="goTo('/patient/securite')">
               ⚙️ Paramètres de sécurité
             </button>
             <button class="btn-logout" (click)="logout()">
@@ -346,6 +346,12 @@ export class PatientProfileComponent implements OnInit {
         const outer = res?.data ?? res;
         const profile = outer?.data ?? outer;
         this.profile.set(profile);
+        // Synchroniser la photo avec le signal AuthService → navbar se met à jour
+        const avatarUrl = profile?.avatarUrl ?? profile?.user?.avatarUrl;
+        if (avatarUrl) {
+          this.avatarPreview.set(avatarUrl);
+          this.authService.updateAvatar(avatarUrl);
+        }
         this.loading.set(false);
       },
       error: () => this.loading.set(false)

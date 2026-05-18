@@ -27,8 +27,8 @@ import { LangSwitcherComponent } from "../../../shared/components/lang-switcher/
           <a routerLink="/medecin/planning"      routerLinkActive="active" class="nav-link">{{ 'nav.planning' | translate }}</a>
           <a routerLink="/medecin/patients"      routerLinkActive="active" class="nav-link">{{ 'nav.patients' | translate }}</a>
           <a routerLink="/medecin/prescriptions" routerLinkActive="active" class="nav-link">{{ 'nav.prescriptions' | translate }}</a>
-          <a routerLink="/medecin/profil"        routerLinkActive="active" class="nav-link">{{ 'nav.profile' | translate }}</a>
           <a routerLink="/medecin/revenus"       routerLinkActive="active" class="nav-link"> Revenus</a>
+          <a routerLink="/medecin/profil"        routerLinkActive="active" class="nav-link">{{ 'nav.profile' | translate }}</a>
         </div>
 
         <div class="nav-user">
@@ -37,6 +37,7 @@ import { LangSwitcherComponent } from "../../../shared/components/lang-switcher/
             <div class="user-avatar">{{ userInitials }}</div>
             <span class="user-name-nav">{{ currentUser()?.firstName }}</span>
           </div>
+          <button class="btn-logout" (click)="logout()">Déconnexion</button>
         </div>
       </div>
     </nav>
@@ -69,8 +70,8 @@ import { LangSwitcherComponent } from "../../../shared/components/lang-switcher/
     .user-avatar-btn { display: flex; align-items: center; gap: 8px; }
     .user-avatar { width: 34px; height: 34px; background: #1a56db; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
     .user-name-nav { font-size: 13px; font-weight: 600; color: #0f172a; }
-    .btn-logout { padding: 7px 14px; background: #ef4444; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
-    .btn-logout:hover { background: #dc2626; }
+    .btn-logout { padding: 6px 10px; background: #db5e5eff; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .btn-logout:hover { background: #ef2e2eff; }
     .page-container { padding-top: 64px; margin-left: 0 !important; padding-left: 0; padding-right: 0; padding-bottom: 0; }
   `]
 })

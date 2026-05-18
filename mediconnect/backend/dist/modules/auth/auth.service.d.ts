@@ -62,6 +62,9 @@ export declare class AuthService {
     forgotPassword(dto: ForgotPasswordDto): Promise<{
         message: string;
     }>;
+    changePassword(userId: string, currentPassword: string, newPassword: string): Promise<{
+        message: string;
+    }>;
     resetPassword(dto: ResetPasswordDto): Promise<{
         message: string;
     }>;

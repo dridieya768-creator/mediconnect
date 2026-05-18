@@ -40,7 +40,7 @@ import { of } from "rxjs";
 
       <!-- ── En-tête ── -->
       <div class="qr-header">
-        <div class="qr-icon">🔖</div>
+        <div class="qr-icon"></div>
         <div>
           <h3 class="qr-title">Mon QR Code Profil</h3>
           <p class="qr-subtitle">
@@ -67,38 +67,38 @@ import { of } from "rxjs";
         <div class="qr-canvas-wrap">
           <canvas #qrCanvas class="qr-canvas"></canvas>
           <!-- Logo centré par-dessus le canvas -->
-          <div class="qr-logo-overlay">🏥</div>
+          <div class="qr-logo-overlay"></div>
         </div>
 
         <!-- URL encodée -->
         <div class="qr-url-box">
-          <span class="qr-url-label">🔗 Lien de profil</span>
+          <span class="qr-url-label">⤷ Lien de profil</span>
           <span class="qr-url-text">{{ profileUrl() }}</span>
         </div>
 
         <!-- Actions -->
         <div class="qr-actions">
           <button class="btn-download" (click)="downloadQr()">
-            ⬇️ Télécharger PNG
+            ⬇↓ Télécharger PNG
           </button>
           <button class="btn-copy" (click)="copyUrl()">
-            {{ copied() ? "✅ Copié !" : "📋 Copier le lien" }}
+            {{ copied() ? " Copié !" : "𓂃🖊 Copier le lien" }}
           </button>
           <button class="btn-print" (click)="printQr()">
-            🖨️ Imprimer
+            🖨 Imprimer
           </button>
         </div>
 
         <!-- Message copié -->
         <div class="copy-toast" *ngIf="copied()">
-          ✅ Lien copié dans le presse-papiers !
+          ✔ Lien copié dans le presse-papiers !
         </div>
 
       </div>
 
       <!-- ── Note informative ── -->
       <div class="qr-note" *ngIf="!isLoading() && !errorMsg()">
-        <strong>💡 Conseil :</strong> Imprimez ce QR code et affichez-le dans votre cabinet.
+        <strong> Conseil :</strong> Imprimez ce QR code et affichez-le dans votre cabinet.
         Vos patients pourront scanner le code pour vérifier instantanément vos informations.
       </div>
 

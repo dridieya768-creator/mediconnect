@@ -61,6 +61,12 @@ export declare class AuthController {
     forgotPassword(dto: ForgotPasswordDto): Promise<{
         message: string;
     }>;
+    changePassword(req: any, body: {
+        currentPassword: string;
+        newPassword: string;
+    }): Promise<{
+        message: string;
+    }>;
     resetPassword(dto: ResetPasswordDto): Promise<{
         message: string;
     }>;

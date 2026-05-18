@@ -75,7 +75,7 @@ import { FamilyMember } from '../../../../../core/models/family-member.model';
         <div class="form-group">
           <label class="form-label" for="beneficiary">Pour qui est ce rendez-vous ?</label>
           <select id="beneficiary" formControlName="beneficiaryId" class="form-select">
-            <option [value]="null">👤 Moi-même</option>
+            <option [value]="null"> Moi-même</option>
             <option *ngFor="let m of familyMembers()" [value]="m.id">
               {{ relationIcon(m.relation) }} {{ m.prenom }} {{ m.nom }} ({{ m.relation | lowercase }})
             </option>
@@ -92,7 +92,7 @@ import { FamilyMember } from '../../../../../core/models/family-member.model';
                 formControlName="consultationType"
                 value="PHYSICAL"
               />
-              <span class="radio-label">🏥 Présentiel</span>
+              <span class="radio-label">♀ Présentiel</span>
             </label>
             <label
               class="radio-option"
@@ -104,7 +104,7 @@ import { FamilyMember } from '../../../../../core/models/family-member.model';
                 value="TELECONSULTATION"
                 [attr.disabled]="isTeleconsultDisabled ? true : null"
               />
-              <span class="radio-label">💻 Téléconsultation</span>
+              <span class="radio-label">ㅤ모 Téléconsultation</span>
               <span class="badge-unavailable" *ngIf="isTeleconsultDisabled">Non disponible</span>
             </label>
           </div>

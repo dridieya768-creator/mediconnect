@@ -35,13 +35,14 @@ import { LangSwitcherComponent } from "../../../shared/components/lang-switcher/
           </a>
           <a routerLink="/patient/dossier" routerLinkActive="active" class="nav-link">{{ 'nav.dossier' | translate }}</a>
           <a routerLink="/patient/prescriptions" routerLinkActive="active" class="nav-link">{{ 'nav.prescriptions' | translate }}</a>
-          <a routerLink="/patient/paiement" routerLinkActive="active" class="nav-link">💳 {{ 'nav.payment' | translate }}</a>
-          <a routerLink="/patient/famille" routerLinkActive="active" class="nav-link">👨‍👩‍👧 Ma famille</a>
+          <a routerLink="/patient/paiement" routerLinkActive="active" class="nav-link"> {{ 'nav.payment' | translate }}</a>
+          <a routerLink="/patient/famille" routerLinkActive="active" class="nav-link"> Ma famille</a>
+          <a routerLink="/patient/pharmacies" routerLinkActive="active" class="nav-link"> Pharmacies</a>
         </div>
         <div class="nav-user">
           <app-lang-switcher />
           <a routerLink="/patient/notifications" class="notif-btn">
-            🔔 <span class="notif-badge">3</span>
+            🔔 <span class="notif-badge"></span>
           </a>
           <a routerLink="/patient/profil" class="user-avatar-btn">
             <div class="user-avatar">{{ userInitials }}</div>
@@ -87,6 +88,8 @@ import { LangSwitcherComponent } from "../../../shared/components/lang-switcher/
     .user-avatar-btn { display: flex; align-items: center; gap: 8px; text-decoration: none; cursor: pointer; }
     .user-avatar { width: 34px; height: 34px; background: #1a56db; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
     .user-name-nav { font-size: 13px; font-weight: 600; color: #0f172a; }
+    .btn-logout { padding: 7px 14px; background: #ef4444; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .btn-logout:hover { background: #dc2626; }
     .page-container {
       padding-top: 64px;
       overflow-x: hidden;
@@ -104,5 +107,9 @@ export class PatientLayoutComponent {
     const u = this.currentUser();
     if (!u) return '?';
     return `${u.firstName?.[0] || ''}${u.lastName?.[0] || ''}`.toUpperCase();
+  }
+
+  logout() {
+    this.authService.logout();
   }
 }

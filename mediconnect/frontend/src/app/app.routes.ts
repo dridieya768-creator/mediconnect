@@ -32,18 +32,8 @@ export const routes: Routes = [
     loadChildren: () =>
       import("./modules/pharmacie/pharmacie.routes").then((m) => m.PHARMACIE_ROUTES),
   },
-  {
-    path: "laboratoire",
-    canActivate: [authGuard],
-    loadChildren: () =>
-      import("./modules/laboratoire/laboratoire.routes").then((m) => m.LABORATOIRE_ROUTES),
-  },
-  {
-    path: "radiologie",
-    canActivate: [authGuard],
-    loadChildren: () =>
-      import("./modules/radiologie/radiologie.routes").then((m) => m.RADIOLOGIE_ROUTES),
-  },
+ 
+ 
   {
     path: "scan/:token",
     loadComponent: () =>
@@ -54,8 +44,6 @@ export const routes: Routes = [
     loadComponent: () =>
       import("./modules/patient/pages/qr-public/qr-public.component").then((m) => m.QrPublicComponent),
   },
-
-  // ✅ ADMIN — doit être AVANT le wildcard **
   {
     path: "admin",
     canActivate: [authGuard],
@@ -76,6 +64,5 @@ export const routes: Routes = [
       import("./pages/partage-dossier/partage-dossier.component").then((m) => m.PartageDossierComponent),
   },
 
-  // ⚠️ Wildcard TOUJOURS EN DERNIER
   { path: "**", redirectTo: "/auth/login" },
 ];

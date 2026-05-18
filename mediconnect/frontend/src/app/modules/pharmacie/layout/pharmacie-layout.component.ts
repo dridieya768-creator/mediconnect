@@ -31,6 +31,9 @@ import { LangSwitcherComponent } from "../../../shared/components/lang-switcher/
         <a class="ph-nav-link" routerLink="/pharmacie/stock" routerLinkActive="active">
           {{ 'nav.stock' | translate }}
         </a>
+        <a class="ph-nav-link" routerLink="/pharmacie/profil" routerLinkActive="active">
+           Profil
+        </a>
       </div>
 
       <div class="ph-nav-user">
@@ -57,7 +60,7 @@ import { LangSwitcherComponent } from "../../../shared/components/lang-switcher/
       align-items: center;
       gap: 0;
       background: white;
-      border-bottom: 2px solid #059669;
+      border-bottom: 2px solid #2053fdff;
       padding: 0 24px;
       height: 64px;
       box-shadow: 0 2px 8px rgba(0,0,0,.06);
@@ -78,9 +81,9 @@ import { LangSwitcherComponent } from "../../../shared/components/lang-switcher/
     .ph-brand-tag {
       font-size: 11px;
       font-weight: 600;
-      color: #059669;
-      background: #f0fdf4;
-      border: 1px solid #bbf7d0;
+      color: #1953f2ff;
+      background: #92abefff;
+      border: 1px solid #9bb3f0ff;
       border-radius: 6px;
       padding: 2px 8px;
     }
@@ -104,8 +107,8 @@ import { LangSwitcherComponent } from "../../../shared/components/lang-switcher/
       transition: all .15s;
       white-space: nowrap;
     }
-    .ph-nav-link:hover { background: #f0fdf4; color: #059669; }
-    .ph-nav-link.active { background: #f0fdf4; color: #059669; font-weight: 700; }
+    .ph-nav-link:hover { background: #eff6ff; color: #0d58e4ff; }
+    .ph-nav-link.active { background: #eff6ff; color: #1935eaff; font-weight: 700; }
 
     .ph-nav-user {
       display: flex;
@@ -117,7 +120,7 @@ import { LangSwitcherComponent } from "../../../shared/components/lang-switcher/
     .ph-user-avatar {
       width: 36px;
       height: 36px;
-      background: #059669;
+      background: #1235e4ff;
       color: white;
       border-radius: 50%;
       display: flex;
@@ -145,7 +148,7 @@ import { LangSwitcherComponent } from "../../../shared/components/lang-switcher/
 
     .ph-page-content {
       flex: 1;
-      padding: 24px 32px;
+      padding: 0;
       background: #f8fafc;
       min-height: calc(100vh - 64px);
     }

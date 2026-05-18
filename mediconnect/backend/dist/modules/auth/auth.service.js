@@ -256,6 +256,23 @@ let AuthService = class AuthService {
         }
         return { message: "Si cet email existe, un lien a ete envoye" };
     }
+    async changePassword(userId, currentPassword, newPassword) {
+        const user = await this.userRepository
+            .createQueryBuilder("user")
+            .addSelect("user.password")
+            .where("user.id = :id", { id: userId })
+            .getOne();
+        if (!user)
+            throw new common_1.NotFoundException("Utilisateur introuvable");
+        const valid = await bcrypt.compare(currentPassword, user.password);
+        if (!valid)
+            throw new common_1.BadRequestException("Mot de passe actuel incorrect");
+        if (newPassword.length < 8)
+            throw new common_1.BadRequestException("Le nouveau mot de passe doit contenir au moins 8 caractères");
+        const hashed = await bcrypt.hash(newPassword, 12);
+        await this.userRepository.update(userId, { password: hashed });
+        return { message: "Mot de passe modifié avec succès" };
+    }
     async resetPassword(dto) {
         const tokenData = this.resetTokens.get(dto.token);
         if (!tokenData)

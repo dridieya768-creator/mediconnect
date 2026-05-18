@@ -65,6 +65,16 @@ export const PATIENT_ROUTES: Routes = [
         loadComponent: () =>
           import("./pages/famille/famille.component").then((m) => m.FamilleComponent),
       },
+      {
+        path: "pharmacies",
+        loadComponent: () =>
+          import("./pages/pharmacies/patient-pharmacies.component").then((m) => m.PatientPharmaciesComponent),
+      },
+      {
+        path: "securite",
+        loadComponent: () =>
+          import("./pages/securite/patient-securite.component").then((m) => m.PatientSecuriteComponent),
+      },
     ],
   },
 ];

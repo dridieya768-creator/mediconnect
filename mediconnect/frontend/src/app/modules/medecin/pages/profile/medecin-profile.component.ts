@@ -20,9 +20,6 @@ import * as L from "leaflet";
           <button class="btn-save" (click)="saveProfile()" [disabled]="isSaving()">
             {{ isSaving() ? ' Enregistrement...' : ' Enregistrer' }}
           </button>
-          <button class="btn-logout" (click)="logout()">
-             Déconnexion
-          </button>
         </div>
       </div>
 
@@ -57,7 +54,7 @@ import * as L from "leaflet";
                 <span class="role-badge">{{ getRoleLabel() }}</span>
                 <div class="avatar-upload">
                   <label class="upload-photo-btn">
-                    📸 Changer la photo
+                    [◉°] Changer la photo
                     <input type="file" (change)="onPhotoSelected($event)" 
                            accept="image/jpeg,image/png,image/jpg" hidden>
                   </label>

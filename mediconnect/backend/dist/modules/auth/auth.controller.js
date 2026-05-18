@@ -65,6 +65,9 @@ let AuthController = class AuthController {
     forgotPassword(dto) {
         return this.authService.forgotPassword(dto);
     }
+    changePassword(req, body) {
+        return this.authService.changePassword(req.user.id, body.currentPassword, body.newPassword);
+    }
     resetPassword(dto) {
         return this.authService.resetPassword(dto);
     }
@@ -178,6 +181,18 @@ __decorate([
     __metadata("design:paramtypes", [forgot_password_dto_1.ForgotPasswordDto]),
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "forgotPassword", null);
+__decorate([
+    (0, common_1.Post)("change-password"),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, swagger_1.ApiOperation)({ summary: "Changer le mot de passe (utilisateur connecté)" }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "changePassword", null);
 __decorate([
     (0, common_1.Post)("reset-password"),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),

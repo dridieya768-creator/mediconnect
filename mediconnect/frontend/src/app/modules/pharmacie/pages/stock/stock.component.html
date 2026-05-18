@@ -38,7 +38,7 @@
       <div class="stat-lbl">Alertes stock bas</div>
     </div>
     <div class="stat-card">
-      <div class="stat-val green">{{ formatMontant(dashboard()!.valeurStock) }}</div>
+      <div class="stat-val blue">{{ formatMontant(dashboard()!.valeurStock) }}</div>
       <div class="stat-lbl">Valeur totale stock</div>
     </div>
   </div>
@@ -48,7 +48,7 @@
       <div class="section-title"> Top 10 produits (valeur)</div>
       <div class="top10-row" *ngFor="let p of dashboard()!.top10; let i = index">
         <span><strong>{{ i+1 }}.</strong> {{ p.nom }}</span>
-        <span class="green">{{ formatMontant(p.valeur) }}</span>
+        <span class="blue">{{ formatMontant(p.valeur) }}</span>
       </div>
     </div>
     <div class="card">
@@ -58,7 +58,7 @@
           <span class="mouv-type mouv-{{ m.type }}">{{ m.type }}</span>
           {{ m.stockItem?.nom ?? '—' }}
         </span>
-        <span [class.red]="m.quantite < 0" [class.green]="m.quantite > 0">
+        <span [class.red]="m.quantite < 0" [class.blue]="m.quantite > 0">
           {{ m.quantite > 0 ? '+' : '' }}{{ m.quantite }}
         </span>
       </div>
@@ -212,7 +212,7 @@
               style="width:80px;padding:4px 8px" />
           </td>
           <td [class.red]="ligne.quantiteReelle < ligne.quantiteSysteme"
-              [class.green]="ligne.quantiteReelle > ligne.quantiteSysteme">
+              [class.blue]="ligne.quantiteReelle > ligne.quantiteSysteme">
             {{ ligne.quantiteReelle - ligne.quantiteSysteme > 0 ? '+' : '' }}{{ ligne.quantiteReelle - ligne.quantiteSysteme }}
           </td>
         </tr>

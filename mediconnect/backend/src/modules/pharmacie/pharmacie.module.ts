@@ -12,14 +12,16 @@ import { StockMouvement } from './entities/stock-mouvement.entity';
 import { StockService } from './stock.service';
 import { StockController } from './stock.controller';
 import { PharmacienProfile } from './entities/pharmacien-profile.entity';
+import { PharmaciePublicController } from './pharmacie-public.controller';
+import { User } from '../users/entities/user.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Prescription, DossierHistorique, StockItem, StockMouvement, PharmacienProfile]),
+    TypeOrmModule.forFeature([Prescription, DossierHistorique, StockItem, StockMouvement, PharmacienProfile, User]),
     QrCodesModule,
     DossierMedicalModule,
   ],
-  controllers: [DelivranceController, StockController],
+  controllers: [DelivranceController, StockController, PharmaciePublicController],
   providers: [DelivranceService, TicketPdfService, StockService],
   exports: [StockService, TypeOrmModule],
 })

@@ -14,11 +14,9 @@ export interface User {
   avatarUrl?: string;
 }
 
-
 @Injectable({ providedIn: "root" })
 export class AuthService {
   private readonly API = "/api/v1/auth";
-   ///État global (Signals Angular) ki nabdlou tout le reste se maj automatiquement 
   private _currentUser = signal<User | null>(this.loadUserFromStorage());
   private _token = signal<string | null>(this.loadTokenFromStorage());
 
@@ -29,23 +27,20 @@ export class AuthService {
 
   constructor(private http: HttpClient, private router: Router) {}
 
-  
-register(data: any): Observable<any> {
-  return this.http.post<any>(`${this.API}/register`, data).pipe(
-    tap((res: any) => {
-      const payload = res?.data ?? res;
-      //  Si médecin en attente, ne pas connecter
-      if (!payload?.pendingApproval) {
-        this.handleAuthSuccess(payload);
-      }
-    }),
-    catchError((err: any) => throwError(() =>
-      err.error?.message?.[0] || err.error?.message || "Erreur inscription"
-    )),
-  );
-}
+  register(data: any): Observable<any> {
+    return this.http.post<any>(`${this.API}/register`, data).pipe(
+      tap((res: any) => {
+        const payload = res?.data ?? res;
+        if (!payload?.pendingApproval) {
+          this.handleAuthSuccess(payload);
+        }
+      }),
+      catchError((err: any) => throwError(() =>
+        err.error?.message?.[0] || err.error?.message || "Erreur inscription"
+      )),
+    );
+  }
 
-  // US2: Login
   login(email: string, password: string): Observable<any> {
     return this.http.post<any>(`${this.API}/login`, { email, password }).pipe(
       tap((res: any) => {
@@ -59,30 +54,28 @@ register(data: any): Observable<any> {
     );
   }
 
-  
   loginWithGoogle(googleToken: string): Observable<any> {
-  return this.http.post<any>(`${this.API}/sso/google`, { token: googleToken }).pipe(
-    tap((res: any) => this.handleAuthSuccess(res)),  // ← plus de ?. data
-    catchError((err: any) => throwError(() =>
-      err.error?.message || "Erreur connexion Google"
-    )),
-  );
-}
+    return this.http.post<any>(`${this.API}/sso/google`, { token: googleToken }).pipe(
+      tap((res: any) => this.handleAuthSuccess(res)),
+      catchError((err: any) => throwError(() =>
+        err.error?.message || "Erreur connexion Google"
+      )),
+    );
+  }
 
-loginWithFacebook(fbToken: string): Observable<any> {
-  return this.http.post<any>(`${this.API}/sso/facebook`, { token: fbToken }).pipe(
-    tap((res: any) => this.handleAuthSuccess(res)),  // ← plus de ?. data
-    catchError((err: any) => throwError(() =>
-      err.error?.message || "Erreur connexion Facebook"
-    )),
-  );
-}
-  // US4: Setup 2FA
+  loginWithFacebook(fbToken: string): Observable<any> {
+    return this.http.post<any>(`${this.API}/sso/facebook`, { token: fbToken }).pipe(
+      tap((res: any) => this.handleAuthSuccess(res)),
+      catchError((err: any) => throwError(() =>
+        err.error?.message || "Erreur connexion Facebook"
+      )),
+    );
+  }
+
   setup2fa(): Observable<any> {
     return this.http.post<any>(`${this.API}/2fa/setup`, {}, { headers: this.authHeaders });
   }
 
-  // US4: Enable 2FA
   enable2fa(code: string): Observable<any> {
     return this.http.post<any>(`${this.API}/2fa/enable`, { code }, { headers: this.authHeaders }).pipe(
       tap(() => {
@@ -96,7 +89,6 @@ loginWithFacebook(fbToken: string): Observable<any> {
     );
   }
 
-  // US4: Disable 2FA
   disable2fa(): Observable<any> {
     return this.http.post<any>(`${this.API}/2fa/disable`, {}, { headers: this.authHeaders }).pipe(
       tap(() => {
@@ -110,7 +102,6 @@ loginWithFacebook(fbToken: string): Observable<any> {
     );
   }
 
-  // US4: Verify 2FA code
   verify2fa(userId: string, code: string): Observable<any> {
     return this.http.post<any>(`${this.API}/2fa/verify`, { userId, code }).pipe(
       tap((res: any) => this.handleAuthSuccess(res?.data ?? res)),
@@ -120,7 +111,6 @@ loginWithFacebook(fbToken: string): Observable<any> {
     );
   }
 
-  // US5: Forgot password
   forgotPassword(email: string): Observable<any> {
     return this.http.post<any>(`${this.API}/forgot-password`, { email }).pipe(
       catchError((err: any) => throwError(() =>
@@ -129,7 +119,6 @@ loginWithFacebook(fbToken: string): Observable<any> {
     );
   }
 
-  // US5: Reset password
   resetPassword(token: string, newPassword: string): Observable<any> {
     return this.http.post<any>(`${this.API}/reset-password`, { token, newPassword }).pipe(
       catchError((err: any) => throwError(() =>
@@ -153,23 +142,30 @@ loginWithFacebook(fbToken: string): Observable<any> {
     this._currentUser.set(updated);
   }
 
+  updateMfa(enabled: boolean): void {
+    const user = this._currentUser();
+    if (!user) return;
+    const updated = { ...user, mfaEnabled: enabled };
+    localStorage.setItem("current_user", JSON.stringify(updated));
+    this._currentUser.set(updated);
+  }
+
   getRedirectPath(role: string): string {
     const routes: Record<string, string> = {
-      PATIENT:    "/patient/dashboard",
-      MEDECIN:    "/medecin/dashboard",
-      PHARMACIEN: "/pharmacie/dashboard",
-      ADMIN:      "/admin/dashboard",
-      // anciens rôles (compatibilité)
-      MEDECIN_GENERALISTE:   "/medecin/dashboard",
-      MEDECIN_SPECIALISTE:   "/medecin/dashboard",
-      MEDECIN_CHEF_SERVICE:  "/medecin/dashboard",
-      PHARMACIEN_TITULAIRE:  "/pharmacie/dashboard",
-      BIOLOGISTE_RESPONSABLE: "/laboratoire/dashboard",
-      BIOLOGISTE_MEDICAL:    "/laboratoire/dashboard",
-      TECHNICIEN_LABO:       "/laboratoire/dashboard",
-      RADIOLOGUE:            "/radiologie/dashboard",
-      MANIPULATEUR_RADIO:    "/radiologie/dashboard",
-      ADMIN_SYSTEM:          "/admin/dashboard",
+      PATIENT:                 "/patient/dashboard",
+      MEDECIN:                 "/medecin/dashboard",
+      PHARMACIEN:              "/pharmacie/dashboard",
+      ADMIN:                   "/admin/dashboard",
+      MEDECIN_GENERALISTE:     "/medecin/dashboard",
+      MEDECIN_SPECIALISTE:     "/medecin/dashboard",
+      MEDECIN_CHEF_SERVICE:    "/medecin/dashboard",
+      PHARMACIEN_TITULAIRE:    "/pharmacie/dashboard",
+      BIOLOGISTE_RESPONSABLE:  "/laboratoire/dashboard",
+      BIOLOGISTE_MEDICAL:      "/laboratoire/dashboard",
+      TECHNICIEN_LABO:         "/laboratoire/dashboard",
+      RADIOLOGUE:              "/radiologie/dashboard",
+      MANIPULATEUR_RADIO:      "/radiologie/dashboard",
+      ADMIN_SYSTEM:            "/admin/dashboard",
     };
     return routes[role] || "/auth/login";
   }
@@ -177,32 +173,30 @@ loginWithFacebook(fbToken: string): Observable<any> {
   private get authHeaders(): HttpHeaders {
     return new HttpHeaders({ Authorization: `Bearer ${this._token() || ""}` });
   }
-private handleAuthSuccess(payload: any): void {
-  try {
-    const unwrapped = payload?.data ?? payload;
-    const rawUser = unwrapped?.user ?? unwrapped;
-    
-    // Normaliser les noms de champs (snake_case → camelCase)
-    const user = rawUser?.id ? {
-      ...rawUser,
-      firstName: rawUser.firstName ?? rawUser.first_name ?? '',
-      lastName: rawUser.lastName ?? rawUser.last_name ?? '',
-    } : null;
 
-    const access_token = unwrapped?.access_token ?? payload?.access_token;
-    const refresh_token = unwrapped?.refresh_token ?? payload?.refresh_token;
+  private handleAuthSuccess(payload: any): void {
+    try {
+      const unwrapped = payload?.data ?? payload;
+      const rawUser = unwrapped?.user ?? unwrapped;
+      const user = rawUser?.id ? {
+        ...rawUser,
+        firstName: rawUser.firstName ?? rawUser.first_name ?? '',
+        lastName: rawUser.lastName ?? rawUser.last_name ?? '',
+      } : null;
 
-    if (access_token) localStorage.setItem("access_token", access_token);
-    if (refresh_token) localStorage.setItem("refresh_token", refresh_token);
-    if (user?.id) localStorage.setItem("current_user", JSON.stringify(user));
+      const access_token = unwrapped?.access_token ?? payload?.access_token;
+      const refresh_token = unwrapped?.refresh_token ?? payload?.refresh_token;
 
-    this._token.set(access_token ?? null);
-    this._currentUser.set(user);
+      if (access_token) localStorage.setItem("access_token", access_token);
+      if (refresh_token) localStorage.setItem("refresh_token", refresh_token);
+      if (user?.id) localStorage.setItem("current_user", JSON.stringify(user));
 
-  } catch {
-    this.clearStorage();
+      this._token.set(access_token ?? null);
+      this._currentUser.set(user);
+    } catch {
+      this.clearStorage();
+    }
   }
-}
 
   private loadUserFromStorage(): User | null {
     try {
