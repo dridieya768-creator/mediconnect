@@ -13,6 +13,7 @@ import { UserRole } from "@core/models/user.model";
   templateUrl: "./register.component.html",
   styleUrls: ["./register.component.scss"],
 })
+
 export class RegisterComponent implements OnInit {
   private fb     = inject(FormBuilder);
   private auth   = inject(AuthService);
@@ -89,18 +90,32 @@ export class RegisterComponent implements OnInit {
   ];
 
   form = this.fb.group({
-    firstName:       ["", Validators.required],
-    lastName:        ["", Validators.required],
+    // ✅ CODE CORRIGÉ : Tous les validateurs sont regroupés dans un tableau []
+firstName: ["", [
+  Validators.required,
+  Validators.minLength(2),
+  Validators.pattern(/^[a-zA-ZÀ-ÿ\s\-']+$/)
+]],
+
+lastName: ["", [
+  Validators.required,
+  Validators.minLength(2),
+  Validators.pattern(/^[a-zA-ZÀ-ÿ\s\-']+$/)
+]],
     email:           ["", [Validators.required, Validators.email]],
-    phone:           [""],
-    gender:          [""],
-    role:            [UserRole.PATIENT, Validators.required],
-    specialite:      [""],
-    rpps:            [""],
-    numeroOrdre:     [""],
-    password:        ["", [Validators.required, Validators.minLength(8)]],
-    confirmPassword: [""],
-    acceptCgu:       [false],
+    phone: ['', [
+  Validators.pattern(/^[0-9]{8}$/),
+  Validators.minLength(8),
+  Validators.maxLength(8),
+]],
+   gender:          ["", Validators.required],
+role:            [UserRole.PATIENT, Validators.required],
+specialite:      [""],
+rpps:            ["", Validators.pattern(/^\d{11}$/)],
+numeroOrdre:     [""],
+password:        ["", [Validators.required, Validators.minLength(8), Validators.pattern(/^(?=.*[A-Z])(?=.*[0-9]).{8,}$/)]],
+confirmPassword: ["", Validators.required],
+acceptCgu:       [false, Validators.requiredTrue],
   });
 
   setProfessional(): void {

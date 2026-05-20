@@ -421,10 +421,10 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
 
   relationIcon(relation: string): string {
     const icons: Record<string, string> = {
-      ENFANT: '👶',
-      CONJOINT: '💑',
-      PARENT: '👴',
-      AUTRE: '👤',
+      ENFANT: '',
+      CONJOINT: '',
+      PARENT: '',
+      AUTRE: '',
     };
     return icons[relation] ?? '👤';
   }

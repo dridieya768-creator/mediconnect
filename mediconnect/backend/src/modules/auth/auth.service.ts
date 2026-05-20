@@ -368,7 +368,7 @@ async changePassword(userId: string, currentPassword: string, newPassword: strin
       allergies: [],
       maladiesChroniques: [],
       medicamentsActuels: [],
-      notification: {},
+    
     });
     return this.patientRepository.save(patient);
   }

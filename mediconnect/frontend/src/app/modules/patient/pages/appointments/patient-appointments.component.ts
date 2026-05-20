@@ -21,9 +21,6 @@ type FilterTab = "upcoming" | "past" | "all";
           <h1 class="page-title">Mes Rendez-vous</h1>
           <p class="page-subtitle">Gerez vos consultations et teleconsultations</p>
         </div>
-        <button class="btn-primary" (click)="showView('new')" *ngIf="view() !== 'new'">
-          + Nouveau RDV
-        </button>
       </div>
 
       <!-- ── MESSAGES ───────────────────────────────── -->
@@ -87,7 +84,7 @@ type FilterTab = "upcoming" | "past" | "all";
                         (click)="joinVideo(appt)">📽 Rejoindre</button>
                 <button class="btn-sm btn-rate"
                         *ngIf="appt.status === 'COMPLETED' && !appt.rated"
-                        (click)="openRate(appt)">⭐ Évaluer</button>
+                        (click)="openRate(appt)"> Évaluer</button>
               </div>
             </div>
           </div>
@@ -96,145 +93,10 @@ type FilterTab = "upcoming" | "past" | "all";
           <div class="empty-state" *ngIf="filteredAppointments().length === 0">
             <div style="font-size:56px"></div>
             <p>Aucun rendez-vous {{ filterTab() === 'upcoming' ? 'à venir' : filterTab() === 'past' ? 'passé' : '' }}</p>
-            <button class="btn-primary" (click)="showView('new')">+ Prendre un RDV</button>
+
           </div>
         </div>
       </ng-container>
-
-      <!-- ══════════════════════════════════════════════
-           VUE NOUVEAU RDV
-           ══════════════════════════════════════════════ -->
-      <ng-container *ngIf="view() === 'new'">
-        <div class="form-card">
-          <div class="form-header">
-            <button class="btn-back" (click)="showView('list')">← Retour</button>
-            <h2>Nouveau Rendez-vous</h2>
-          </div>
-
-          <!-- Étape 1 : Recherche médecin -->
-          <div class="step-block">
-            <div class="step-label"><span class="step-num">1</span> Trouver un médecin</div>
-            <div class="search-bar">
-              <input class="form-input" type="text" [(ngModel)]="searchQuery"
-                     placeholder="🔍︎ Nom du médecin..."
-                     (ngModelChange)="onSearchChange($event)" />
-              <select class="form-select" [(ngModel)]="searchSpecialty" (change)="searchDoctors()">
-                <option value="">Toutes spécialités</option>
-                <option *ngFor="let s of specialties" [value]="s">{{ s }}</option>
-              </select>
-            </div>
-            <div class="doctors-grid" *ngIf="doctors().length > 0">
-              <div class="doctor-card"
-                   *ngFor="let doc of doctors()"
-                   [class.selected]="selectedDoctor()?.id === doc.id"
-                   (click)="selectDoctor(doc)">
-                <div class="doc-avatar">{{ getInitials(doc) }}</div>
-                <div class="doc-info">
-                  <div class="doc-name">Dr. {{ doc.firstName || doc.first_name }} {{ doc.lastName || doc.last_name }}</div>
-                  <div class="doc-spec">{{ doc.specialite || doc.specialty || 'Médecin généraliste' }}</div>
-                  <div class="doc-meta">
-                    <span *ngIf="doc.ville || doc.city">📍 {{ doc.ville || doc.city }}</span>
-                    <span class="doc-badge video" *ngIf="doc.teleconsultation">모 Téléconsult.</span>
-                  </div>
-                </div>
-                <div class="doc-check" *ngIf="selectedDoctor()?.id === doc.id">✓</div>
-              </div>
-            </div>
-            <div class="search-hint" *ngIf="doctors().length === 0 && !searchLoading()">
-              Tapez pour rechercher un médecin disponible
-            </div>
-            <div class="search-hint" *ngIf="searchLoading()"> Recherche en cours...</div>
-          </div>
-
-          <!-- Étape 2 : Créneaux -->
-          <div class="step-block" *ngIf="selectedDoctor()">
-            <div class="step-label"><span class="step-num">2</span> Choisir un créneau</div>
-            <div class="slot-picker">
-              <div class="slot-date-nav">
-                <button class="btn-nav" (click)="prevWeek()">‹</button>
-                <div class="slot-dates">
-                  <div class="slot-day-col" *ngFor="let day of slotDays()">
-                    <div class="slot-day-label">{{ day.label }}</div>
-                    <div class="slot-day-date">{{ day.date }}</div>
-                    <div class="slot-time"
-                         *ngFor="let slot of day.slots"
-                         [class.selected]="selectedSlot() === slot.datetime"
-                         [class.taken]="slot.taken"
-                         (click)="!slot.taken && selectSlot(slot.datetime)">{{ slot.time }}</div>
-                    <div class="slot-empty" *ngIf="day.slots.length === 0">—</div>
-                  </div>
-                </div>
-                <button class="btn-nav" (click)="nextWeek()">›</button>
-              </div>
-            </div>
-          </div>
-          <!-- Message créneau occupé — centré dans l'étape 2 -->
-<div class="slot-taken-overlay" *ngIf="slotTakenError()">
-  <div class="slot-taken-box">
-    <div class="slot-taken-icon">⏱</div>
-    <div class="slot-taken-title">Ce créneau est déjà occupé</div>
-    <div class="slot-taken-sub">Veuillez choisir un autre horaire disponible</div>
-    <button class="slot-taken-btn" (click)="slotTakenError.set(false); selectedSlot.set(null)">
-      Choisir un autre créneau
-    </button>
-  </div>
-</div>
-          <!-- Étape 3 : Confirmation -->
-          <div class="step-block" *ngIf="selectedDoctor() && selectedSlot()">
-            <div class="step-label"><span class="step-num">3</span> Confirmer le rendez-vous</div>
-            <div class="confirm-grid">
-              <div class="form-group">
-                <label class="form-label">Type de consultation</label>
-                <select class="form-select" [(ngModel)]="newAppt.consultationType">
-                  <option value="PHYSICAL"> Présentiel</option>
-                  <option value="TELECONSULTATION">모 Téléconsultation</option>
-                  <option value="HOME_VISIT">🏠︎ À domicile</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Durée</label>
-                <select class="form-select" [(ngModel)]="newAppt.durationMinutes">
-                  <option [value]="15">15 minutes</option>
-                  <option [value]="30">30 minutes</option>
-                  <option [value]="45">45 minutes</option>
-                  <option [value]="60">1 heure</option>
-                </select>
-              </div>
-              <div class="form-group-full">
-                <label class="form-label">Motif de consultation</label>
-                <textarea class="form-input" rows="3" [(ngModel)]="newAppt.reason"
-                          placeholder="Décrivez brièvement le motif de votre visite..."></textarea>
-              </div>
-            </div>
-
-            <!-- Récapitulatif -->
-            <div class="recap-box">
-              <div class="recap-row">
-                <span> Médecin</span>
-                <strong>Dr. {{ selectedDoctor()?.firstName || selectedDoctor()?.first_name }}
-                        {{ selectedDoctor()?.lastName  || selectedDoctor()?.last_name }}</strong>
-              </div>
-              <div class="recap-row">
-                <span> Date & heure</span>
-                <strong>{{ formatFullDate(selectedSlot()!) }}</strong>
-              </div>
-              <div class="recap-row">
-                <span> Type</span>
-                <strong>{{ getTypeLabel(newAppt.consultationType) }}</strong>
-              </div>
-              <div class="recap-row">
-                <span>⏱ Durée</span>
-                <strong>{{ newAppt.durationMinutes }} minutes</strong>
-              </div>
-            </div>
-
-            <button class="btn-primary btn-full" (click)="createAppointment()" [disabled]="isCreating()">
-              {{ isCreating() ? ' Confirmation...' : '✔ Confirmer le rendez-vous' }}
-            </button>
-          </div>
-        </div>
-      </ng-container>
-
       <!-- ══════════════════════════════════════════════
            VUE DÉTAIL
            ══════════════════════════════════════════════ -->
@@ -276,7 +138,7 @@ type FilterTab = "upcoming" | "past" | "all";
               </span>
             </div>
             <div class="detail-row" *ngIf="selectedAppt()!.cancellationReason">
-              <span class="detail-label">💬 Motif annulation</span>
+              <span class="detail-label"> Motif annulation</span>
               <span class="detail-value">{{ selectedAppt()!.cancellationReason }}</span>
             </div>
             <div class="detail-row" *ngIf="selectedAppt()!.notes">
@@ -293,7 +155,7 @@ type FilterTab = "upcoming" | "past" | "all";
                     (click)="joinVideo(selectedAppt()!)">📽 Rejoindre la téléconsultation</button>
             <button class="btn-rate"
                     *ngIf="selectedAppt()!.status === 'COMPLETED' && !selectedAppt()!.rated"
-                    (click)="openRate(selectedAppt()!)">⭐ Évaluer la consultation</button>
+                    (click)="openRate(selectedAppt()!)"> Évaluer la consultation</button>
           </div>
         </div>
       </ng-container>
@@ -308,7 +170,7 @@ type FilterTab = "upcoming" | "past" | "all";
             <h2>Annuler le Rendez-vous</h2>
           </div>
           <div class="cancel-warning">
-            <div style="font-size:32px">⚠️</div>
+            <div style="font-size:32px"></div>
             <div>
               <strong>Vous êtes sur le point d'annuler votre RDV</strong><br>
               Dr. {{ getDoctorName(selectedAppt()!) }} — {{ formatFullDate(selectedAppt()!.appointmentDate) }}<br>
@@ -905,10 +767,10 @@ export class PatientAppointmentsComponent implements OnInit {
     return ({ CONFIRMED:"status-confirmed", REQUESTED:"status-pending", CANCELLED:"status-cancelled", COMPLETED:"status-completed", NO_SHOW:"status-cancelled" } as any)[s] || "status-pending";
   }
   getTypeLabel(t: string): string {
-    return ({ PHYSICAL:"🏥 Présentiel", TELECONSULTATION:"💻 Téléconsultation", HOME_VISIT:"🏠 À domicile" } as any)[t] || t;
+    return ({ PHYSICAL:" Présentiel", TELECONSULTATION:" Téléconsultation", HOME_VISIT:" À domicile" } as any)[t] || t;
   }
   getRatingLabel(): string {
-    return (["","😞 Très déçu","😐 Décevant","🙂 Correct","😊 Bien","🌟 Excellent !"] as any)[this.hoverRating() || this.rating()] || "";
+    return ([""," Très déçu"," Décevant"," Correct"," Bien"," Excellent !"] as any)[this.hoverRating() || this.rating()] || "";
   }
 
   getMonday(d: Date): Date {

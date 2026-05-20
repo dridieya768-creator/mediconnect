@@ -114,7 +114,7 @@ export class MedecinsService {
   }
 
   async getAllMedecinsWithProfiles(search?: string, specialite?: string, ville?: string) {
-  const roles = ['MEDECIN'];
+  const roles = ['MEDECIN', 'MEDECIN_GENERALISTE', 'MEDECIN_SPECIALISTE', 'MEDECIN_CHEF_SERVICE'];
  
   let qb = this.userRepository
     .createQueryBuilder('user')

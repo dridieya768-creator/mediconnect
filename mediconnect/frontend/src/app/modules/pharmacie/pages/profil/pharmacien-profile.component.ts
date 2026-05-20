@@ -39,7 +39,7 @@ import * as L from 'leaflet';
             <div class="photo-actions">
               <label class="btn-upload" [class.loading]="isUploadingPhoto()">
                 <input type="file" accept="image/jpeg,image/png,image/jpg" (change)="onPhotoSelected($event)" hidden/>
-                {{ isUploadingPhoto() ? ' Téléchargement...' : '📷 Changer la photo' }}
+                {{ isUploadingPhoto() ? ' Téléchargement...' : ' Changer la photo' }}
               </label>
               <button class="btn-remove" *ngIf="photoPreview" (click)="removePhoto()">🗑 Supprimer</button>
             </div>
@@ -253,7 +253,7 @@ export class PharmacienProfileComponent implements OnInit, OnDestroy, AfterViewC
     if (this.form.latitude && this.form.longitude) {
       this.profileMarker = L.marker(center, { icon, draggable: true })
         .addTo(this.profileMap)
-        .bindPopup('🏪 Ma pharmacie').openPopup();
+        .bindPopup(' Ma pharmacie').openPopup();
       this.profileMarker.on('dragend', (e: any) => {
         const pos = e.target.getLatLng();
         this.form.latitude = pos.lat.toFixed(6);
@@ -271,7 +271,7 @@ export class PharmacienProfileComponent implements OnInit, OnDestroy, AfterViewC
       } else {
         this.profileMarker = L.marker([lat, lng], { icon, draggable: true })
           .addTo(this.profileMap!)
-          .bindPopup('🏪 Ma pharmacie').openPopup();
+          .bindPopup(' Ma pharmacie').openPopup();
         this.profileMarker.on('dragend', (ev: any) => {
           const pos = ev.target.getLatLng();
           this.form.latitude = pos.lat.toFixed(6);
@@ -292,13 +292,13 @@ export class PharmacienProfileComponent implements OnInit, OnDestroy, AfterViewC
     this.form.longitude = null;
     if (this.profileMarker) { this.profileMarker.remove(); this.profileMarker = null; }
   }
-
+ 
   loadProfile() {
     this.isLoading.set(true);
     this.http.get<any>('/api/v1/pharmacies/my-profile')
       .pipe(catchError(() => of(null)))
       .subscribe(res => {
-        const data = res?.data ?? res;
+        const data = res?.data.data ?? res;
         if (data) {
           Object.keys(this.form).forEach(key => {
             if (data[key] !== undefined && data[key] !== null) {
@@ -311,7 +311,7 @@ export class PharmacienProfileComponent implements OnInit, OnDestroy, AfterViewC
         this.isLoading.set(false);
       });
   }
-
+  
   onPhotoSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (!input.files?.[0]) return;

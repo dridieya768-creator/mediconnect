@@ -5,12 +5,6 @@ export declare class MedecinProfile {
     user: User;
     specialite: string;
     rpps: string;
-    telephone: string;
-    cabinetNom: string;
-    cabinetAdresse: string;
-    cabinetVille: string;
-    cabinetCodePostal: string;
-    cabinetTelephone: string;
     bio: string;
     photoUrl: string;
     photoPro: string;

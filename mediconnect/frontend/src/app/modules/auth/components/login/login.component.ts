@@ -39,8 +39,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     { icon: "", role: "Patient",    email: "patient@test.com" },
     { icon: "", role: "Médecin",    email: "medecin@test.com" },
     { icon: "", role: "Pharmacien", email: "pharmacien@test.com" },
-    { icon: "", role: "Biologiste", email: "biologiste@test.com" },
-    { icon: "", role: "Radiologue", email: "radiologue@test.com" },
+
     { icon: "", role: "Admin",      email: "admin@test.com" },
   ];
 

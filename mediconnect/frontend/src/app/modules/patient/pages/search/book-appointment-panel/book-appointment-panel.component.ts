@@ -18,6 +18,7 @@ import { AvailabilityConfig, OccupiedSlot } from '../../../../../core/models/med
 import { ConsultationType } from '../../../../../core/models/appointment.model';
 import { WeeklyCalendarComponent } from '../weekly-calendar/weekly-calendar.component';
 import { AppointmentFormComponent } from '../appointment-form/appointment-form.component';
+import { profile } from 'console';
 
 @Component({
   selector: 'app-book-appointment-panel',
@@ -52,20 +53,20 @@ import { AppointmentFormComponent } from '../appointment-form/appointment-form.c
             <span class="doctor-specialty" *ngIf="medecin.specialite">{{ medecin.specialite }}</span>
           </div>
         </div>
-        <button class="close-btn" (click)="onClose()" aria-label="Fermer le panneau">Ã—</button>
+        <button class="close-btn" (click)="onClose()" aria-label="Fermer le panneau">fermer</button>
       </div>
 
       <!-- Error message -->
       <div class="error-banner" *ngIf="errorMessage()">
-        <span class="error-icon">âš ï¸</span>
+        <span class="error-icon"></span>
         <span>{{ errorMessage() }}</span>
-        <button class="error-dismiss" (click)="errorMessage.set(null)" aria-label="Fermer le message d'erreur">Ã—</button>
+        <button class="error-dismiss" (click)="errorMessage.set(null)" aria-label="Fermer le message d'erreur">fermer</button>
       </div>
 
       <!-- Loading state for availability -->
       <div class="loading-state" *ngIf="loadingAvailability()">
         <div class="spinner" aria-hidden="true"></div>
-        <span>Chargement des disponibilitÃ©s...</span>
+        <span>Chargement des disponibilities...</span>
       </div>
 
       <!-- Content -->
@@ -319,9 +320,13 @@ export class BookAppointmentPanelComponent implements OnChanges {
   }
 
   get doctorPhoto(): string | null {
-    return this.medecin?.avatarUrl ?? this.medecin?.photoPro ?? null;
-  }
+  const photo =
+    this.medecin?.profile?.photoPro ??
+    this.medecin?.profile?.photoUrl ??
+    null;
 
+  return photo ? String(photo) : null;
+}
   get doctorInitials(): string {
     const prenom = this.medecin?.prenom ?? this.medecin?.firstName ?? '';
     const nom = this.medecin?.nom ?? this.medecin?.lastName ?? '';

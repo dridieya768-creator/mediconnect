@@ -105,7 +105,7 @@ let MedecinsService = class MedecinsService {
         };
     }
     async getAllMedecinsWithProfiles(search, specialite, ville) {
-        const roles = ['MEDECIN'];
+        const roles = ['MEDECIN', 'MEDECIN_GENERALISTE', 'MEDECIN_SPECIALISTE', 'MEDECIN_CHEF_SERVICE'];
         let qb = this.userRepository
             .createQueryBuilder('user')
             .where('user.role IN (:...roles)', { roles })

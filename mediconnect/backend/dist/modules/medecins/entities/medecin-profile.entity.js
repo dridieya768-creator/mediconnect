@@ -37,30 +37,6 @@ __decorate([
     __metadata("design:type", String)
 ], MedecinProfile.prototype, "rpps", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
-    __metadata("design:type", String)
-], MedecinProfile.prototype, "telephone", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ name: 'cabinet_nom', nullable: true }),
-    __metadata("design:type", String)
-], MedecinProfile.prototype, "cabinetNom", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ name: 'cabinet_adresse', type: 'text', nullable: true }),
-    __metadata("design:type", String)
-], MedecinProfile.prototype, "cabinetAdresse", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ name: 'cabinet_ville', nullable: true }),
-    __metadata("design:type", String)
-], MedecinProfile.prototype, "cabinetVille", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ name: 'cabinet_code_postal', nullable: true }),
-    __metadata("design:type", String)
-], MedecinProfile.prototype, "cabinetCodePostal", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ name: 'cabinet_telephone', nullable: true }),
-    __metadata("design:type", String)
-], MedecinProfile.prototype, "cabinetTelephone", void 0);
-__decorate([
     (0, typeorm_1.Column)({ type: 'text', nullable: true }),
     __metadata("design:type", String)
 ], MedecinProfile.prototype, "bio", void 0);

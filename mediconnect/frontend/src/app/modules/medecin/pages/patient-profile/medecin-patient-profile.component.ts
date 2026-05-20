@@ -112,25 +112,31 @@ import { of } from 'rxjs';
           <!-- Observations médecin -->
           <div class="card card-full">
             <div class="card-title">Observations médicales</div>
-            <ng-container *ngIf="permissions().observations">
-            <div *ngIf="patient()?.observationsMedecin" class="obs-existing">
-              <p class="obs-text">{{ patient()?.observationsMedecin }}</p>
-            </div>
-            <textarea
-              class="obs-textarea"
-              [(ngModel)]="newObservation"
-              placeholder="Saisir vos observations, remarques cliniques..."
-              rows="4"
-            ></textarea>
-            <div class="obs-actions">
-              <span class="obs-success" *ngIf="obsSaved()">✓ Observation enregistrée</span>
-              <span class="obs-error" *ngIf="obsError()">{{ obsError() }}</span>
-              <button class="btn-save-obs" (click)="saveObservation()" [disabled]="obsSaving() || !newObservation.trim()">
-                {{ obsSaving() ? 'Enregistrement...' : 'Enregistrer' }}
-              </button>
-            </div>
-            </ng-container>
-            <div *ngIf="!permissions().observations" class="no-access-msg"> Accès non autorisé par le patient</div>
+            <!-- Observation existante : soumise à permission -->
+<ng-container *ngIf="permissions().observations">
+  <div *ngIf="patient()?.observationsMedecin" class="obs-existing">
+    <p class="obs-text">{{ patient()?.observationsMedecin }}</p>
+  </div>
+</ng-container>
+<div *ngIf="!permissions().observations" class="no-access-msg">
+  Accès non autorisé par le patient
+</div>
+
+<!-- Écriture : toujours visible -->
+<textarea
+  class="obs-textarea"
+  [(ngModel)]="newObservation"
+  placeholder="Saisir vos observations, remarques cliniques..."
+  rows="4"
+></textarea>
+<div class="obs-actions">
+  <span class="obs-success" *ngIf="obsSaved()">✓ Observation enregistrée</span>
+  <span class="obs-error" *ngIf="obsError()">{{ obsError() }}</span>
+  <button class="btn-save-obs" (click)="saveObservation()" 
+    [disabled]="obsSaving() || !newObservation.trim()">
+    {{ obsSaving() ? 'Enregistrement...' : 'Enregistrer' }}
+  </button>
+</div>
           </div>
 
         </div>

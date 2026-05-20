@@ -60,10 +60,6 @@ __decorate([
     __metadata("design:type", String)
 ], Patient.prototype, "ville", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: "localisation_gps", nullable: true }),
-    __metadata("design:type", String)
-], Patient.prototype, "localisationGPS", void 0);
-__decorate([
     (0, typeorm_1.Column)({ name: "langue_preferee", nullable: true, default: "fr" }),
     __metadata("design:type", String)
 ], Patient.prototype, "languePreferee", void 0);
@@ -77,10 +73,6 @@ __decorate([
     __metadata("design:type", String)
 ], Patient.prototype, "groupeSanguin", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: "medecin_traitant_id", nullable: true }),
-    __metadata("design:type", String)
-], Patient.prototype, "medecinTraitantId", void 0);
-__decorate([
     (0, typeorm_1.Column)({ type: "jsonb", default: "[]" }),
     __metadata("design:type", Array)
 ], Patient.prototype, "allergies", void 0);
@@ -93,53 +85,13 @@ __decorate([
     __metadata("design:type", Array)
 ], Patient.prototype, "medicamentsActuels", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: "jsonb", nullable: true }),
-    __metadata("design:type", Object)
-], Patient.prototype, "favoris", void 0);
-__decorate([
     (0, typeorm_1.Column)({ name: "rappels_auto", default: false }),
     __metadata("design:type", Boolean)
 ], Patient.prototype, "rappelsAuto", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: "acces_base_medicaments", default: true }),
-    __metadata("design:type", Boolean)
-], Patient.prototype, "accesBaseMedicaments", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ name: "questions_teleconseil", type: "text", nullable: true }),
-    __metadata("design:type", String)
-], Patient.prototype, "questionsTeleconseil", void 0);
-__decorate([
     (0, typeorm_1.Column)({ name: "historique_teleconsultations", type: "jsonb", default: "[]" }),
     __metadata("design:type", Array)
 ], Patient.prototype, "historiqueTeleconsultations", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ name: "questions_forum", type: "text", nullable: true }),
-    __metadata("design:type", String)
-], Patient.prototype, "questionsForum", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ name: "acces_anonyme", default: false }),
-    __metadata("design:type", Boolean)
-], Patient.prototype, "accesAnonyme", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ name: "gestion_multi_profils", default: false }),
-    __metadata("design:type", Boolean)
-], Patient.prototype, "gestionMultiProfils", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ name: "paiement_en_ligne", default: false }),
-    __metadata("design:type", Boolean)
-], Patient.prototype, "paiementEnLigne", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ name: "application_mobile", default: false }),
-    __metadata("design:type", Boolean)
-], Patient.prototype, "applicationMobile", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ name: "double_authentification", default: false }),
-    __metadata("design:type", Boolean)
-], Patient.prototype, "doubleAuthentification", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ type: "jsonb", default: "{}" }),
-    __metadata("design:type", Object)
-], Patient.prototype, "notification", void 0);
 __decorate([
     (0, typeorm_1.Column)({ nullable: true, unique: true }),
     __metadata("design:type", String)

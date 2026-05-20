@@ -45,8 +45,6 @@ export class Patient {
   @Column({ nullable: true })
   ville: string;
 
-  @Column({ name: "localisation_gps", nullable: true })
-  localisationGPS: string;
 
   @Column({ name: "langue_preferee", nullable: true, default: "fr" })
   languePreferee: string;
@@ -60,9 +58,6 @@ export class Patient {
   })
   groupeSanguin: BloodGroup;
 
-  @Column({ name: "medecin_traitant_id", nullable: true })
-  medecinTraitantId: string;
-
   @Column({ type: "jsonb", default: "[]" })
   allergies: string[];
 
@@ -72,42 +67,13 @@ export class Patient {
   @Column({ name: "medicaments_actuels", type: "jsonb", default: "[]" })
   medicamentsActuels: any[];
 
-  @Column({ type: "jsonb", nullable: true })
-  favoris: any;
-
   // ─── Paramètres & Préférences ─────────────────────────────
   @Column({ name: "rappels_auto", default: false })
   rappelsAuto: boolean;
 
-  @Column({ name: "acces_base_medicaments", default: true })
-  accesBaseMedicaments: boolean;
-
-  @Column({ name: "questions_teleconseil", type: "text", nullable: true })
-  questionsTeleconseil: string;
 
   @Column({ name: "historique_teleconsultations", type: "jsonb", default: "[]" })
   historiqueTeleconsultations: any[];
-
-  @Column({ name: "questions_forum", type: "text", nullable: true })
-  questionsForum: string;
-
-  @Column({ name: "acces_anonyme", default: false })
-  accesAnonyme: boolean;
-
-  @Column({ name: "gestion_multi_profils", default: false })
-  gestionMultiProfils: boolean;
-
-  @Column({ name: "paiement_en_ligne", default: false })
-  paiementEnLigne: boolean;
-
-  @Column({ name: "application_mobile", default: false })
-  applicationMobile: boolean;
-
-  @Column({ name: "double_authentification", default: false })
-  doubleAuthentification: boolean;
-
-  @Column({ type: "jsonb", default: "{}" })
-  notification: any;
 
   // ─── NSS (ancien champ conservé) ─────────────────────────
   @Column({ nullable: true, unique: true })

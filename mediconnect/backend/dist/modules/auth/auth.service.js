@@ -346,7 +346,6 @@ let AuthService = class AuthService {
             allergies: [],
             maladiesChroniques: [],
             medicamentsActuels: [],
-            notification: {},
         });
         return this.patientRepository.save(patient);
     }

@@ -19,23 +19,6 @@ export class MedecinProfile {
   @Column({ nullable: true })
   rpps: string;
 
-  @Column({ nullable: true })
-  telephone: string;
-
-  @Column({ name: 'cabinet_nom', nullable: true })
-  cabinetNom: string;
-
-  @Column({ name: 'cabinet_adresse', type: 'text', nullable: true })
-  cabinetAdresse: string;
-
-  @Column({ name: 'cabinet_ville', nullable: true })
-  cabinetVille: string;
-
-  @Column({ name: 'cabinet_code_postal', nullable: true })
-  cabinetCodePostal: string;
-
-  @Column({ name: 'cabinet_telephone', nullable: true })
-  cabinetTelephone: string;
 
   @Column({ type: 'text', nullable: true })
   bio: string;
@@ -53,7 +36,7 @@ export class MedecinProfile {
   photosCabinet: string;
 
   @Column({ type: 'jsonb', nullable: true })
-tarifs: any;
+  tarifs: any;
 
   @Column({ name: 'actes_couverts', type: 'text', nullable: true })
   actesCouverts: string;

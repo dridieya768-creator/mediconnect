@@ -134,7 +134,7 @@ import * as L from "leaflet";
         <div class="promo-text">
           <h2 class="promo-title">Bienvenue sur notre plateforme medicale !</h2>
           <p class="promo-desc">Nous collaborons avec les meilleurs medecins en Tunisie pour vous accompagner dans votre parcours de sante.</p>
-          <button class="btn-symptomes" (click)="goToGuide()">Creer vos symptomes</button>
+          
         </div>
         <div class="promo-img-wrap">
           <img src="assets/images/recherche-medecins.webp" class="promo-img" alt="Recherche medecins" />

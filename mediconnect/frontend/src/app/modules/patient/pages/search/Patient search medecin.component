@@ -147,9 +147,10 @@
                   </span>
                 </div>
 
-                <p class="doc-bio" *ngIf="doc.profile?.biographie">
-                  {{ doc.profile.biographie | slice:0:120 }}{{ doc.profile.biographie?.length > 120 ? '...' : '' }}
-                </p>
+                  <div class="profile-section" *ngIf="selectedDoc()!.profile?.bio">
+  <h4> Biographie</h4>
+  <p>{{ selectedDoc()!.profile.bio }}</p>
+</div>
 
                 <!-- Tarifs -->
                 <div class="doc-tarifs" *ngIf="getTarif(doc.profile?.tarifs) as tarif">
