@@ -54,17 +54,25 @@ export class MedecinsController {
     const result = await this.medecinsService.acceptAppointment(user.id, appointmentId);
     try {
       const appt = result.appointment;
-      await (this.medecinsService as any).appointmentRepository?.manager?.query(
-        `INSERT INTO dossier_historique
-           (id, patient_id, modifie_par_id, role_auteur, champs_modifies, snapshot_avant, commentaire, created_at)
-         VALUES (gen_random_uuid(), $1, $2, 'MEDECIN', $3::jsonb, '{}'::jsonb, $4, NOW())`,
-        [
-          appt?.patientId,
-          user.id,
-          JSON.stringify({ rdv_confirme: { avant: { status: 'REQUESTED' }, apres: { status: 'CONFIRMED', appointmentId } } }),
-          'Rendez-vous confirme',
-        ],
+      // Résoudre le patient.id depuis le patientId (qui peut être un user_id)
+      const patientRows = await (this.medecinsService as any).appointmentRepository?.manager?.query(
+        `SELECT id FROM patients WHERE id = $1 OR user_id = $1 LIMIT 1`,
+        [appt?.patientId]
       );
+      const realPatientId = patientRows?.[0]?.id;
+      if (realPatientId) {
+        await (this.medecinsService as any).appointmentRepository?.manager?.query(
+          `INSERT INTO dossier_historique
+             (id, patient_id, modifie_par_id, role_auteur, champs_modifies, snapshot_avant, commentaire, created_at)
+           VALUES (gen_random_uuid(), $1, $2, 'MEDECIN', $3::jsonb, '{}'::jsonb, $4, NOW())`,
+          [
+            realPatientId,
+            user.id,
+            JSON.stringify({ rdv_confirme: { avant: { status: 'REQUESTED' }, apres: { status: 'CONFIRMED', appointmentId } } }),
+            'Rendez-vous confirme',
+          ],
+        );
+      }
     } catch { /* silencieux */ }
     return result;
   }

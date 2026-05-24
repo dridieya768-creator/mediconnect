@@ -1,7 +1,7 @@
 import { Injectable, signal, computed } from "@angular/core";
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { Router } from "@angular/router";
-import { Observable, tap, catchError, throwError } from "rxjs";
+import { Observable, tap, catchError, throwError, retry } from "rxjs";
 
 export interface User {
   id: string;
@@ -23,7 +23,7 @@ export class AuthService {
   currentUser = this._currentUser.asReadonly();
   token = this._token.asReadonly();
   isAuthenticated = computed(() => !!this._currentUser());
-  userRole = computed(() => this._currentUser()?.role);
+  userRole = computed(() => this._currentUser()?.role||"");
 
   constructor(private http: HttpClient, private router: Router) {}
 
@@ -44,7 +44,7 @@ export class AuthService {
   login(email: string, password: string): Observable<any> {
     return this.http.post<any>(`${this.API}/login`, { email, password }).pipe(
       tap((res: any) => {
-        if (!res?.requires2fa) {
+        if (!res?.requires2fa && !res?.data?.requires2fa) {
           this.handleAuthSuccess(res?.data ?? res);
         }
       }),
@@ -160,11 +160,6 @@ export class AuthService {
       MEDECIN_SPECIALISTE:     "/medecin/dashboard",
       MEDECIN_CHEF_SERVICE:    "/medecin/dashboard",
       PHARMACIEN_TITULAIRE:    "/pharmacie/dashboard",
-      BIOLOGISTE_RESPONSABLE:  "/laboratoire/dashboard",
-      BIOLOGISTE_MEDICAL:      "/laboratoire/dashboard",
-      TECHNICIEN_LABO:         "/laboratoire/dashboard",
-      RADIOLOGUE:              "/radiologie/dashboard",
-      MANIPULATEUR_RADIO:      "/radiologie/dashboard",
       ADMIN_SYSTEM:            "/admin/dashboard",
     };
     return routes[role] || "/auth/login";
@@ -223,5 +218,8 @@ export class AuthService {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("current_user");
+  }
+  getRole ():string{
+    return this.currentUser()?.role ??'';
   }
 }

@@ -30,19 +30,49 @@ const notifications_gateway_1 = require("../notifications/notifications.gateway"
 const notification_entity_1 = require("../notifications/notification.entity");
 const fs = require("fs");
 const path_1 = require("path");
-function generateTotpSecret() {
-    return crypto.randomBytes(20).toString("hex").toUpperCase();
+const speakeasy = require("speakeasy");
+function base32Encode(buffer) {
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+    let result = '';
+    let bits = 0;
+    let value = 0;
+    for (const byte of buffer) {
+        value = (value << 8) | byte;
+        bits += 8;
+        while (bits >= 5) {
+            result += alphabet[(value >>> (bits - 5)) & 31];
+            bits -= 5;
+        }
+    }
+    if (bits > 0)
+        result += alphabet[(value << (5 - bits)) & 31];
+    return result;
 }
-function verifyTotpCode(secret, code) {
+function generateTotpSecret() {
+    return crypto.randomBytes(20).toString('hex').toUpperCase();
+}
+function verifyTotpCode(secretHex, code) {
     const timeStep = Math.floor(Date.now() / 1000 / 30);
-    const hmac = crypto.createHmac("sha1", Buffer.from(secret, "hex"));
-    hmac.update(Buffer.alloc(8));
-    const hash = hmac.digest();
-    const offset = hash[hash.length - 1] & 0x0f;
-    const otp = ((hash.readUInt32BE(offset) & 0x7fffffff) % 1000000)
-        .toString()
-        .padStart(6, "0");
-    return otp === code;
+    console.log('[2FA DEBUG] secretHex:', secretHex);
+    console.log('[2FA DEBUG] code reçu:', code);
+    console.log('[2FA DEBUG] timeStep actuel:', timeStep);
+    for (const delta of [-1, 0, 1]) {
+        const counter = timeStep + delta;
+        const buf = Buffer.alloc(8);
+        buf.writeUInt32BE(Math.floor(counter / 0x100000000), 0);
+        buf.writeUInt32BE(counter >>> 0, 4);
+        const hmac = crypto.createHmac('sha1', Buffer.from(secretHex, 'hex'));
+        hmac.update(buf);
+        const hash = hmac.digest();
+        const offset = hash[hash.length - 1] & 0x0f;
+        const otp = ((hash.readUInt32BE(offset) & 0x7fffffff) % 1000000)
+            .toString()
+            .padStart(6, '0');
+        console.log(`[2FA DEBUG] delta=${delta} → OTP calculé: ${otp}`);
+        if (otp === code)
+            return true;
+    }
+    return false;
 }
 let AuthService = class AuthService {
     constructor(userRepository, patientRepository, pharmacienRepository, jwtService, configService, notificationsService, notificationsGateway) {
@@ -94,9 +124,7 @@ let AuthService = class AuthService {
         const hashedPassword = await bcrypt.hash(registerDto.password, 12);
         const medecinRoles = [
             user_entity_1.UserRole.MEDECIN, user_entity_1.UserRole.MEDECIN_GENERALISTE, user_entity_1.UserRole.MEDECIN_SPECIALISTE,
-            user_entity_1.UserRole.MEDECIN_CHEF_SERVICE, user_entity_1.UserRole.RADIOLOGUE, user_entity_1.UserRole.BIOLOGISTE_RESPONSABLE,
-            user_entity_1.UserRole.BIOLOGISTE_MEDICAL, user_entity_1.UserRole.TECHNICIEN_LABO, user_entity_1.UserRole.MANIPULATEUR_RADIO,
-            user_entity_1.UserRole.SECRETAIRE_RADIO,
+            user_entity_1.UserRole.PHARMACIEN,
         ];
         const isMedecin = medecinRoles.includes(registerDto.role);
         const isPharmacien = registerDto.role === user_entity_1.UserRole.PHARMACIEN;
@@ -178,7 +206,7 @@ let AuthService = class AuthService {
         if (user.status === user_entity_1.UserStatus.PENDING_VERIFICATION)
             throw new common_1.UnauthorizedException("Votre compte est en attente de validation par un administrateur.");
         if (user.mfaEnabled) {
-            return { requires2fa: true, userId: user.id, message: "Code 2FA requis" };
+            return { requires2fa: true, userId: user.id, message: "Code 2FA requis", role: user.role };
         }
         await this.userRepository.update(user.id, { lastLoginAt: new Date() });
         const tokens = await this.generateTokens(user);
@@ -187,45 +215,60 @@ let AuthService = class AuthService {
     async setup2fa(userId) {
         const user = await this.userRepository.findOne({ where: { id: userId } });
         if (!user)
-            throw new common_1.NotFoundException("Utilisateur introuvable");
-        const secret = generateTotpSecret();
-        const appName = "MediConnect";
-        const otpauthUrl = `otpauth://totp/${appName}:${user.email}?secret=${secret}&issuer=${appName}`;
-        await this.userRepository.update(userId, { mfaSecret: secret });
+            throw new common_1.NotFoundException('Utilisateur introuvable');
+        const secret = speakeasy.generateSecret({
+            name: `MediConnect:${user.email}`,
+            issuer: 'MediConnect',
+            length: 20,
+        });
+        await this.userRepository.update(userId, { mfaSecret: secret.base32 });
         return {
-            secret,
-            otpauthUrl,
-            qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(otpauthUrl)}`,
-            instructions: "Scannez ce QR code avec Google Authenticator ou Authy",
+            secret: secret.base32,
+            otpauthUrl: secret.otpauth_url,
+            qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(secret.otpauth_url)}`,
+            instructions: 'Scannez ce QR code avec Google Authenticator ou Authy',
         };
     }
     async enable2fa(userId, dto) {
-        const user = await this.userRepository.findOne({ where: { id: userId }, select: ["id", "mfaSecret"] });
+        const user = await this.userRepository.findOne({
+            where: { id: userId },
+            select: ['id', 'mfaSecret'],
+        });
         if (!user || !user.mfaSecret)
-            throw new common_1.BadRequestException("Configurez d abord le 2FA");
-        const isValid = verifyTotpCode(user.mfaSecret, dto.code);
-        if (!isValid && dto.code !== "000000")
-            throw new common_1.BadRequestException("Code invalide");
+            throw new common_1.BadRequestException('Configurez d abord le 2FA');
+        const isValid = speakeasy.totp.verify({
+            secret: user.mfaSecret,
+            encoding: 'base32',
+            token: dto.code,
+            window: 1,
+        });
+        if (!isValid)
+            throw new common_1.BadRequestException('Code invalide');
         await this.userRepository.update(userId, { mfaEnabled: true });
-        return { message: "2FA active avec succes" };
-    }
-    async disable2fa(userId) {
-        await this.userRepository.update(userId, { mfaEnabled: false, mfaSecret: null });
-        return { message: "2FA desactive" };
+        return { message: '2FA activé avec succès' };
     }
     async verify2fa(dto) {
         const user = await this.userRepository.findOne({
             where: { id: dto.userId },
-            select: ["id", "email", "firstName", "lastName", "role", "status", "tenantId", "mfaSecret", "mfaEnabled"],
+            select: ['id', 'email', 'firstName', 'lastName', 'role', 'status', 'mfaSecret', 'mfaEnabled'],
         });
         if (!user)
-            throw new common_1.NotFoundException("Utilisateur introuvable");
-        const isValid = verifyTotpCode(user.mfaSecret, dto.code);
-        if (!isValid && dto.code !== "000000")
-            throw new common_1.UnauthorizedException("Code 2FA incorrect");
+            throw new common_1.NotFoundException('Utilisateur introuvable');
+        const isValid = speakeasy.totp.verify({
+            secret: user.mfaSecret,
+            encoding: 'base32',
+            token: dto.code,
+            window: 1,
+        });
+        if (!isValid)
+            throw new common_1.UnauthorizedException('Code 2FA incorrect');
         await this.userRepository.update(user.id, { lastLoginAt: new Date() });
         const tokens = await this.generateTokens(user);
         return { user: this.sanitizeUser(user), ...tokens };
+    }
+    async disable2fa(userId) {
+        await this.userRepository.update(userId, { mfaEnabled: false, mfaSecret: null });
+        return { message: '2FA désactivé' };
     }
     async forgotPassword(dto) {
         const user = await this.userRepository.findOne({ where: { email: dto.email } });
@@ -371,7 +414,7 @@ let AuthService = class AuthService {
         }
     }
     async generateTokens(user) {
-        const payload = { sub: user.id, email: user.email, role: user.role, tenantId: user.tenantId };
+        const payload = { sub: user.id, email: user.email, role: user.role };
         return {
             access_token: this.jwtService.sign(payload),
             refresh_token: this.jwtService.sign(payload, {

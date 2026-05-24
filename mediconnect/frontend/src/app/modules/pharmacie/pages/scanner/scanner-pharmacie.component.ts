@@ -113,11 +113,11 @@ import { HttpClient } from '@angular/common/http';
     </div>
   `,
   styles: [`
-    .page-header { margin-bottom: 24px; }
+    .page-header { margin-bottom: 24px; padding-left: 40px; padding-top: 20px; }
     .page-title { font-size: 26px; font-weight: 700; color: #0f172a; margin: 0 0 4px; }
     .page-subtitle { color: #64748b; font-size: 14px; margin: 0; }
 
-    .search-card { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,.06); border: 1px solid #e5e7eb; margin-bottom: 20px; }
+    .search-card { background: white; border-radius: 12px; padding: 16px 20px; box-shadow: 0 2px 12px rgba(0,0,0,.06); border: 1px solid #e5e7eb; margin-bottom: 20px; max-width: 700px; margin-left: auto; margin-right: auto; }
     .search-row { display: flex; gap: 12px; }
     .qr-input { flex: 1; padding: 12px 16px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 15px; color: #0f172a; outline: none; font-family: monospace; }
     .qr-input:focus { border-color: #1a56db; }

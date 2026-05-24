@@ -1,24 +1,24 @@
 import { Injectable, Logger } from '@nestjs/common';
+import * as https from 'https';
 
 @Injectable()
 export class SmsService {
   private readonly logger = new Logger(SmsService.name);
-  private client: any;
-  private readonly from: string;
+  private readonly apiKey: string;
+  private readonly baseUrl: string;
+  private readonly sender: string;
   private readonly enabled: boolean;
 
   constructor() {
-    const sid   = process.env.TWILIO_ACCOUNT_SID;
-    const token = process.env.TWILIO_AUTH_TOKEN;
-    this.from   = process.env.TWILIO_PHONE_NUMBER || '';
-    this.enabled = !!(sid && token && this.from);
+    this.apiKey  = process.env.INFOBIP_API_KEY  || '';
+    this.baseUrl = process.env.INFOBIP_BASE_URL  || '';
+    this.sender  = process.env.INFOBIP_SENDER    || 'MediApp';
+    this.enabled = !!(this.apiKey && this.baseUrl);
 
     if (this.enabled) {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      this.client = require('twilio')(sid, token);
-      this.logger.log('Twilio SMS service initialized');
+      this.logger.log('Infobip SMS service initialized');
     } else {
-      this.logger.warn('Twilio not configured — SMS disabled (set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER)');
+      this.logger.warn('Infobip not configured — SMS disabled (set INFOBIP_API_KEY, INFOBIP_BASE_URL)');
     }
   }
 
@@ -27,11 +27,64 @@ export class SmsService {
       this.logger.debug(`[SMS MOCK] To: ${to} | ${body}`);
       return;
     }
+
+    // Normaliser le numéro : ajouter +216 si numéro tunisien à 8 chiffres
+    const normalized = this.normalizePhone(to);
+
+    const payload = JSON.stringify({
+      messages: [{
+        from: this.sender,
+        destinations: [{ to: normalized }],
+        text: body,
+      }],
+    });
+
     try {
-      await this.client.messages.create({ body, from: this.from, to });
-      this.logger.log(`SMS sent to ${to}`);
+      await this.httpPost(payload);
+      this.logger.log(`SMS sent to ${normalized}`);
     } catch (err: any) {
-      this.logger.error(`SMS failed to ${to}: ${err.message}`);
+      this.logger.error(`SMS failed to ${normalized}: ${err.message}`);
     }
+  }
+
+  private normalizePhone(phone: string): string {
+    const digits = phone.replace(/\D/g, '');
+    if (digits.length === 8) return `+216${digits}`;
+    if (digits.length === 11 && digits.startsWith('216')) return `+${digits}`;
+    if (!phone.startsWith('+')) return `+${digits}`;
+    return phone;
+  }
+
+  private httpPost(payload: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const url = new URL(`${this.baseUrl}/sms/2/text/advanced`);
+      const options = {
+        hostname: url.hostname,
+        path:     url.pathname,
+        method:   'POST',
+        headers: {
+          'Authorization': `App ${this.apiKey}`,
+          'Content-Type':  'application/json',
+          'Accept':        'application/json',
+          'Content-Length': Buffer.byteLength(payload),
+        },
+      };
+
+      const req = https.request(options, (res) => {
+        let data = '';
+        res.on('data', chunk => data += chunk);
+        res.on('end', () => {
+          if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
+            resolve();
+          } else {
+            reject(new Error(`Infobip HTTP ${res.statusCode}: ${data}`));
+          }
+        });
+      });
+
+      req.on('error', reject);
+      req.write(payload);
+      req.end();
+    });
   }
 }

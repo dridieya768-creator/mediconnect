@@ -70,7 +70,7 @@ let AdminService = class AdminService {
         const saved = await this.userRepository.save(user);
         const medecinRoles = [
             user_entity_1.UserRole.MEDECIN, user_entity_1.UserRole.MEDECIN_GENERALISTE, user_entity_1.UserRole.MEDECIN_SPECIALISTE,
-            user_entity_1.UserRole.MEDECIN_CHEF_SERVICE, user_entity_1.UserRole.PHARMACIEN,
+            user_entity_1.UserRole.PHARMACIEN,
         ];
         const isProfessionnel = medecinRoles.includes(saved.role);
         if (isProfessionnel && dto.status && dto.status !== oldStatus) {

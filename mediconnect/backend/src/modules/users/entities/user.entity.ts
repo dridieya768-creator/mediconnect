@@ -8,14 +8,7 @@ export enum UserRole {
   MEDECIN                = "MEDECIN",
   MEDECIN_GENERALISTE    = "MEDECIN_GENERALISTE",
   MEDECIN_SPECIALISTE    = "MEDECIN_SPECIALISTE",
-  MEDECIN_CHEF_SERVICE   = "MEDECIN_CHEF_SERVICE",
   PHARMACIEN             = "PHARMACIEN",
-  BIOLOGISTE_RESPONSABLE = "BIOLOGISTE_RESPONSABLE",
-  BIOLOGISTE_MEDICAL     = "BIOLOGISTE_MEDICAL",
-  TECHNICIEN_LABO        = "TECHNICIEN_LABO",
-  RADIOLOGUE             = "RADIOLOGUE",
-  MANIPULATEUR_RADIO     = "MANIPULATEUR_RADIO",
-  SECRETAIRE_RADIO       = "SECRETAIRE_RADIO",
   ADMIN                  = "ADMIN",
 }
 
@@ -53,8 +46,6 @@ export class User {
   @Column({ type: "enum", enum: UserStatus, default: UserStatus.PENDING_VERIFICATION })
   status: UserStatus;
 
-  @Column({ name: "tenant_id", nullable: true })
-  tenantId: string;
 
   @Column({ name: "country_code", default: "TN", length: 2 })
   countryCode: string;

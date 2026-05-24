@@ -26,7 +26,7 @@ export class AppointmentsReminderService {
   // Tâche exécutée toutes les heures
   @Cron(CronExpression.EVERY_HOUR)
   async sendReminders() {
-    this.logger.log('🔔 Vérification des rappels RDV...');
+    this.logger.log(' Vérification des rappels RDV...');
 
     const now = new Date();
 
@@ -74,7 +74,7 @@ export class AppointmentsReminderService {
     await transporter.sendMail({
       from: `"MediConnect" <${process.env.SMTP_USER}>`,
       to: patientEmail,
-      subject: `⏰ Rappel : Votre RDV dans ${hoursAhead}h — ${doctorName}`,
+      subject: ` Rappel : Votre RDV dans ${hoursAhead}h — ${doctorName}`,
       html: `
         <div style="font-family:Arial,sans-serif; max-width:520px; margin:auto; background:#fff; border-radius:12px; overflow:hidden; border:1px solid #e2e8f0;">
           <div style="background:#0d9488; padding:24px 28px;">
@@ -107,7 +107,7 @@ export class AppointmentsReminderService {
             ${appt.consultationType === 'TELECONSULTATION' && appt.videoRoomId ? `
             <div style="text-align:center; margin:20px 0;">
               <a href="https://meet.jit.si/${appt.videoRoomId}" style="background:#3b82f6; color:white; padding:12px 28px; border-radius:8px; text-decoration:none; font-weight:600; font-size:14px;">
-                📹 Rejoindre la téléconsultation
+                 Rejoindre la téléconsultation
               </a>
             </div>
             ` : ''}

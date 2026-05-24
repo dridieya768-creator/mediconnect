@@ -192,12 +192,17 @@ let PrescriptionsService = class PrescriptionsService {
             return await this.repo.find({
                 where: { patientId },
                 order: { createdAt: 'DESC' },
-                relations: [],
+                relations: ['doctor'],
             });
         }
         catch (err) {
             console.warn('[PrescriptionsService] findByPatient error:', err?.message);
-            return [];
+            try {
+                return await this.repo.find({ where: { patientId }, order: { createdAt: 'DESC' } });
+            }
+            catch {
+                return [];
+            }
         }
     }
     async scanAtPharmacy(qrCode, dispensedQuantities) {

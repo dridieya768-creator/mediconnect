@@ -19,6 +19,7 @@ export declare class AuthController {
         requires2fa: boolean;
         userId: string;
         message: string;
+        role: import("../users/entities/user.entity").UserRole;
     } | {
         access_token: string;
         refresh_token: string;
@@ -26,6 +27,7 @@ export declare class AuthController {
         requires2fa?: undefined;
         userId?: undefined;
         message?: undefined;
+        role?: undefined;
     }>;
     googleLogin(body: {
         token: string;

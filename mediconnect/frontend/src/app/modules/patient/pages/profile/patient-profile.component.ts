@@ -228,10 +228,10 @@ import { AuthService } from "../../../../core/services/auth.service";
   `,
   styles: [`
     .profile-page { padding: 0; }
-    .page-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; flex-wrap:wrap; gap:12px; }
+    .page-header { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:24px; flex-wrap:wrap; gap:12px; padding-left:40px; padding-top:20px; }
     .page-title { font-size:26px; font-weight:700; color:#0f172a; margin:0 0 4px; }
     .page-subtitle { color:#64748b; font-size:14px; margin:0; }
-    .header-actions { display:flex; gap:8px; align-items:center; }
+    .header-actions { display:flex; gap:8px; align-items:center; padding-bottom:4px; padding-right:50px; }
 
     .btn-edit   { padding:9px 20px; background:#eff6ff; color:#1a56db; border:2px solid #1a56db; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; transition:background .15s; }
     .btn-edit:hover { background:#dbeafe; }
@@ -246,7 +246,7 @@ import { AuthService } from "../../../../core/services/auth.service";
     .spinner { width:40px; height:40px; border:3px solid #e2e8f0; border-top-color:#1a56db; border-radius:50%; animation:spin .8s linear infinite; }
     @keyframes spin { to { transform:rotate(360deg); } }
 
-    .profile-grid { display:grid; grid-template-columns:280px 1fr; gap:24px; align-items:start; }
+    .profile-grid { display:grid; grid-template-columns:280px 1fr; gap:24px; align-items:start; padding-left:40px; }
 
     /* ── LEFT ── */
     .left-col { display:flex; flex-direction:column; gap:16px; }

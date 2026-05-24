@@ -54,12 +54,6 @@ export class RegisterComponent implements OnInit {
     { value: 'MEDECIN_SPECIALISTE',    label: ' Médecin Spécialiste' },
     { value: 'MEDECIN_CHEF_SERVICE',   label: ' Médecin Chef de Service' },
     { value: 'PHARMACIEN',             label: ' Pharmacien' },
-    { value: 'BIOLOGISTE_RESPONSABLE', label: ' Biologiste Responsable' },
-    { value: 'BIOLOGISTE_MEDICAL',     label: ' Biologiste Médical' },
-    { value: 'TECHNICIEN_LABO',        label: ' Technicien de Laboratoire' },
-    { value: 'RADIOLOGUE',             label: ' Radiologue' },
-    { value: 'MANIPULATEUR_RADIO',     label: ' Manipulateur Radio' },
-    { value: 'SECRETAIRE_RADIO',       label: ' Secrétaire Radiologie' },
   ];
 
   specialites = [
@@ -205,7 +199,7 @@ acceptCgu:       [false, Validators.requiredTrue],
       this.auth.register(payload).subscribe({
         next: (res: any) => this.handleRegisterSuccess(res),
         error: (err: any) => {
-          this.error = typeof err === 'string' ? err : "Erreur lors de l'inscription";
+          this.error = err?.status === 409 ? 'Cet email est déjà utilisé. Veuillez en choisir un autre.' : (typeof err === 'string' ? err : "Erreur lors de l'inscription");
           this.isLoading = false;
         },
       });
@@ -213,7 +207,7 @@ acceptCgu:       [false, Validators.requiredTrue],
       this.auth.register(dto).subscribe({
         next: (res: any) => this.handleRegisterSuccess(res),
         error: (err: any) => {
-          this.error = typeof err === 'string' ? err : "Erreur lors de l'inscription";
+          this.error = err?.status === 409 ? 'Cet email est déjà utilisé. Veuillez en choisir un autre.' : (typeof err === 'string' ? err : "Erreur lors de l'inscription");
           this.isLoading = false;
         },
       });

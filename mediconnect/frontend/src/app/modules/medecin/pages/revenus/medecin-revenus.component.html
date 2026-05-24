@@ -1,0 +1,140 @@
+<div class="rev-page">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Mes Revenus</h1>
+      <p class="page-subtitle"></p>
+    </div>
+    <button class="btn-export" (click)="exportCsv()" [disabled]="factures().length === 0">
+      Exporter CSV
+    </button>
+  </div>
+
+  <!-- FILTRES -->
+  <div class="filters-bar">
+    <div class="filter-group">
+      <label>Du</label>
+      <input type="date" [(ngModel)]="dateFrom" (change)="load()" />
+    </div>
+    <div class="filter-group">
+      <label>Au</label>
+      <input type="date" [(ngModel)]="dateTo" (change)="load()" />
+    </div>
+    <button class="btn-reset" (click)="resetFilters()">Réinitialiser</button>
+  </div>
+
+  <!-- STATS CARDS -->
+  <div class="stats-grid" *ngIf="stats()">
+    <div class="stat-card blue">
+      <div class="stat-icon"></div>
+      <div class="stat-val">{{ stats()!.totalRevenu | number:'1.3-3' }} TND</div>
+      <div class="stat-lbl">Revenu total</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-icon"></div>
+      <div class="stat-val">{{ stats()!.nbConsult }}</div>
+      <div class="stat-lbl">Consultations payées</div>
+    </div>
+    <div class="stat-card purple">
+      <div class="stat-icon"></div>
+      <div class="stat-val">{{ stats()!.nbTeleconsult }}</div>
+      <div class="stat-lbl">Téléconsultations</div>
+    </div>
+    <div class="stat-card orange">
+      <div class="stat-icon"></div>
+      <div class="stat-val">{{ stats()!.nbPhysique }}</div>
+      <div class="stat-lbl">Consultations physiques</div>
+    </div>
+    <div class="stat-card teal">
+      <div class="stat-icon"></div>
+      <div class="stat-val">{{ stats()!.tarif }} TND</div>
+      <div class="stat-lbl">Tarif par consultation</div>
+    </div>
+  </div>
+
+  <!-- GRAPHIQUE PAR MOIS -->
+  <div class="chart-card" *ngIf="parMoisEntries().length > 0">
+    <div class="chart-title">Revenus par mois</div>
+    <div class="chart-bars">
+      <div class="bar-item" *ngFor="let entry of parMoisEntries()">
+        <div class="bar-wrap">
+          <div class="bar-fill"
+            [style.height.%]="getBarHeight(entry[1])"
+            [title]="entry[1] + ' TND'">
+          </div>
+        </div>
+        <div class="bar-label">{{ entry[0] }}</div>
+        <div class="bar-val">{{ entry[1] | number:'1.0-0' }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading" *ngIf="loading()">
+    <div class="spinner"></div>
+    <p>Chargement...</p>
+  </div>
+
+  <!-- TABLE FACTURES -->
+  <div class="table-card" *ngIf="!loading()">
+    <div class="table-header">
+      <span class="table-title">Détail des paiements reçus</span>
+      <span class="table-count">{{ factures().length }} paiement(s)</span>
+    </div>
+
+    <div class="empty" *ngIf="factures().length === 0">
+      <div style="font-size:48px"></div>
+      <p>Aucune consultation terminée sur cette période</p>
+      <p class="empty-hint">Les revenus sont générés automatiquement quand une consultation est marquée "Terminée"</p>
+    </div>
+
+    <table class="rev-table" *ngIf="factures().length > 0">
+      <thead>
+        <tr>
+          <th>N° Facture</th>
+          <th>Date paiement</th>
+          <th>Patient</th>
+          <th>Type</th>
+          <th>Statut</th>
+          <th>Montant</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let f of factures()">
+          <td class="mono">{{ f.numero }}</td>
+          <td class="date-cell">
+            <span class="date-main">{{ formatDate(f.date) }}</span>
+          </td>
+          <td class="patient-cell">{{ f.patientNom }}</td>
+          <td>
+            <span class="type-badge" [class.tele]="f.type === 'TELECONSULTATION'">
+              {{ f.type === 'TELECONSULTATION' ? 'Téléconsult.' : ' Physique' }}
+            </span>
+          </td>
+          <td>
+            <span class="status-badge paid"> Payé</span>
+          </td>
+          <td class="amount">{{ f.montant | number:'1.3-3' }} {{ f.devise }}</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="5" class="total-label">TOTAL REVENUS</td>
+          <td class="total-amount">{{ stats()?.totalRevenu | number:'1.3-3' }} TND</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <!-- INFO BOX -->
+  <div class="info-box" *ngIf="!loading()">
+    <div class="info-icon"></div>
+    <div class="info-text">
+      <strong>Comment fonctionnent les revenus ?</strong>
+      Chaque consultation marquée comme "Terminée" génère automatiquement un revenu de <strong>50 TND</strong>.
+      La date de paiement correspond à la date de la consultation.
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,248 @@
+<div class="page">
+  <div style="position:fixed; inset:0; z-index:0;">
+    <img src="assets/images/Writing-down-results.jpg" alt="background"
+         style="width:100%; height:100%; object-fit:cover; object-position:center; display:block;">
+    <div style="position:absolute; inset:0; background:rgba(15,39,90,0.55);"></div>
+  </div>
+
+  <div style="position:relative; z-index:1; padding:32px 40px;isolation:isolate;">
+    <div style="margin-bottom:24px;">
+      <h1 style="font-size:32px; font-weight:800; color:white; margin:0 0 6px; text-shadow:0 2px 8px rgba(0,0,0,.3);">Mon Dossier Medical</h1>
+      <p style="font-size:15px; color:rgba(255,255,255,0.8); margin:0;">Consultez et mettez a jour vos informations medicales</p>
+    </div>
+
+    <div class="page-header" style="background:transparent; padding:0; margin-bottom:16px;">
+      <div></div>
+      <div class="header-actions">
+        <button class="btn-edit" *ngIf="!editing()" (click)="startEdit()">Modifier</button>
+        <button class="btn-save" *ngIf="editing()" (click)="save()" [disabled]="saving()">{{ saving() ? '...' : 'Enregistrer' }}</button>
+        <button class="btn-cancel" *ngIf="editing()" (click)="cancelEdit()">Annuler</button>
+      </div>
+    </div>
+
+    <div class="alert-success" *ngIf="successMsg()">{{ successMsg() }}</div>
+    <div class="alert-error" *ngIf="errorMsg()">{{ errorMsg() }}</div>
+
+    <div class="loading" *ngIf="loading()"><div class="spinner"></div></div>
+
+    <div class="alert-error" *ngIf="!loading() && !patient()">
+      Impossible de charger le dossier. Vérifiez que le backend est démarré.
+    </div>
+
+    <div *ngIf="!loading() && patient()" class="content">
+
+      <!-- Infos médicales -->
+      <div class="card">
+        <div class="card-title">Informations médicales</div>
+        <div *ngIf="!editing()" class="info-grid">
+          <div class="info-item"><span class="info-label">Nom</span><span>{{ patient().prenom }} {{ patient().nom }}</span></div>
+          <div class="info-item"><span class="info-label">NSS</span><span>{{ patient().nss || '—' }}</span></div>
+          <div class="info-item"><span class="info-label">Groupe sanguin</span><span class="blood">{{ patient().groupeSanguin || '—' }}</span></div>
+          <div class="info-item"><span class="info-label">Date de naissance</span><span>{{ formatDate(patient().dateNaissance) }}</span></div>
+          <div class="info-item"><span class="info-label">Sexe</span><span>{{ patient().sexe === 'M' ? 'Masculin' : patient().sexe === 'F' ? 'Féminin' : '—' }}</span></div>
+          <div class="info-item"><span class="info-label">Ville</span><span>{{ patient().ville || '—' }}</span></div>
+          <div class="info-item"><span class="info-label">Téléphone</span><span>{{ patient().telephone || '—' }}</span></div>
+        </div>
+        <div *ngIf="editing()" class="edit-grid">
+          <div class="fg"><label class="fl">Groupe sanguin</label>
+            <select class="fi" [(ngModel)]="form.groupeSanguin">
+              <option value="">—</option>
+              <option *ngFor="let g of groupes" [value]="g">{{ g }}</option>
+            </select>
+          </div>
+          <div class="fg"><label class="fl">Date de naissance</label><input class="fi" type="date" [(ngModel)]="form.dateNaissance"/></div>
+          <div class="fg"><label class="fl">Sexe</label>
+            <select class="fi" [(ngModel)]="form.sexe">
+              <option value="">—</option><option value="M">Masculin</option><option value="F">Féminin</option>
+            </select>
+          </div>
+          <div class="fg"><label class="fl">Ville</label><input class="fi" type="text" [(ngModel)]="form.ville"/></div>
+          <div class="fg"><label class="fl">Téléphone</label><input class="fi" type="tel" [(ngModel)]="form.telephone"/></div>
+          <div class="fg"><label class="fl">NSS</label><input class="fi" type="text" [(ngModel)]="form.nss"/></div>
+        </div>
+      </div>
+
+      <!-- Allergies & Maladies -->
+      <div class="card">
+        <div class="card-title">Allergies & Maladies chroniques</div>
+        <div *ngIf="!editing()">
+          <div class="section-label">Allergies</div>
+          <div class="tags" *ngIf="allergies().length"><span class="tag red" *ngFor="let a of allergies()">{{ a }}</span></div>
+          <p class="empty" *ngIf="!allergies().length">Aucune allergie connue</p>
+          <div class="section-label" style="margin-top:12px">Maladies chroniques</div>
+          <div class="tags" *ngIf="maladies().length"><span class="tag orange" *ngFor="let m of maladies()">{{ m }}</span></div>
+          <p class="empty" *ngIf="!maladies().length">Aucune maladie chronique</p>
+          <div class="section-label" style="margin-top:12px">Médicaments actuels</div>
+          <div class="tags" *ngIf="medicaments().length"><span class="tag blue" *ngFor="let m of medicaments()">{{ m }}</span></div>
+          <p class="empty" *ngIf="!medicaments().length">Aucun médicament en cours</p>
+        </div>
+        <div *ngIf="editing()">
+          <div class="tag-section">
+            <label class="fl">Allergies</label>
+            <div class="tags"><span class="tag red editable" *ngFor="let a of form.allergies; let i=index">{{ a }}<button class="tag-rm" (click)="rm(form.allergies,i)">x</button></span></div>
+            <div class="tag-add"><input class="fi small" [(ngModel)]="newAllergie" placeholder="Ex: Pénicilline" (keydown.enter)="add(form.allergies,'newAllergie')"/><button class="btn-add-tag" (click)="add(form.allergies,'newAllergie')">+</button></div>
+          </div>
+          <div class="tag-section">
+            <label class="fl">Maladies chroniques</label>
+            <div class="tags"><span class="tag orange editable" *ngFor="let m of form.maladiesChroniques; let i=index">{{ m }}<button class="tag-rm" (click)="rm(form.maladiesChroniques,i)">x</button></span></div>
+            <div class="tag-add"><input class="fi small" [(ngModel)]="newMaladie" placeholder="Ex: Diabète type 2" (keydown.enter)="add(form.maladiesChroniques,'newMaladie')"/><button class="btn-add-tag" (click)="add(form.maladiesChroniques,'newMaladie')">+</button></div>
+          </div>
+          <div class="tag-section">
+            <label class="fl">Médicaments actuels</label>
+            <div class="tags"><span class="tag blue editable" *ngFor="let m of form.medicamentsActuels; let i=index">{{ m }}<button class="tag-rm" (click)="rm(form.medicamentsActuels,i)">x</button></span></div>
+            <div class="tag-add"><input class="fi small" [(ngModel)]="newMedicament" placeholder="Ex: Metformine 500mg" (keydown.enter)="add(form.medicamentsActuels,'newMedicament')"/><button class="btn-add-tag" (click)="add(form.medicamentsActuels,'newMedicament')">+</button></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Observations -->
+      <div class="card">
+        <div class="card-title">Observations médicales</div>
+        <div class="obs-list" *ngIf="observations().length">
+          <div class="obs-item" *ngFor="let obs of observations()">
+            <div class="obs-header">
+              <span class="obs-doctor">Dr. {{ obs.medecinNom }}</span>
+              <span class="obs-date">{{ formatDate(obs.date) }}</span>
+            </div>
+            <p class="obs-text">{{ obs.texte }}</p>
+          </div>
+        </div>
+        <p class="empty" *ngIf="!observations().length">Aucune observation médicale enregistrée</p>
+      </div>
+
+      <!-- Documents PDF -->
+      <div class="card">
+        <div class="card-title">Documents médicaux</div>
+        <div class="docs-list" *ngIf="documents().length">
+          <div class="doc-item" *ngFor="let d of documents(); let i=index">
+            <span class="doc-icon">📄</span>
+            <div class="doc-info">
+              <div class="doc-name">{{ d.name }}</div>
+              <div class="doc-date">{{ d.uploadedAt ? formatDate(d.uploadedAt) : '' }}</div>
+            </div>
+            <a class="btn-dl" [href]="d.url" target="_blank" download>Télécharger</a>
+            <button class="btn-rm-doc" (click)="removeDoc(i)">x</button>
+          </div>
+        </div>
+        <p class="empty" *ngIf="!documents().length">Aucun document ajouté</p>
+        <div class="upload-zone" (click)="fileInput.click()" (dragover)="$event.preventDefault()" (drop)="onDrop($event)">
+          <input #fileInput type="file" accept=".pdf" multiple hidden (change)="onFilesSelected($event)"/>
+          <div class="upload-text">Cliquez ou glissez vos fichiers PDF ici</div>
+          <div class="upload-hint">PDF uniquement · max 10MB par fichier</div>
+        </div>
+        <div class="uploading" *ngIf="uploading()">Upload en cours...</div>
+      </div>
+
+      <!-- Accès médecins -->
+      <div class="card">
+        <div class="card-title">Accès médecins à mon dossier</div>
+        <p style="font-size:13px;color:#64748b;margin:0 0 16px">Gérez quels médecins peuvent voir vos informations médicales.</p>
+
+        <div *ngIf="accesList().length > 0">
+          <div class="acces-item" *ngFor="let a of accesList()">
+            <div class="acces-info">
+              <div class="acces-nom">Dr. {{ a.medecinNom || a.medecinId }}</div>
+              <div class="acces-niveau">
+                <span class="niveau-badge" [class.niveau-lecture]="a.niveauAcces === 'LECTURE'"
+                      [class.niveau-ecriture]="a.niveauAcces === 'LECTURE_ECRITURE'"
+                      [class.niveau-complet]="a.niveauAcces === 'ACCES_COMPLET'">
+                  {{ niveauLabel(a.niveauAcces) }}
+                </span>
+                <span class="acces-status" [class.actif]="a.actif" [class.inactif]="!a.actif">
+                  {{ a.actif ? 'Actif' : 'Révoqué' }}
+                </span>
+              </div>
+              <div class="acces-permissions">
+                <span class="perm-tag" *ngIf="a.permissions?.allergies">Allergies</span>
+                <span class="perm-tag" *ngIf="a.permissions?.documents">Documents</span>
+                <span class="perm-tag" *ngIf="a.permissions?.observations">Observations</span>
+              </div>
+            </div>
+            <div class="acces-actions">
+              <button class="btn-acces-edit" (click)="openEditAcces(a)">Modifier</button>
+              <button class="btn-acces-revoke" *ngIf="a.actif" (click)="revoquerAcces(a)">Révoquer</button>
+              <button class="btn-acces-restore" *ngIf="!a.actif" (click)="restaurerAcces(a)">Restaurer</button>
+            </div>
+          </div>
+        </div>
+        <p class="empty" *ngIf="accesList().length === 0">Aucun accès accordé à un médecin</p>
+
+        <div class="acces-form" *ngIf="showAccesForm()">
+          <div class="acces-form-title">{{ editingAcces() ? 'Modifier accès' : 'Accorder un accès' }}</div>
+          <div class="fg" *ngIf="!editingAcces()">
+            <label class="fl">Médecin</label>
+            <select class="fi" [(ngModel)]="newAcces.medecinId">
+              <option value="">-- Choisir un médecin --</option>
+              <option *ngFor="let m of medecinsList()" [value]="m.id">Dr. {{ m.firstName }} {{ m.lastName }}</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label class="fl">Niveau d'accès</label>
+            <select class="fi" [(ngModel)]="newAcces.niveauAcces">
+              <option value="LECTURE">Lecture seule</option>
+              <option value="LECTURE_ECRITURE">Lecture + Écriture</option>
+              <option value="ACCES_COMPLET">Accès complet</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label class="fl">Permissions</label>
+            <div class="perm-checks">
+              <label class="perm-check"><input type="checkbox" [(ngModel)]="newAcces.permissions.allergies"/> Allergies</label>
+              <label class="perm-check"><input type="checkbox" [(ngModel)]="newAcces.permissions.documents"/> Documents PDF</label>
+              <label class="perm-check"><input type="checkbox" [(ngModel)]="newAcces.permissions.observations"/> Observations</label>
+            </div>
+          </div>
+          <div class="fg">
+            <label class="fl">Date d'expiration (optionnel)</label>
+            <input class="fi" type="date" [(ngModel)]="newAcces.dateExpiration"/>
+          </div>
+          <div class="acces-form-actions">
+            <button class="btn-save" (click)="saveAcces()" [disabled]="savingAcces()">{{ savingAcces() ? '...' : 'Enregistrer' }}</button>
+            <button class="btn-cancel" (click)="showAccesForm.set(false); editingAcces.set(null)">Annuler</button>
+          </div>
+        </div>
+
+        <button class="btn-add-acces" *ngIf="!showAccesForm()" (click)="openNewAcces()">
+          + Accorder un accès à un médecin
+        </button>
+
+        <!-- Partage ponctuel -->
+        <div style="margin-top:16px;padding-top:16px;border-top:1px solid #e2e8f0">
+          <div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:8px">Partage ponctuel via lien chiffré</div>
+          <div *ngIf="!showLienForm()">
+            <button class="btn-lien" (click)="showLienForm.set(true)">Générer un lien de partage</button>
+          </div>
+          <div class="lien-form" *ngIf="showLienForm()">
+            <div class="perm-checks">
+              <label class="perm-check"><input type="checkbox" [(ngModel)]="lienPerms.allergies"/> Allergies</label>
+              <label class="perm-check"><input type="checkbox" [(ngModel)]="lienPerms.medicamentsActuels"/> Médicaments</label>
+              <label class="perm-check"><input type="checkbox" [(ngModel)]="lienPerms.documents"/> Documents PDF</label>
+            </div>
+            <div class="fg" style="margin-top:12px">
+              <label class="fl">Durée d'accès</label>
+              <select class="fi" [(ngModel)]="lienDureeHeures">
+                <option [value]="2">2 heures</option>
+                <option [value]="24">24 heures</option>
+                <option [value]="48">48 heures</option>
+                <option [value]="168">7 jours</option>
+              </select>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:12px">
+              <button class="btn-save" (click)="genererLien()" [disabled]="generatingLien()">{{ generatingLien() ? '...' : 'Générer le lien' }}</button>
+              <button class="btn-cancel" (click)="showLienForm.set(false); lienGenere.set(null)">Annuler</button>
+            </div>
+          </div>
+          <div class="lien-result" *ngIf="lienGenere()">
+            <div style="font-size:13px;font-weight:700;color:#166534;margin-bottom:8px">Lien généré avec succès</div>
+            <div class="lien-url">{{ lienGenere()!.lien }}</div>
+            <div style="display:flex;gap:8px;margin-top:10px">
+              <button class="btn-copy" (click)="copierLien()">{{ copie() ? 'Copié !' : 'Copier le lien' }}</button>
+              <span style="font-size:12px;color:#64748b;align-self:center">Expire le {{ formatDate(lienGenere()!.expiresAt) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

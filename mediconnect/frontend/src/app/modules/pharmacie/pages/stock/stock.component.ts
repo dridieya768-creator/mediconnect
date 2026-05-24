@@ -24,48 +24,7 @@ interface Dashboard {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './stock.component.html',
-  styles: [`
-    .tab-bar { display:flex; gap:4px; margin-bottom:24px; background:white; padding:8px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,.06); border:1px solid #e5e7eb; }
-    .tab-btn { padding:8px 18px; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; color:#64748b; background:transparent; transition:all .15s; }
-    .tab-btn.active { background:#1a56db; color:white; }
-    .tab-btn:hover:not(.active) { background:#eff6ff; color:#1a56db; }
-    .alert-badge { display:inline-block; background:#fef2f2; color:#dc2626; border-radius:12px; padding:1px 8px; font-size:11px; font-weight:700; margin-left:6px; }
-    .card { background:white; border-radius:14px; padding:20px; box-shadow:0 2px 8px rgba(0,0,0,.06); border:1px solid #e5e7eb; margin-bottom:16px; }
-    .stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:20px; }
-    .stat-card { background:white; border-radius:12px; padding:16px; text-align:center; border:1px solid #e5e7eb; }
-    .stat-val { font-size:28px; font-weight:700; }
-    .stat-lbl { font-size:12px; color:#64748b; margin-top:4px; }
-    .green { color:#1a56db; } .red { color:#dc2626; } .orange { color:#d97706; } .blue { color:#1a56db; }
-    table { width:100%; border-collapse:collapse; font-size:13px; }
-    th { background:#1a56db; color:white; padding:10px 12px; text-align:left; font-size:12px; }
-    td { padding:10px 12px; border-bottom:1px solid #f1f5f9; }
-    tr:hover td { background:#f8fafc; }
-    .badge { padding:3px 10px; border-radius:12px; font-size:11px; font-weight:600; }
-    .badge-ok { background:#eff6ff; color:#1d4ed8; }
-    .badge-rupture { background:#fef2f2; color:#dc2626; }
-    .badge-alerte { background:#fffbeb; color:#d97706; }
-    .badge-perime { background:#fdf4ff; color:#9333ea; }
-    .form-row { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:12px; }
-    .form-input { width:100%; padding:8px 12px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:13px; box-sizing:border-box; }
-    .form-input:focus { border-color:#1a56db; outline:none; }
-    .btn-primary { padding:10px 20px; background:#1a56db; color:white; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; }
-    .btn-primary:hover { background:#1447c0; }
-    .btn-danger { padding:8px 16px; background:#fef2f2; color:#dc2626; border:1.5px solid #fecaca; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; }
-    .btn-add { padding:6px 14px; background:#eff6ff; color:#1a56db; border:1.5px solid #bfdbfe; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; margin-bottom:12px; }
-    .alert-box { background:#fffbeb; border:1px solid #fde68a; border-radius:10px; padding:12px 16px; margin-bottom:12px; font-size:13px; color:#92400e; }
-    .success-box { background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:12px 16px; margin-bottom:12px; font-size:13px; color:#1e3a8a; }
-    .error-box { background:#fef2f2; border:1px solid #fecaca; border-radius:10px; padding:12px 16px; margin-bottom:12px; font-size:13px; color:#991b1b; }
-    .section-title { font-size:15px; font-weight:700; color:#0f172a; margin-bottom:12px; }
-    .top10-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #f1f5f9; font-size:13px; }
-    .mouv-row { display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid #f1f5f9; font-size:12px; }
-    .mouv-type { padding:2px 8px; border-radius:8px; font-size:11px; font-weight:600; }
-    .mouv-RECEPTION { background:#eff6ff; color:#1d4ed8; }
-    .mouv-DELIVRANCE { background:#eff6ff; color:#1a56db; }
-    .mouv-RETOUR_FOURNISSEUR { background:#fffbeb; color:#d97706; }
-    .mouv-INVENTAIRE_AJUSTEMENT { background:#fdf4ff; color:#9333ea; }
-    .search-input { padding:8px 14px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:13px; width:280px; }
-    .search-input:focus { border-color:#1a56db; outline:none; }
-  `]
+  styleUrls: ['./stock.component.scss'],
 })
 export class StockComponent implements OnInit {
   private http = inject(HttpClient);

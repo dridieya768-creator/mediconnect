@@ -292,11 +292,11 @@ interface Financier {
     .step-content { animation: fadeIn .2s ease; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-    .page-header { margin-bottom: 20px; }
+    .page-header { margin-bottom: 20px; padding-left: 40px; }
     .page-title { font-size: 24px; font-weight: 700; color: #0f172a; margin: 0 0 4px; }
     .page-subtitle { color: #64748b; font-size: 14px; margin: 0; }
 
-    .card { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,.06); border: 1px solid #e5e7eb; }
+    .card { background: white; border-radius: 12px; padding: 16px 20px; box-shadow: 0 2px 12px rgba(0,0,0,.06); border: 1px solid #e5e7eb; max-width: 700px; margin-left: auto; margin-right: auto; }
 
     .search-row { display: flex; gap: 12px; margin-bottom: 8px; }
     .qr-input { flex: 1; padding: 12px 16px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 15px; color: #0f172a; outline: none; font-family: monospace; }

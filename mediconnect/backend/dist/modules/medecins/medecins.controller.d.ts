@@ -80,7 +80,6 @@ export declare class MedecinsController {
             phone: string;
             role: import("@modules/users/entities/user.entity").UserRole;
             status: import("@modules/users/entities/user.entity").UserStatus;
-            tenantId: string;
             countryCode: string;
             isEmailVerified: boolean;
             mfaEnabled: boolean;
@@ -99,7 +98,6 @@ export declare class MedecinsController {
         phone: string;
         role: import("@modules/users/entities/user.entity").UserRole;
         status: import("@modules/users/entities/user.entity").UserStatus;
-        tenantId: string;
         countryCode: string;
         isEmailVerified: boolean;
         mfaEnabled: boolean;

@@ -64,7 +64,7 @@ import { RouterLink } from "@angular/router";
 
         <div class="profile-section" *ngIf="profile()?.ville || profile()?.adresseCabinet">
           <div class="section-header">
-            <span class="section-icon">📍</span>
+            <span class="section-icon"></span>
             <h2>Cabinet & Localisation</h2>
           </div>
           <div class="section-body">

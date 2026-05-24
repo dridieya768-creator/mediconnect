@@ -1,0 +1,107 @@
+<div class="page-header">
+  <h1 class="page-title">Mes Ordonnances</h1>
+  <p class="page-subtitle">Consultez, téléchargez ou présentez le QR code à votre pharmacien</p>
+</div>
+
+<div class="loading-state" *ngIf="loading()">
+  <div class="spinner"></div>
+  <p>Chargement...</p>
+</div>
+
+<div *ngIf="!loading()">
+  <div class="rx-list" *ngIf="prescriptions().length > 0">
+    <div class="rx-card" *ngFor="let rx of prescriptions()">
+      <div class="rx-body">
+        <div class="rx-info">
+          <div class="rx-header">
+            <div>
+              <div class="rx-doctor">Dr. {{ getDoctorName(rx) }}</div>
+              <div class="rx-date">{{ formatDate(rx.issuedAt) }} — expire {{ formatDate(rx.expiresAt) }}</div>
+            </div>
+            <span class="rx-badge" [class]="'status-' + rx.status.toLowerCase()">{{ getStatusLabel(rx.status) }}</span>
+          </div>
+          <div class="rx-meds">
+            <span class="med-tag" *ngFor="let m of rx.medications">{{ m.name }} {{ m.dosage }}</span>
+          </div>
+          <div class="rx-actions">
+            <button class="btn-dl" (click)="download(rx)" [disabled]="!rx.pdfUrl">
+              {{ rx.pdfUrl ? '⬇ PDF' : 'PDF non disponible' }}
+            </button>
+            <button class="btn-qr" (click)="showQr(rx)" *ngIf="rx.qrCode">
+              Afficher QR Code
+            </button>
+          </div>
+        </div>
+
+        <div class="rx-qr-mini" *ngIf="rx.qrCode" (click)="showQr(rx)" title="Cliquer pour agrandir">
+          <qrcode
+            [qrdata]="getQrData(rx)"
+            [width]="90"
+            [errorCorrectionLevel]="'M'"
+            [colorDark]="'#0f172a'"
+            [colorLight]="'#ffffff'"
+            [margin]="1"
+          ></qrcode>
+          <div class="qr-label">QR-ORD</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="prescriptions().length === 0">
+    <div style="font-size:48px">📋</div>
+    <p>Aucune ordonnance pour le moment</p>
+  </div>
+</div>
+
+<!-- Modal QR Code agrandi -->
+<div class="modal-overlay" *ngIf="selectedRx()" (click)="closeQr()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <button class="modal-close" (click)="closeQr()">✕</button>
+    <h2 class="modal-title">QR Code Ordonnance</h2>
+    <p class="modal-sub">Présentez ce code à votre pharmacien</p>
+
+    <div class="qr-container">
+      <qrcode
+        [qrdata]="getQrData(selectedRx()!)"
+        [width]="240"
+        [errorCorrectionLevel]="'M'"
+        [colorDark]="'#0f172a'"
+        [colorLight]="'#ffffff'"
+        [margin]="2"
+      ></qrcode>
+    </div>
+
+    <div class="qr-hint" *ngIf="selectedRx()!.pdfUrl">
+      Ce QR ouvre directement le PDF de l'ordonnance
+    </div>
+    <div class="qr-hint qr-hint-code" *ngIf="!selectedRx()!.pdfUrl">
+      Code à saisir manuellement chez le pharmacien
+    </div>
+
+    <div class="qr-code-text">{{ selectedRx()!.qrCode }}</div>
+
+    <button class="btn-open-pdf" *ngIf="selectedRx()!.pdfUrl" (click)="download(selectedRx()!)">
+      ⬇ Télécharger le PDF
+    </button>
+
+    <div class="modal-info">
+      <div class="info-row">
+        <span class="info-label">Médecin</span>
+        <span>Dr. {{ getDoctorName(selectedRx()!) }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Émis le</span>
+        <span>{{ formatDate(selectedRx()!.issuedAt) }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Expire le</span>
+        <span>{{ formatDate(selectedRx()!.expiresAt) }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Médicaments</span>
+        <span>{{ getMedNames(selectedRx()!) }}</span>
+      </div>
+    </div>
+  </div>
+</div>

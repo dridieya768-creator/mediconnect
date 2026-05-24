@@ -16,17 +16,17 @@ import { AuthService } from '@core/services/auth.service';
       <!-- CHANGER MOT DE PASSE -->
       <div style="background:white; border-radius:16px; border:1px solid #e5e7eb; padding:28px; margin-bottom:24px;">
         <h2 style="font-size:16px; font-weight:700; color:#0f172a; margin:0 0 20px; display:flex; align-items:center; gap:8px;">
-          🔑 Changer le mot de passe
+           Changer le mot de passe
         </h2>
 
         @if (pwSuccess()) {
           <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:12px 16px; color:#166534; font-size:14px; margin-bottom:16px;">
-            ✅ {{ pwSuccess() }}
+             {{ pwSuccess() }}
           </div>
         }
         @if (pwError()) {
           <div style="background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:12px 16px; color:#dc2626; font-size:14px; margin-bottom:16px;">
-            ❌ {{ pwError() }}
+             {{ pwError() }}
           </div>
         }
 
@@ -56,7 +56,7 @@ import { AuthService } from '@core/services/auth.service';
       <!-- 2FA -->
       <div style="background:white; border-radius:16px; border:1px solid #e5e7eb; padding:28px; margin-bottom:24px;">
         <h2 style="font-size:16px; font-weight:700; color:#0f172a; margin:0 0 6px; display:flex; align-items:center; gap:8px;">
-          🛡️ Authentification à deux facteurs (2FA)
+           Authentification à deux facteurs (2FA)
         </h2>
         <p style="font-size:13px; color:#64748b; margin:0 0 20px;">
           Ajoutez une couche de sécurité supplémentaire avec une application comme Google Authenticator.
@@ -64,7 +64,7 @@ import { AuthService } from '@core/services/auth.service';
 
         @if (twoFaMsg()) {
           <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:12px 16px; color:#166534; font-size:14px; margin-bottom:16px;">
-            ✅ {{ twoFaMsg() }}
+             {{ twoFaMsg() }}
           </div>
         }
         @if (twoFaError()) {
@@ -203,7 +203,7 @@ export class PatientSecuriteComponent implements OnInit {
     this.twoFaLoading.set(true);
     this.http.post<any>('/api/v1/auth/2fa/setup', {}).subscribe({
       next: (res) => {
-        this.qrCodeUrl.set(res?.qrCode || res?.data?.qrCode);
+        this.qrCodeUrl.set(res?.qrCodeUrl || res?.data?.qrCodeUrl || res?.qrCode || res?.data?.qrCode);
         this.twoFaLoading.set(false);
       },
       error: () => {

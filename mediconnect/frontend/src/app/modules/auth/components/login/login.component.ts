@@ -127,8 +127,9 @@ export class LoginComponent implements OnInit, AfterViewInit {
     const { email, password } = this.loginForm.value;
     this.authService.login(email!, password!).subscribe({
       next: (res: any) => {
-        if (res?.requires2fa) {
-          this.router.navigate(["/auth/2fa-verify"], { queryParams: { userId: res.userId } });
+        if (res?.requires2fa || res?.data?.requires2fa) {
+          const userId = res?.userId || res?.data?.userId;
+          this.router.navigate(["/auth/2fa-verify"], { queryParams: { userId } });
           return;
         }
         const unwrapped = res?.data?.data ?? res?.data ?? res;

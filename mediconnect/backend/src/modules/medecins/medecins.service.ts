@@ -12,6 +12,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { UpdateAvailabilityDto } from './update-availability.dto';
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationType } from '../notifications/notification.entity';
+import { SmsService } from '../notifications/sms.service';
 
 @Injectable()
 export class MedecinsService {
@@ -27,6 +28,7 @@ export class MedecinsService {
     @InjectRepository(Patient)
     private patientRepository: Repository<Patient>,
     private readonly notificationsService: NotificationsService,
+    private readonly smsService: SmsService,
   ) {}
 
   async getProfile(userId: string) {
@@ -114,7 +116,7 @@ export class MedecinsService {
   }
 
   async getAllMedecinsWithProfiles(search?: string, specialite?: string, ville?: string) {
-  const roles = ['MEDECIN', 'MEDECIN_GENERALISTE', 'MEDECIN_SPECIALISTE', 'MEDECIN_CHEF_SERVICE'];
+  const roles = ['MEDECIN', 'MEDECIN_GENERALISTE', 'MEDECIN_SPECIALISTE'];
  
   let qb = this.userRepository
     .createQueryBuilder('user')
@@ -319,6 +321,19 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
           relatedId: appointment.id,
         });
         console.log(`[Notifications] acceptAppointment -> notif envoyee a userId=${patientUserId}`);
+
+        // ── Envoi SMS ────────────────────────────────────────────────
+        try {
+          const patientPhone = await this.resolvePatientPhone(appointment.patientId);
+          if (patientPhone) {
+            await this.smsService.sendSms(
+              patientPhone,
+              `MediConnect: Votre rendez-vous du ${dateStr} a ${timeStr} a ete confirme.`,
+            );
+          }
+        } catch (smsErr: any) {
+          console.warn('[SMS] Impossible d\'envoyer le SMS:', smsErr.message);
+        }
       } catch (e) {
         console.warn('[Notifications] Impossible de notifier le patient (accept):', e.message);
       }
@@ -364,6 +379,19 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
       return result[0].user_id;
     }
     return patientId;
+  }
+
+  private async resolvePatientPhone(patientId: string): Promise<string | null> {
+    const result = await this.appointmentRepository.manager.query(
+      `SELECT u.phone FROM patients p LEFT JOIN users u ON u.id = p.user_id WHERE p.id = $1 LIMIT 1`,
+      [patientId]
+    );
+    if (result?.length > 0 && result[0].phone) return result[0].phone;
+    const fromUser = await this.appointmentRepository.manager.query(
+      `SELECT phone FROM users WHERE id = $1 LIMIT 1`,
+      [patientId]
+    );
+    return fromUser?.[0]?.phone || null;
   }
   async getMyPatients(doctorId: string) {
     // RÃ©cupÃ©rer les relations

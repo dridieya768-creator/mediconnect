@@ -167,6 +167,12 @@ import * as L from "leaflet";
               <label class="form-label">Email professionnel</label>
               <input class="form-input" type="email" [(ngModel)]="form.emailPro" placeholder="dr.nom@cabinet.tn"/>
             </div>
+             <div class="form-group">
+              <label class="form-label">Rpps</label>
+              <input class="form-input" type="email" [(ngModel)]="form.emailPro" placeholder="dr.nom@cabinet.tn"/>
+            </div>
+            
+    
           </div>
         </div>
 
@@ -347,6 +353,7 @@ export class MedecinProfileComponent implements OnInit, OnDestroy, AfterViewChec
     telephonePro: '',
     emailPro: '',
     tarifs: '',
+    rpps:  '',
     actesCouverts: '',
     assurancesAcceptees: '',
     agendaConnecte: true,
@@ -357,11 +364,11 @@ export class MedecinProfileComponent implements OnInit, OnDestroy, AfterViewChec
   };
 
   features = [
-    { key: 'agendaConnecte',       icon: '📅', label: 'Agenda connecté',        desc: 'Synchronisation avec le planning' },
-    { key: 'disponTeleconsult',    icon: '💻', label: 'Téléconsultation',        desc: 'Disponible en vidéo consultation' },
-    { key: 'connexionVideoIntegree', icon: '📹', label: 'Vidéo intégrée',       desc: 'Utiliser Jitsi Meet intégré' },
-    { key: 'profilSEO',            icon: '🔍', label: 'Profil SEO',             desc: 'Référencement sur les moteurs de recherche' },
-    { key: 'statsAnalytics',       icon: '📊', label: 'Stats & Analytics',      desc: 'Statistiques de consultation du profil' },
+    { key: 'agendaConnecte',       icon: '', label: 'Agenda connecté',        desc: 'Synchronisation avec le planning' },
+    { key: 'disponTeleconsult',    icon: '', label: 'Téléconsultation',        desc: 'Disponible en vidéo consultation' },
+    { key: 'connexionVideoIntegree', icon: '', label: 'Vidéo intégrée',       desc: 'Utiliser Jitsi Meet intégré' },
+    { key: 'profilSEO',            icon: '', label: 'Profil SEO',             desc: 'Référencement sur les moteurs de recherche' },
+    { key: 'statsAnalytics',       icon: '', label: 'Stats & Analytics',      desc: 'Statistiques de consultation du profil' },
   ];
 
   ngOnInit() { this.loadProfile(); }
@@ -413,7 +420,7 @@ export class MedecinProfileComponent implements OnInit, OnDestroy, AfterViewChec
     if (this.form.geoGoogleMaps) {
       this.profileMarker = L.marker(center, { icon, draggable: true })
         .addTo(this.profileMap)
-        .bindPopup('📍 Mon cabinet').openPopup();
+        .bindPopup(' Mon cabinet').openPopup();
       this.profileMarker.on('dragend', (e: any) => {
         const pos = e.target.getLatLng();
         this.form.geoGoogleMaps = `${pos.lat.toFixed(6)},${pos.lng.toFixed(6)}`;

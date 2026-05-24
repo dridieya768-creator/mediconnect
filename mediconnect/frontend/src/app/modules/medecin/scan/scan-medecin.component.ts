@@ -54,7 +54,7 @@ import { HttpClient } from "@angular/common/http";
 
               <!-- Badge vérifié -->
               <div style="margin-top:10px; display:inline-flex; align-items:center; gap:6px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:20px; padding:4px 12px; font-size:12px; color:#16a34a; font-weight:700;">
-                ✅ Médecin vérifié — MediConnect
+                Médecin vérifié — MediConnect
               </div>
             </div>
 

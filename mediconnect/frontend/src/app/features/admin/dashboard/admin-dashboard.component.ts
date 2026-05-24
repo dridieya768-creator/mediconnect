@@ -12,10 +12,7 @@ export const ROLES = [
   'PATIENT',
   'MEDECIN_GENERALISTE', 'MEDECIN_SPECIALISTE', 'MEDECIN_CHEF_SERVICE',
   'PHARMACIEN_TITULAIRE',
-  'BIOLOGISTE_RESPONSABLE', 'BIOLOGISTE_MEDICAL',
-  'TECHNICIEN_LABO', 'PRELEVEUR',
-  'RADIOLOGUE', 'MANIPULATEUR_RADIO', 'TECHNICIEN_IMAGERIE',
-  'ASSISTANT_MEDICAL', 'SECRETAIRE_MEDICAL',
+  
 ] as const;
 
 export const STATUTS = ['ACTIVE', 'INACTIVE', 'SUSPENDED', 'PENDING_VERIFICATION'] as const;
@@ -62,7 +59,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   isLoadingDocs = signal(false);
   rejectReason  = '';
 
-  // ── Audit logs ─────────────────────────────────────────────────────────────
+  
   activeTab     = signal<'users' | 'audit'>('users');
   auditLogs     = signal<any[]>([]);
   auditLoading  = signal(false);
@@ -126,7 +123,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       ]);
       // Recharger la liste des utilisateurs pour afficher le nouveau compte
       this.loadUsers();
-      this.showToast(`🔔 ${notif.message}`, 'success');
+      this.showToast(` ${notif.message}`, 'success');
     });
   }
 
@@ -303,6 +300,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   }
 
   openDoc(doc: DoctorDocument) {
+    const userId = this.doctorModal()?.id;
     if (doc.base64) {
       try {
         const binary = atob(doc.base64);
@@ -314,6 +312,15 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       } catch {
         this.showToast('Erreur ouverture document', 'error');
       }
+    } else if (doc.filePath) {
+      if (doc.filePath.startsWith('http')) {
+        window.open(doc.filePath, '_blank');
+      } else {
+        const filename = doc.filePath.replace(/\\/g, '/').split('/').pop();
+        window.open(`http://localhost:3000/uploads/doctor-docs/${userId}/${filename}`, '_blank');
+      }
+    } else if (doc.filename) {
+      window.open(`http://localhost:3000/uploads/doctor-docs/${userId}/${doc.filename}`, '_blank');
     } else {
       this.showToast('Document non disponible', 'error');
     }
@@ -321,11 +328,11 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
   getDocLabel(type: string): string {
     const labels: Record<string, string> = {
-      DIPLOME:           '🎓 Diplôme de Médecine',
-      CASIER_JUDICIAIRE: '📜 Casier judiciaire',
-      CARTE_ORDRE:       "🪪 Carte d'inscription à l'Ordre",
-      CIN:               '🪪 CIN',
-      ATTESTATION_SPEC:  '🏅 Attestation de spécialité',
+      DIPLOME:           ' Diplôme de Médecine',
+      CASIER_JUDICIAIRE: ' Casier judiciaire',
+      CARTE_ORDRE:       " Carte d'inscription à l'Ordre",
+      CIN:               ' CIN',
+      ATTESTATION_SPEC:  ' Attestation de spécialité',
     };
     return labels[type] || `📄 ${type}`;
   }
@@ -341,7 +348,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       this.users.update(list => list.map(u =>
         u.id === user.id ? { ...u, status: 'ACTIVE' as UserStatus } : u
       ));
-      this.showToast(`✅ Dr. ${user.firstName} ${user.lastName} approuvé !`);
+      this.showToast(` Dr. ${user.firstName} ${user.lastName} approuvé !`);
       this.closeModal();
       this.isSubmitting.set(false);
     });
@@ -410,4 +417,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   }
 
   trackById(_: number, u: AdminUser): string { return u.id; }
+
+  logout() {
+    this.auth.logout();
+  }
 }

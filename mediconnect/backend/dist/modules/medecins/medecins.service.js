@@ -26,14 +26,16 @@ const path = require("path");
 const uuid_1 = require("uuid");
 const notifications_service_1 = require("../notifications/notifications.service");
 const notification_entity_1 = require("../notifications/notification.entity");
+const sms_service_1 = require("../notifications/sms.service");
 let MedecinsService = class MedecinsService {
-    constructor(medecinProfileRepository, doctorPatientRepository, userRepository, appointmentRepository, patientRepository, notificationsService) {
+    constructor(medecinProfileRepository, doctorPatientRepository, userRepository, appointmentRepository, patientRepository, notificationsService, smsService) {
         this.medecinProfileRepository = medecinProfileRepository;
         this.doctorPatientRepository = doctorPatientRepository;
         this.userRepository = userRepository;
         this.appointmentRepository = appointmentRepository;
         this.patientRepository = patientRepository;
         this.notificationsService = notificationsService;
+        this.smsService = smsService;
     }
     async getProfile(userId) {
         const profile = await this.medecinProfileRepository.findOne({
@@ -105,7 +107,7 @@ let MedecinsService = class MedecinsService {
         };
     }
     async getAllMedecinsWithProfiles(search, specialite, ville) {
-        const roles = ['MEDECIN', 'MEDECIN_GENERALISTE', 'MEDECIN_SPECIALISTE', 'MEDECIN_CHEF_SERVICE'];
+        const roles = ['MEDECIN', 'MEDECIN_GENERALISTE', 'MEDECIN_SPECIALISTE'];
         let qb = this.userRepository
             .createQueryBuilder('user')
             .where('user.role IN (:...roles)', { roles })
@@ -259,6 +261,15 @@ let MedecinsService = class MedecinsService {
                         relatedId: appointment.id,
                     });
                     console.log(`[Notifications] acceptAppointment -> notif envoyee a userId=${patientUserId}`);
+                    try {
+                        const patientPhone = await this.resolvePatientPhone(appointment.patientId);
+                        if (patientPhone) {
+                            await this.smsService.sendSms(patientPhone, `MediConnect: Votre rendez-vous du ${dateStr} a ${timeStr} a ete confirme.`);
+                        }
+                    }
+                    catch (smsErr) {
+                        console.warn('[SMS] Impossible d\'envoyer le SMS:', smsErr.message);
+                    }
                 }
                 catch (e) {
                     console.warn('[Notifications] Impossible de notifier le patient (accept):', e.message);
@@ -299,6 +310,13 @@ let MedecinsService = class MedecinsService {
             return result[0].user_id;
         }
         return patientId;
+    }
+    async resolvePatientPhone(patientId) {
+        const result = await this.appointmentRepository.manager.query(`SELECT u.phone FROM patients p LEFT JOIN users u ON u.id = p.user_id WHERE p.id = $1 LIMIT 1`, [patientId]);
+        if (result?.length > 0 && result[0].phone)
+            return result[0].phone;
+        const fromUser = await this.appointmentRepository.manager.query(`SELECT phone FROM users WHERE id = $1 LIMIT 1`, [patientId]);
+        return fromUser?.[0]?.phone || null;
     }
     async getMyPatients(doctorId) {
         const relations = await this.doctorPatientRepository.find({
@@ -498,7 +516,8 @@ exports.MedecinsService = MedecinsService = __decorate([
         typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
-        notifications_service_1.NotificationsService])
+        notifications_service_1.NotificationsService,
+        sms_service_1.SmsService])
 ], MedecinsService);
 class RevenusService {
     static async getRevenus(appointmentRepo, doctorId, from, to) {

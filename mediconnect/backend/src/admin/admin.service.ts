@@ -89,7 +89,7 @@ export class AdminService {
 
     const medecinRoles = [
       UserRole.MEDECIN, UserRole.MEDECIN_GENERALISTE, UserRole.MEDECIN_SPECIALISTE,
-      UserRole.MEDECIN_CHEF_SERVICE, UserRole.PHARMACIEN,
+       UserRole.PHARMACIEN,
     ] as string[];
     const isProfessionnel = medecinRoles.includes(saved.role as string);
     if (isProfessionnel && dto.status && dto.status !== oldStatus) {

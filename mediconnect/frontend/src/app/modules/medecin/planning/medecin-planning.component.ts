@@ -17,7 +17,7 @@ type PlanningView = "calendar" | "requests" | "slots" | "conges";
 
       <!-- HEADER -->
       <div class="page-header">
-        <div>
+        <div class="header-title-block">
           <h1 class="page-title"> Mon Planning</h1>
           <p class="page-subtitle">Gérez vos disponibilités et demandes de RDV</p>
         </div>
@@ -408,24 +408,25 @@ type PlanningView = "calendar" | "requests" | "slots" | "conges";
   `,
   styles: [`
     .planning-page { padding:0; }
-    .page-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; flex-wrap:wrap; gap:12px; }
+    .page-header { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:24px; flex-wrap:wrap; gap:12px; padding-top:8px; }
+    .header-title-block { flex:1; text-align:left; padding-left:40px; }
     .page-title  { font-size:26px; font-weight:700; color:#0f172a; margin:0 0 4px; }
     .page-subtitle { color:#64748b; font-size:14px; margin:0; }
-    .header-actions { display:flex; align-items:center; gap:12px; }
+    .header-actions { display:flex; align-items:center; gap:12px; padding-bottom:4px; }
 
     .notif-badge { background:#fef2f2; color:#dc2626; border:1px solid #fecaca; border-radius:8px; padding:6px 12px; font-size:12px; font-weight:600; }
 
     .alert-success { background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; border-radius:10px; padding:12px 16px; margin-bottom:16px; font-size:14px; }
     .alert-error   { background:#fef2f2; color:#dc2626; border:1px solid #fecaca; border-radius:10px; padding:12px 16px; margin-bottom:16px; font-size:14px; }
 
-    .tabs-bar { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
+    .tabs-bar { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; justify-content:center; }
     .tab-btn { padding:8px 18px; border:1.5px solid #e2e8f0; border-radius:24px; background:white; font-size:13px; cursor:pointer; color:#64748b; display:flex; align-items:center; gap:6px; transition:all .15s; }
     .tab-btn.active { border-color:#4f46e5; color:#4f46e5; background:#eef2ff; font-weight:600; }
     .tab-count { background:#e2e8f0; color:#64748b; border-radius:10px; padding:1px 7px; font-size:11px; }
     .tab-count.pending { background:#fef2f2; color:#dc2626; }
     .tab-btn.active .tab-count { background:#4f46e5; color:white; }
 
-    .calendar-card { background:white; border-radius:16px; padding:24px; box-shadow:0 2px 16px rgba(0,0,0,.06); overflow:hidden; }
+    .calendar-card { background:white; border-radius:16px; padding:24px; box-shadow:0 2px 16px rgba(0,0,0,.06); overflow:hidden; max-width:900px; margin:0 auto; }
     .cal-nav { display:flex; align-items:center; gap:12px; margin-bottom:20px; }
     .cal-title { font-size:16px; font-weight:700; color:#0f172a; flex:1; text-align:center; }
     .btn-nav  { background:white; border:1.5px solid #e2e8f0; border-radius:8px; padding:6px 14px; cursor:pointer; font-size:16px; }

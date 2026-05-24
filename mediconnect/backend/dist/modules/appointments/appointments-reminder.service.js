@@ -34,7 +34,7 @@ let AppointmentsReminderService = AppointmentsReminderService_1 = class Appointm
         });
     }
     async sendReminders() {
-        this.logger.log('🔔 Vérification des rappels RDV...');
+        this.logger.log(' Vérification des rappels RDV...');
         const now = new Date();
         for (const hoursAhead of [48, 24]) {
             const from = new Date(now.getTime() + (hoursAhead - 0.5) * 60 * 60 * 1000);
@@ -76,7 +76,7 @@ let AppointmentsReminderService = AppointmentsReminderService_1 = class Appointm
         await transporter.sendMail({
             from: `"MediConnect" <${process.env.SMTP_USER}>`,
             to: patientEmail,
-            subject: `⏰ Rappel : Votre RDV dans ${hoursAhead}h — ${doctorName}`,
+            subject: ` Rappel : Votre RDV dans ${hoursAhead}h — ${doctorName}`,
             html: `
         <div style="font-family:Arial,sans-serif; max-width:520px; margin:auto; background:#fff; border-radius:12px; overflow:hidden; border:1px solid #e2e8f0;">
           <div style="background:#0d9488; padding:24px 28px;">
@@ -109,7 +109,7 @@ let AppointmentsReminderService = AppointmentsReminderService_1 = class Appointm
             ${appt.consultationType === 'TELECONSULTATION' && appt.videoRoomId ? `
             <div style="text-align:center; margin:20px 0;">
               <a href="https://meet.jit.si/${appt.videoRoomId}" style="background:#3b82f6; color:white; padding:12px 28px; border-radius:8px; text-decoration:none; font-weight:600; font-size:14px;">
-                📹 Rejoindre la téléconsultation
+                 Rejoindre la téléconsultation
               </a>
             </div>
             ` : ''}

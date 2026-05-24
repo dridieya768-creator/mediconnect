@@ -121,7 +121,7 @@ import { of } from "rxjs";
             </div>
 
             <div class="qr-url" [class.hidden]="qrLoading() || !!qrError()">
-              <span class="qr-url-label">🔗 Lien de profil</span>
+              <span class="qr-url-label"> Lien de profil</span>
               <span class="qr-url-val">{{ profileUrl() }}</span>
             </div>
 
@@ -380,7 +380,7 @@ import { of } from "rxjs";
 })
 export class MedecinDashboardComponent implements OnInit, AfterViewInit {
 
-  // ✅ { static: true } = disponible dès ngAfterViewInit, peu importe les *ngIf
+  
   @ViewChild("qrCanvas", { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
 
   private http   = inject(HttpClient);
@@ -434,10 +434,10 @@ export class MedecinDashboardComponent implements OnInit, AfterViewInit {
     const pending        = appts.filter(a => a.status === "REQUESTED").length;
 
     return [
-      { icon: "📅", label: "RDV aujourd'hui",    value: todayCount,     trend: 0 },
-      { icon: "📆", label: "RDV cette semaine",   value: weekCount,      trend: 0 },
-      { icon: "✅", label: "Consultations total",  value: completedTotal, trend: 0 },
-      { icon: "⏳", label: "En attente",           value: pending,        trend: pending > 0 ? pending : 0 },
+      { icon: "", label: "RDV aujourd'hui",    value: todayCount,     trend: 0 },
+      { icon: "", label: "RDV cette semaine",   value: weekCount,      trend: 0 },
+      { icon: "", label: "Consultations total",  value: completedTotal, trend: 0 },
+      { icon: "", label: "En attente",           value: pending,        trend: pending > 0 ? pending : 0 },
     ];
   });
 
@@ -491,7 +491,7 @@ loadData() {
           this.isLoading.set(false);
         });
 
-      // ✅ Générer le QR — canvas toujours dans le DOM (static: true)
+     
       if (this.canvasRef?.nativeElement) {
         this.generateQr(url);
       } else {
@@ -500,7 +500,7 @@ loadData() {
     });
 }
 
-  // ── QR Generation ────────────────────────────────────────────────────────
+ 
   private async generateQr(url: string) {
     this.qrLoading.set(true);
     this.qrError.set(null);
@@ -525,7 +525,7 @@ loadData() {
     }
   }
 
-  // ── QR Actions ───────────────────────────────────────────────────────────
+  
   downloadQr() {
     const canvas = this.canvasRef?.nativeElement;
     if (!canvas) return;
@@ -557,7 +557,7 @@ loadData() {
       .url{margin-top:12px;font-size:11px;color:#4f46e5;word-break:break-all;max-width:280px;text-align:center}
       .note{margin-top:20px;font-size:11px;color:#94a3b8;text-align:center;max-width:280px}</style>
       </head><body>
-      <h1>🏥 MediConnect</h1>
+      <h1> MediConnect</h1>
       <p>Profil Médecin Vérifié — ${this.medecin()?.firstName ?? ''} ${this.medecin()?.lastName ?? ''}</p>
       <img src="${data}" alt="QR Code"/>
       <div class="url">${this.profileUrl()}</div>

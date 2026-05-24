@@ -288,14 +288,14 @@ interface Appointment {
 
     /* ── Header ── */
     .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
-    .page-title  { font-size: 26px; font-weight: 700; color: #0f172a; margin: 0 0 4px; }
-    .page-subtitle { color: #64748b; font-size: 14px; margin: 0; }
-    .header-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .page-title  { font-size: 26px; font-weight: 700; color: #2563eb; margin: 0 0 4px; padding-left: 40px; }
+    .page-subtitle { color: #64748b; font-size: 14px; margin: 0; padding-left: 40px; }
+    .header-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; flex: 1; }
     .search-wrap { position: relative; }
     .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 14px; }
     .search-input { padding: 9px 12px 9px 32px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 14px; width: 240px; outline: none; }
     .search-input:focus { border-color: #4f46e5; }
-    .btn-export { padding: 9px 18px; background: white; color: #4f46e5; border: 1.5px solid #4f46e5; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+    .btn-export { padding: 9px 18px; background: white; color: #4f46e5; border: 1.5px solid #4f46e5; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; align-self: flex-end; margin-top: 8px; margin-right: 500px; }
 
     /* ── Loading ── */
     .loading-state { display: flex; flex-direction: column; align-items: center; padding: 60px; color: #64748b; gap: 12px; }
@@ -304,14 +304,14 @@ interface Appointment {
 
     /* ── Stats ── */
     .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
-    .stat-card { background: white; border-radius: 14px; border: 1.5px solid #e2e8f0; padding: 16px 20px; display: flex; align-items: center; gap: 14px; }
+    .stat-card { background: white; border-radius: 14px; border: 1.5px solid #e2e8f0; padding: 10px 14px; display: flex; align-items: center; gap: 10px; justify-content: center; }
     .stat-card.indigo { border-left: 4px solid #4f46e5; }
     .stat-card.green  { border-left: 4px solid #16a34a; }
     .stat-card.blue   { border-left: 4px solid #3b82f6; }
     .stat-card.orange { border-left: 4px solid #d97706; }
-    .stat-icon { font-size: 26px; }
-    .stat-val   { font-size: 22px; font-weight: 800; color: #0f172a; }
-    .stat-label { font-size: 12px; color: #64748b; }
+    .stat-icon { font-size: 20px; }
+    .stat-val   { font-size: 16px; font-weight: 800; color: #0f172a; text-align: center; }
+    .stat-label { font-size: 11px; color: #64748b; text-align: center; }
 
     /* ── Tabs ── */
     .tabs-bar { display: flex; gap: 8px; margin-bottom: 20px; }

@@ -17,14 +17,7 @@ var UserRole;
     UserRole["MEDECIN"] = "MEDECIN";
     UserRole["MEDECIN_GENERALISTE"] = "MEDECIN_GENERALISTE";
     UserRole["MEDECIN_SPECIALISTE"] = "MEDECIN_SPECIALISTE";
-    UserRole["MEDECIN_CHEF_SERVICE"] = "MEDECIN_CHEF_SERVICE";
     UserRole["PHARMACIEN"] = "PHARMACIEN";
-    UserRole["BIOLOGISTE_RESPONSABLE"] = "BIOLOGISTE_RESPONSABLE";
-    UserRole["BIOLOGISTE_MEDICAL"] = "BIOLOGISTE_MEDICAL";
-    UserRole["TECHNICIEN_LABO"] = "TECHNICIEN_LABO";
-    UserRole["RADIOLOGUE"] = "RADIOLOGUE";
-    UserRole["MANIPULATEUR_RADIO"] = "MANIPULATEUR_RADIO";
-    UserRole["SECRETAIRE_RADIO"] = "SECRETAIRE_RADIO";
     UserRole["ADMIN"] = "ADMIN";
 })(UserRole || (exports.UserRole = UserRole = {}));
 var UserStatus;
@@ -70,10 +63,6 @@ __decorate([
     (0, typeorm_1.Column)({ type: "enum", enum: UserStatus, default: UserStatus.PENDING_VERIFICATION }),
     __metadata("design:type", String)
 ], User.prototype, "status", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ name: "tenant_id", nullable: true }),
-    __metadata("design:type", String)
-], User.prototype, "tenantId", void 0);
 __decorate([
     (0, typeorm_1.Column)({ name: "country_code", default: "TN", length: 2 }),
     __metadata("design:type", String)

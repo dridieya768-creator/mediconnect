@@ -16,11 +16,7 @@
     </div>
     <nav class="sidebar-nav">
       <a class="nav-item active" routerLink="/admin/dashboard"><span></span> Dashboard</a>
-      <a class="nav-item" routerLink="/admin/securite"><span></span> Sécurité & Audit</a>
-      <a class="nav-item" routerLink="/admin/monitoring"><span></span> Monitoring</a>
-      <a class="nav-item" routerLink="/admin/sauvegardes"><span></span> Sauvegardes</a>
-      <a class="nav-item" routerLink="/admin/configuration"><span>⚙️</span> Configuration</a>
-      <a class="nav-item" routerLink="/admin/support"><span></span> Support</a>
+   
     </nav>
     <div class="sidebar-footer">
       <div class="sidebar-user">
@@ -30,6 +26,7 @@
           <div class="su-role">Super Admin</div>
         </div>
       </div>
+      <button class="btn-logout-admin" (click)="logout()"> Déconnexion</button>
     </div>
   </aside>
 

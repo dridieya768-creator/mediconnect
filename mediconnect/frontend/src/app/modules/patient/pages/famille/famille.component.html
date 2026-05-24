@@ -1,0 +1,258 @@
+<div class="famille-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Ma famille</h1>
+      <p class="page-subtitle">Gérez les profils de vos proches pour prendre des rendez-vous en leur nom</p>
+    </div>
+  </div>
+
+  <div class="add-btn-center">
+    <button class="btn-add-circle" (click)="openAdd()" title="Ajouter un proche">+</button>
+    <span class="add-label">Ajouter un proche</span>
+  </div>
+
+  <div class="alert-success" *ngIf="successMsg()">{{ successMsg() }}</div>
+  <div class="alert-error"   *ngIf="errorMsg()">{{ errorMsg() }}</div>
+
+  <div class="loading" *ngIf="isLoading()">
+    <div class="spinner"></div>
+    <p>Chargement...</p>
+  </div>
+
+  <div class="members-grid" *ngIf="!isLoading()">
+    <div class="empty-state" *ngIf="members().length === 0">
+      <div style="font-size:56px;margin-bottom:12px"></div>
+      <p>Aucun proche ajouté</p>
+      <button class="btn-add" (click)="openAdd()">Ajouter un proche</button>
+    </div>
+
+    <div class="member-card" *ngFor="let m of members()">
+      <div class="member-avatar">{{ getInitials(m) }}</div>
+      <div class="member-info">
+        <div class="member-name">{{ m.prenom }} {{ m.nom }}</div>
+        <div class="member-relation">{{ getRelationLabel(m.relation) }}</div>
+        <div class="member-meta">
+          <span>{{ m.sexe === 'M' ? '♂ Masculin' : '♀ Féminin' }}</span>
+          <span *ngIf="m.dateNaissance">· {{ getAge(m.dateNaissance) }} ans</span>
+          <span *ngIf="m.groupeSanguin" class="blood-badge">{{ m.groupeSanguin }}</span>
+        </div>
+        <div class="member-allergies" *ngIf="m.allergies && m.allergies.length > 0">
+          ⚠ Allergies : {{ m.allergies.join(', ') }}
+        </div>
+        <div class="docs-status" *ngIf="needsDocs(m.relation)">
+          <span class="doc-badge" [class.ok]="m.docMembrePath" [class.missing]="!m.docMembrePath">
+            {{ m.docMembrePath ? '✓' : '✗' }} Contenu de la naissance ({{ getRelationLabel(m.relation) }})
+          </span>
+          <span class="doc-badge" [class.ok]="m.docPatientPath" [class.missing]="!m.docPatientPath">
+            {{ m.docPatientPath ? '✓' : '✗' }} Contenu de la naissance (vous)
+          </span>
+        </div>
+      </div>
+      <div class="member-actions">
+        <button class="btn-edit" (click)="openEdit(m)" title="Modifier">✏</button>
+        <button class="btn-docs" (click)="openDocs(m)" title="Documents" *ngIf="needsDocs(m.relation)"></button>
+        <button class="btn-delete" (click)="confirmDelete(m)" title="Supprimer">🗑</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL Ajout / Édition -->
+<div class="modal-overlay" *ngIf="showModal()" (click)="closeModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ editingMember() ? 'Modifier le proche' : 'Ajouter un proche' }}</h2>
+      <button class="btn-close" (click)="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Prénom *</label>
+          <input type="text" [(ngModel)]="form.prenom" placeholder="Prénom" />
+        </div>
+        <div class="form-group">
+          <label>Nom *</label>
+          <input type="text" [(ngModel)]="form.nom" placeholder="Nom" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Date de naissance *</label>
+          <input type="date" [(ngModel)]="form.dateNaissance" />
+        </div>
+        <div class="form-group">
+          <label>Sexe *</label>
+          <select [(ngModel)]="form.sexe">
+            <option value="M">Masculin</option>
+            <option value="F">Féminin</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Relation *</label>
+        <select [(ngModel)]="form.relation">
+          <option value="ENFANT">Enfant</option>
+          <option value="CONJOINT">Conjoint(e)</option>
+          <option value="PARENT">Parent</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>NSS (optionnel)</label>
+          <input type="text" [(ngModel)]="form.nss" placeholder="Numéro sécurité sociale" />
+        </div>
+        <div class="form-group">
+          <label>Groupe sanguin (optionnel)</label>
+          <select [(ngModel)]="form.groupeSanguin">
+            <option value="">—</option>
+            <option *ngFor="let g of bloodGroups" [value]="g">{{ g }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Allergies (optionnel, séparées par virgule)</label>
+        <input type="text" [(ngModel)]="allergiesInput" placeholder="Ex: pénicilline, arachides" />
+      </div>
+
+      <div class="docs-section" *ngIf="needsDocs(form.relation)">
+        <div class="docs-section-title"> Documents justificatifs</div>
+        <p class="docs-section-hint">Ces documents permettent de vérifier le lien familial.</p>
+
+        <div class="doc-upload-block">
+          <div class="doc-upload-label">
+            <span class="doc-num">1</span>
+            <div>
+              <strong>Contenu de la naissance</strong> de {{ form.prenom || getRelationLabel(form.relation) }}
+              <p class="doc-hint">Acte de naissance du {{ getRelationLabel(form.relation) | lowercase }}</p>
+            </div>
+            <span class="doc-status-icon" *ngIf="editingMember()?.docMembrePath && !docMembreFile"></span>
+          </div>
+          <div class="file-input-row">
+            <label class="file-label" [class.has-file]="docMembreFile">
+              <input type="file" accept="application/pdf" (change)="onDocMembreChange($event)" hidden #docMembreInputInline />
+              <span (click)="docMembreInputInline.click()">
+                {{ docMembreFile ? docMembreFile.name : (editingMember()?.docMembrePath ? ' Remplacer' : '📎 Choisir un PDF') }}
+              </span>
+            </label>
+            <a *ngIf="editingMember()?.docMembrePath && !docMembreFile"
+               [href]="getDocUrl(editingMember()!.docMembrePath!)"
+               target="_blank" class="btn-view-doc">👁 Voir</a>
+          </div>
+        </div>
+
+        <div class="doc-upload-block">
+          <div class="doc-upload-label">
+            <span class="doc-num">2</span>
+            <div>
+              <strong>Contenu de la naissance</strong> de vous-même
+              <p class="doc-hint">Votre acte de naissance pour prouver le lien familial</p>
+            </div>
+            <span class="doc-status-icon" *ngIf="editingMember()?.docPatientPath && !docPatientFile"></span>
+          </div>
+          <div class="file-input-row">
+            <label class="file-label" [class.has-file]="docPatientFile">
+              <input type="file" accept="application/pdf" (change)="onDocPatientChange($event)" hidden #docPatientInputInline />
+              <span (click)="docPatientInputInline.click()">
+                {{ docPatientFile ? docPatientFile.name : (editingMember()?.docPatientPath ? ' Remplacer' : '📎 Choisir un PDF') }}
+              </span>
+            </label>
+            <a *ngIf="editingMember()?.docPatientPath && !docPatientFile"
+               [href]="getDocUrl(editingMember()!.docPatientPath!)"
+               target="_blank" class="btn-view-doc">👁 Voir</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" (click)="closeModal()">Annuler</button>
+      <button class="btn-save" (click)="save()" [disabled]="isSaving()">
+        {{ isSaving() ? 'Enregistrement...' : 'Enregistrer' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL Documents -->
+<div class="modal-overlay" *ngIf="docsModal()" (click)="closeDocsModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2> Documents justificatifs</h2>
+      <button class="btn-close" (click)="closeDocsModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="docs-intro">
+        Pour <strong>{{ docsModal()!.prenom }} {{ docsModal()!.nom }}</strong>
+        ({{ getRelationLabel(docsModal()!.relation) }}), veuillez fournir :
+      </p>
+      <div class="doc-upload-block">
+        <div class="doc-upload-label">
+          <span class="doc-num">1</span>
+          <div>
+            <strong>Contenu de la naissance</strong> de {{ docsModal()!.prenom }}
+            <p class="doc-hint">Acte de naissance du {{ getRelationLabel(docsModal()!.relation) | lowercase }}</p>
+          </div>
+          <span class="doc-status-icon" *ngIf="docsModal()!.docMembrePath"></span>
+        </div>
+        <div class="file-input-row">
+          <label class="file-label" [class.has-file]="docMembreFile">
+            <input type="file" accept="application/pdf" (change)="onDocMembreChange($event)" hidden #docMembreInput />
+            <span (click)="docMembreInput.click()">
+              {{ docMembreFile ? docMembreFile.name : (docsModal()!.docMembrePath ? ' Remplacer le PDF' : '📎 Choisir un PDF') }}
+            </span>
+          </label>
+          <a *ngIf="docsModal()!.docMembrePath && !docMembreFile"
+             [href]="getDocUrl(docsModal()!.docMembrePath!)"
+             target="_blank" class="btn-view-doc">👁 Voir</a>
+        </div>
+      </div>
+      <div class="doc-upload-block">
+        <div class="doc-upload-label">
+          <span class="doc-num">2</span>
+          <div>
+            <strong>Contenu de la naissance</strong> de vous-même
+            <p class="doc-hint">Votre propre acte de naissance pour prouver le lien familial</p>
+          </div>
+          <span class="doc-status-icon" *ngIf="docsModal()!.docPatientPath"></span>
+        </div>
+        <div class="file-input-row">
+          <label class="file-label" [class.has-file]="docPatientFile">
+            <input type="file" accept="application/pdf" (change)="onDocPatientChange($event)" hidden #docPatientInput />
+            <span (click)="docPatientInput.click()">
+              {{ docPatientFile ? docPatientFile.name : (docsModal()!.docPatientPath ? ' Remplacer le PDF' : '📎 Choisir un PDF') }}
+            </span>
+          </label>
+          <a *ngIf="docsModal()!.docPatientPath && !docPatientFile"
+             [href]="getDocUrl(docsModal()!.docPatientPath!)"
+             target="_blank" class="btn-view-doc">👁 Voir</a>
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" (click)="closeDocsModal()">Annuler</button>
+      <button class="btn-save" (click)="saveDocuments()"
+              [disabled]="isSaving() || (!docMembreFile && !docPatientFile)">
+        {{ isSaving() ? 'Envoi...' : 'Enregistrer les documents' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL Suppression -->
+<div class="modal-overlay" *ngIf="deletingMember()" (click)="deletingMember.set(null)">
+  <div class="modal-card modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Confirmer la suppression</h2>
+      <button class="btn-close" (click)="deletingMember.set(null)">✕</button>
+    </div>
+    <div class="modal-body">
+      <p>Supprimer <strong>{{ deletingMember()!.prenom }} {{ deletingMember()!.nom }}</strong> ?</p>
+      <p class="warn-text"> Cette action est irréversible.</p>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" (click)="deletingMember.set(null)">Annuler</button>
+      <button class="btn-delete-confirm" (click)="doDelete()" [disabled]="isSaving()">
+        {{ isSaving() ? '...' : 'Supprimer' }}
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,111 @@
+.page-header { margin-bottom: 24px; text-align: center; }
+.page-title { font-size: 26px; font-weight: 700; color: #0f172a; margin: 0 0 4px; }
+.page-subtitle { color: #64748b; font-size: 14px; margin: 0; }
+
+.loading-state {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 60px; color: #64748b; gap: 12px;
+}
+.spinner {
+  width: 40px; height: 40px;
+  border: 3px solid #e2e8f0; border-top-color: #1a56db;
+  border-radius: 50%; animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.rx-list { display: flex; flex-direction: column; gap: 16px; }
+.rx-card {
+  background: white; border-radius: 16px; padding: 20px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.06); border: 1px solid #e5e7eb;
+}
+.rx-body { display: flex; gap: 20px; align-items: flex-start; }
+.rx-info { flex: 1; }
+
+.rx-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+.rx-doctor { font-size: 16px; font-weight: 700; color: #0f172a; }
+.rx-date { font-size: 12px; color: #64748b; margin-top: 2px; }
+.rx-badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.status-active { background: #f0fdf4; color: #16a34a; }
+.status-expired { background: #fef2f2; color: #dc2626; }
+.status-fully_used { background: #f1f5f9; color: #64748b; }
+.status-partially_used { background: #fffbeb; color: #d97706; }
+.status-revoked { background: #fef2f2; color: #dc2626; }
+
+.rx-meds { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.med-tag {
+  background: #eff6ff; color: #1a56db;
+  padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 500;
+}
+
+.rx-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn-dl {
+  padding: 8px 14px; background: #1a56db; color: white;
+  border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
+  &:disabled { opacity: .5; cursor: not-allowed; background: #94a3b8; }
+}
+.btn-qr {
+  padding: 8px 14px; background: #f0fdf4; color: #16a34a;
+  border: 1.5px solid #bbf7d0; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
+  &:hover { background: #dcfce7; }
+}
+
+.rx-qr-mini {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  cursor: pointer; padding: 8px; border: 1.5px solid #e2e8f0;
+  border-radius: 12px; transition: border-color .2s; flex-shrink: 0;
+  &:hover { border-color: #1a56db; }
+}
+.qr-label { font-size: 10px; font-weight: 700; color: #64748b; letter-spacing: .05em; }
+
+.empty-state {
+  text-align: center; padding: 60px 20px; color: #94a3b8;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.5);
+  display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px;
+}
+.modal-box {
+  background: white; border-radius: 20px; padding: 32px;
+  max-width: 420px; width: 100%; position: relative;
+  box-shadow: 0 20px 60px rgba(0,0,0,.2);
+}
+.modal-close {
+  position: absolute; top: 16px; right: 16px;
+  background: #f1f5f9; border: none; border-radius: 8px;
+  width: 32px; height: 32px; cursor: pointer; font-size: 14px; color: #64748b;
+}
+.modal-title { font-size: 20px; font-weight: 700; color: #0f172a; margin: 0 0 4px; }
+.modal-sub { font-size: 13px; color: #64748b; margin: 0 0 24px; }
+
+.qr-container {
+  display: flex; justify-content: center;
+  background: #f8fafc; border-radius: 16px; padding: 20px; margin-bottom: 16px;
+}
+.qr-code-text {
+  text-align: center; font-family: monospace; font-size: 12px; color: #64748b;
+  background: #f1f5f9; padding: 8px 12px; border-radius: 8px;
+  margin-bottom: 20px; word-break: break-all;
+}
+
+.qr-hint {
+  text-align: center; font-size: 12px; color: #16a34a;
+  background: #f0fdf4; border-radius: 8px; padding: 6px 12px; margin-bottom: 10px;
+}
+.qr-hint-code { color: #d97706; background: #fffbeb; }
+
+.btn-open-pdf {
+  width: 100%; padding: 10px; background: #1a56db; color: white;
+  border: none; border-radius: 10px; font-size: 14px; font-weight: 600;
+  cursor: pointer; margin-bottom: 16px;
+  &:hover { background: #1e40af; }
+}
+
+.modal-info { display: flex; flex-direction: column; gap: 10px; }
+.info-row {
+  display: flex; justify-content: space-between; font-size: 13px;
+  color: #374151; padding: 8px 0; border-bottom: 1px solid #f1f5f9;
+}
+.info-label { font-weight: 600; color: #64748b; }

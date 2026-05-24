@@ -1,0 +1,200 @@
+<div class="appt-page">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Mes Rendez-vous</h1>
+      <p class="page-subtitle">Gerez vos consultations et teleconsultations</p>
+    </div>
+  </div>
+
+  <!-- MESSAGES -->
+  <div class="alert-success" *ngIf="successMsg()">✔ {{ successMsg() }}</div>
+  <div class="alert-error"   *ngIf="errorMsg()">✖ {{ errorMsg() }}</div>
+
+  <!-- VUE LISTE -->
+  <ng-container *ngIf="view() === 'list'">
+    <div class="tabs-bar">
+      <button class="tab-btn" [class.active]="filterTab() === 'upcoming'" (click)="setFilter('upcoming')">
+        ➠ À venir <span class="tab-count">{{ upcomingCount() }}</span>
+      </button>
+      <button class="tab-btn" [class.active]="filterTab() === 'past'" (click)="setFilter('past')">
+        ⏱ Passés <span class="tab-count">{{ pastCount() }}</span>
+      </button>
+      <button class="tab-btn" [class.active]="filterTab() === 'all'" (click)="setFilter('all')">
+        𓂃🖊 Tous <span class="tab-count">{{ appointments().length }}</span>
+      </button>
+    </div>
+
+    <div class="loading-state" *ngIf="isLoading()">
+      <div class="spinner"></div>
+      <p>Chargement de vos rendez-vous...</p>
+    </div>
+
+    <div class="appt-list" *ngIf="!isLoading()">
+      <div class="appt-card" *ngFor="let appt of filteredAppointments()" (click)="openDetail(appt)">
+        <div class="appt-date-block" [class.date-video]="isVideo(appt)">
+          <div class="date-day">{{ formatDay(appt.appointmentDate) }}</div>
+          <div class="date-month">{{ formatMonth(appt.appointmentDate) }}</div>
+          <div class="date-year">{{ formatYear(appt.appointmentDate) }}</div>
+        </div>
+        <div class="appt-body">
+          <div class="appt-top">
+            <div>
+              <div class="appt-doctor">Dr. {{ getDoctorName(appt) }}</div>
+              <div class="appt-spec">{{ getSpecialty(appt) }}</div>
+            </div>
+            <span class="status-pill" [ngClass]="getStatusClass(appt.status)">
+              {{ getStatusLabel(appt.status) }}
+            </span>
+          </div>
+          <div class="appt-meta">
+            <span>{{ isVideo(appt) ? '모 Téléconsultation' : ' Présentiel' }}</span>
+            <span>⏱ {{ formatTime(appt.appointmentDate) }}</span>
+            <span *ngIf="appt.durationMinutes">⏱ {{ appt.durationMinutes }} min</span>
+            <span *ngIf="appt.reason" class="reason-badge">𓂃🖊 {{ appt.reason }}</span>
+          </div>
+          <div class="appt-actions" (click)="$event.stopPropagation()">
+            <button class="btn-sm btn-danger" *ngIf="canCancel(appt)" (click)="openCancel(appt)">✕ Annuler</button>
+            <button class="btn-sm btn-video" *ngIf="isVideo(appt) && appt.status === 'CONFIRMED'" (click)="joinVideo(appt)">📽 Rejoindre</button>
+            <button class="btn-sm btn-rate" *ngIf="appt.status === 'COMPLETED' && !appt.rated" (click)="openRate(appt)"> Évaluer</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="filteredAppointments().length === 0">
+        <div style="font-size:56px"></div>
+        <p>Aucun rendez-vous {{ filterTab() === 'upcoming' ? 'à venir' : filterTab() === 'past' ? 'passé' : '' }}</p>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- VUE DÉTAIL -->
+  <ng-container *ngIf="view() === 'detail' && selectedAppt()">
+    <div class="form-card">
+      <div class="form-header">
+        <button class="btn-back" (click)="showView('list')">← Retour</button>
+        <h2>Détail du Rendez-vous</h2>
+      </div>
+      <div class="detail-grid">
+        <div class="detail-row">
+          <span class="detail-label"> Médecin</span>
+          <span class="detail-value">Dr. {{ getDoctorName(selectedAppt()!) }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">🩺 Spécialité</span>
+          <span class="detail-value">{{ getSpecialty(selectedAppt()!) }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label"> Date</span>
+          <span class="detail-value">{{ formatFullDate(selectedAppt()!.appointmentDate) }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">⏱ Durée</span>
+          <span class="detail-value">{{ selectedAppt()!.durationMinutes }} min</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label"> Type</span>
+          <span class="detail-value">{{ getTypeLabel(selectedAppt()!.consultationType) }}</span>
+        </div>
+        <div class="detail-row" *ngIf="selectedAppt()!.reason">
+          <span class="detail-label">𓂃🖊 Motif</span>
+          <span class="detail-value">{{ selectedAppt()!.reason }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label"> Statut</span>
+          <span class="status-pill" [ngClass]="getStatusClass(selectedAppt()!.status)">
+            {{ getStatusLabel(selectedAppt()!.status) }}
+          </span>
+        </div>
+        <div class="detail-row" *ngIf="selectedAppt()!.cancellationReason">
+          <span class="detail-label"> Motif annulation</span>
+          <span class="detail-value">{{ selectedAppt()!.cancellationReason }}</span>
+        </div>
+        <div class="detail-row" *ngIf="selectedAppt()!.notes">
+          <span class="detail-label">🗒 Notes médecin</span>
+          <span class="detail-value">{{ selectedAppt()!.notes }}</span>
+        </div>
+      </div>
+      <div class="detail-actions">
+        <button class="btn-danger" *ngIf="canCancel(selectedAppt()!)" (click)="openCancel(selectedAppt()!)">✕ Annuler ce RDV</button>
+        <button class="btn-video" *ngIf="isVideo(selectedAppt()!) && selectedAppt()!.status === 'CONFIRMED'" (click)="joinVideo(selectedAppt()!)">📽 Rejoindre la téléconsultation</button>
+        <button class="btn-rate" *ngIf="selectedAppt()!.status === 'COMPLETED' && !selectedAppt()!.rated" (click)="openRate(selectedAppt()!)"> Évaluer la consultation</button>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- VUE ANNULATION -->
+  <ng-container *ngIf="view() === 'cancel' && selectedAppt()">
+    <div class="form-card">
+      <div class="form-header">
+        <button class="btn-back" (click)="showView('list')">← Retour</button>
+        <h2>Annuler le Rendez-vous</h2>
+      </div>
+      <div class="cancel-warning">
+        <div style="font-size:32px"></div>
+        <div>
+          <strong>Vous êtes sur le point d'annuler votre RDV</strong><br>
+          Dr. {{ getDoctorName(selectedAppt()!) }} — {{ formatFullDate(selectedAppt()!.appointmentDate) }}<br>
+          <span style="color:#ef4444; font-size:13px;">Cette action est irréversible.</span>
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:20px;">
+        <label class="form-label">Motif d'annulation *</label>
+        <select class="form-select" [(ngModel)]="cancelReason">
+          <option value="">— Sélectionner un motif —</option>
+          <option value="Empêchement personnel">Empêchement personnel</option>
+          <option value="Problème de transport">Problème de transport</option>
+          <option value="Guérison spontanée">Guérison spontanée</option>
+          <option value="Changement de médecin">Changement de médecin</option>
+          <option value="Autre">Autre</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-top:12px;">
+        <label class="form-label">Précisions (optionnel)</label>
+        <textarea class="form-input" rows="3" [(ngModel)]="cancelNote" placeholder="Informations supplémentaires..."></textarea>
+      </div>
+      <div style="display:flex; gap:12px; margin-top:20px;">
+        <button class="btn-outline flex-1" (click)="showView('list')">Conserver le RDV</button>
+        <button class="btn-danger flex-1" (click)="confirmCancel()" [disabled]="!cancelReason || isCancelling()">
+          {{ isCancelling() ? ' Annulation...' : "✕ Confirmer l'annulation" }}
+        </button>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- VUE ÉVALUATION -->
+  <ng-container *ngIf="view() === 'rate' && selectedAppt()">
+    <div class="form-card">
+      <div class="form-header">
+        <button class="btn-back" (click)="showView('list')">← Retour</button>
+        <h2>Évaluer la Consultation</h2>
+      </div>
+      <div style="text-align:center; padding:16px 0 24px;">
+        <div style="font-size:40px; margin-bottom:8px;"></div>
+        <p style="color:#64748b;">Votre avis aide les autres patients à choisir leur médecin</p>
+        <p style="font-weight:600; color:#0f172a;">Dr. {{ getDoctorName(selectedAppt()!) }}</p>
+      </div>
+      <div class="stars-row">
+        <span *ngFor="let i of [1,2,3,4,5]"
+              class="star"
+              [class.filled]="i <= hoverRating() || (hoverRating() === 0 && i <= rating())"
+              (click)="rating.set(i)"
+              (mouseenter)="hoverRating.set(i)"
+              (mouseleave)="hoverRating.set(0)">★</span>
+      </div>
+      <div class="rating-label">{{ getRatingLabel() }}</div>
+      <div class="form-group" style="margin-top:20px;">
+        <label class="form-label">Votre commentaire</label>
+        <textarea class="form-input" rows="4" [(ngModel)]="ratingComment" placeholder="Partagez votre expérience avec ce médecin..."></textarea>
+      </div>
+      <div style="display:flex; gap:12px; margin-top:20px;">
+        <button class="btn-outline flex-1" (click)="showView('list')">Annuler</button>
+        <button class="btn-primary flex-1" (click)="submitRating()" [disabled]="!rating() || isRating()">
+          {{ isRating() ? ' Envoi...' : ' Publier mon avis' }}
+        </button>
+      </div>
+    </div>
+  </ng-container>
+
+</div>

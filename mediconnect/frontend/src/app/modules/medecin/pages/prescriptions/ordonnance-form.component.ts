@@ -287,10 +287,10 @@ interface DrugInteraction {
   `,
   styles: [`
     .rx-page { padding: 0; font-family: system-ui, sans-serif; }
-    .page-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; flex-wrap:wrap; gap:12px; }
-    .page-title { font-size:26px; font-weight:700; color:#0f172a; margin:0 0 4px; }
-    .page-subtitle { color:#64748b; font-size:14px; margin:0; }
-    .header-actions { display:flex; gap:8px; }
+    .page-header { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:24px; flex-wrap:wrap; gap:12px; }
+    .page-title { font-size:26px; font-weight:700; color:#0f172a; margin:0 0 4px; padding-left:40px; }
+    .page-subtitle { color:#2563eb; font-size:14px; margin:0; padding-left:40px; }
+    .header-actions { display:flex; gap:8px; padding-bottom:4px; }
     .btn-back { padding:8px 16px; background:white; color:#64748b; border:1.5px solid #e2e8f0; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; }
     .btn-back:hover { background:#f1f5f9; }
 

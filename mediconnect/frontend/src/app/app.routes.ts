@@ -17,18 +17,21 @@ export const routes: Routes = [
   {
     path: "patient",
     canActivate: [authGuard],
+    data :{roles:['PATIENT']},
     loadChildren: () =>
       import("./modules/patient/patient.routes").then((m) => m.PATIENT_ROUTES),
   },
   {
     path: "medecin",
     canActivate: [authGuard],
+    data :{roles:['MEDECIN_GENERALISTE',"MEDECIN_SPECIALISTE",'MEDECIN']},
     loadChildren: () =>
       import("./modules/medecin/medecin.routes").then((m) => m.MEDECIN_ROUTES),
   },
   {
     path: "pharmacie",
     canActivate: [authGuard],
+    data :{roles:['PHARMACIEN']},
     loadChildren: () =>
       import("./modules/pharmacie/pharmacie.routes").then((m) => m.PHARMACIE_ROUTES),
   },
@@ -47,7 +50,7 @@ export const routes: Routes = [
   {
     path: "admin",
     canActivate: [authGuard],
-    data: { role: "ADMIN" },
+    data :{roles:['ADMIN']},
     loadChildren: () =>
       import("./features/admin/admin.routes").then((m) => m.ADMIN_ROUTES),
   },
@@ -63,6 +66,10 @@ export const routes: Routes = [
     loadComponent: () =>
       import("./pages/partage-dossier/partage-dossier.component").then((m) => m.PartageDossierComponent),
   },
-
+  {
+    path:'unauthorized',
+    loadComponent:()=> 
+      import("./pages/unauthorized").then((m) => m.Unauthorized),
+  },
   { path: "**", redirectTo: "/auth/login" },
 ];

@@ -1,0 +1,101 @@
+.appt-page {
+  padding: 24px;
+  background: #f1f5f9;
+  min-height: 100vh;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.page-title {
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.page-subtitle {
+  color: #64748b;
+}
+
+.alert-success {
+  background: #f0fdf4;
+  color: #16a34a;
+  padding: 12px;
+  border-radius: 10px;
+}
+
+.alert-error {
+  background: #fef2f2;
+  color: #dc2626;
+  padding: 12px;
+  border-radius: 10px;
+}
+
+.tabs-bar {
+  display: flex;
+  gap: 8px;
+}
+
+.tab-btn {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid #ddd;
+}
+
+.tab-btn.active {
+  background: #1a56db;
+  color: white;
+}
+
+.loading-state {
+  text-align: center;
+  padding: 40px;
+}
+
+.appt-card {
+  display: flex;
+  background: white;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+
+.appt-date-block {
+  background: #1a56db;
+  color: white;
+  padding: 12px;
+}
+
+.appt-body {
+  padding: 12px;
+  flex: 1;
+}
+
+.status-confirmed {
+  color: green;
+}
+
+.status-cancelled {
+  color: red;
+}
+
+.status-pending {
+  color: orange;
+}
+
+.btn-danger {
+  background: red;
+  color: white;
+}
+
+.btn-video {
+  background: purple;
+  color: white;
+}
+
+.btn-rate {
+  background: orange;
+  color: white;
+}

@@ -247,11 +247,16 @@ export class PrescriptionsService implements OnModuleInit {
       return await this.repo.find({
         where: { patientId },
         order: { createdAt: 'DESC' },
-        relations: [], // pas de jointures eager pour éviter les erreurs
+        relations: ['doctor'],
       });
     } catch (err: any) {
       console.warn('[PrescriptionsService] findByPatient error:', err?.message);
-      return [];
+      // Retry without relations if join fails
+      try {
+        return await this.repo.find({ where: { patientId }, order: { createdAt: 'DESC' } });
+      } catch {
+        return [];
+      }
     }
   }
 

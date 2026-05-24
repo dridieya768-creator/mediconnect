@@ -1,7 +1,7 @@
 import { JwtService } from "@nestjs/jwt";
 import { Repository } from "typeorm";
 import { ConfigService } from "@nestjs/config";
-import { User } from "../users/entities/user.entity";
+import { User, UserRole } from "../users/entities/user.entity";
 import { Patient } from "../patients/entities/patient.entity";
 import { PharmacienProfile } from "../pharmacie/entities/pharmacien-profile.entity";
 import { LoginDto } from "./dto/login.dto";
@@ -34,6 +34,7 @@ export declare class AuthService {
         requires2fa: boolean;
         userId: string;
         message: string;
+        role: UserRole;
     } | {
         access_token: string;
         refresh_token: string;
@@ -41,6 +42,7 @@ export declare class AuthService {
         requires2fa?: undefined;
         userId?: undefined;
         message?: undefined;
+        role?: undefined;
     }>;
     setup2fa(userId: string): Promise<{
         secret: string;
@@ -51,13 +53,13 @@ export declare class AuthService {
     enable2fa(userId: string, dto: Enable2faDto): Promise<{
         message: string;
     }>;
-    disable2fa(userId: string): Promise<{
-        message: string;
-    }>;
     verify2fa(dto: Verify2faDto): Promise<{
         access_token: string;
         refresh_token: string;
         user: any;
+    }>;
+    disable2fa(userId: string): Promise<{
+        message: string;
     }>;
     forgotPassword(dto: ForgotPasswordDto): Promise<{
         message: string;

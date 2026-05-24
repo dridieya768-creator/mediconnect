@@ -3,8 +3,24 @@ import { Injectable } from '@nestjs/common';
 @Injectable()
 export class PdfService {
   async generatePrescriptionPdf(prescription: any, doctorName: string, patientName: string): Promise<Buffer> {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+ 
     const PDFDocument = require('pdfkit');
+   
+    const QRCode = require('qrcode');
+
+ 
+    const qrData = prescription.qrCode || prescription.id || 'N/A';
+    let qrImageBuffer: Buffer | null = null;
+    try {
+      qrImageBuffer = await QRCode.toBuffer(qrData, {
+        type: 'png',
+        width: 120,
+        margin: 1,
+        color: { dark: '#0f172a', light: '#ffffff' },
+      });
+    } catch (qrErr: any) {
+      console.warn('[PdfService] QR generation failed:', qrErr?.message);
+    }
 
     return new Promise<Buffer>((resolve, reject) => {
       try {
@@ -14,27 +30,27 @@ export class PdfService {
         doc.on('end', () => resolve(Buffer.concat(chunks as any)));
         doc.on('error', reject);
 
-        // ── En-tête ──────────────────────────────────────────
+      
         doc.fontSize(20).fillColor('#1a56db').text('MediConnect', 50, 50);
         doc.fontSize(10).fillColor('#64748b').text('Plateforme e-Santé', 50, 75);
 
-        doc.fontSize(18).fillColor('#0f172a').text('ORDONNANCE MÉDICALE', 300, 50, { align: 'right' });
+        doc.fontSize(18).fillColor('#0f172a').text('ORDONNANCE MÉDICALE', 200, 50, { align: 'right', width: 200 });
         doc.fontSize(10).fillColor('#64748b').text(
           `N° ${(prescription.qrCode || prescription.id || '').toUpperCase()}`,
-          300, 75, { align: 'right' }
+          200, 75, { align: 'right', width: 200 }
         );
 
-        // Ligne séparatrice
         doc.moveTo(50, 100).lineTo(545, 100).strokeColor('#1a56db').lineWidth(2).stroke();
 
-        // ── Médecin & Patient ─────────────────────────────────
-        doc.fontSize(9).fillColor('#94a3b8').text('MÉDECIN PRESCRIPTEUR', 50, 120);
-        doc.fontSize(13).fillColor('#0f172a').font('Helvetica-Bold').text(`Dr. ${doctorName}`, 50, 135);
+      
+        doc.fontSize(9).fillColor('#94a3b8').font('Helvetica').text('MÉDECIN PRESCRIPTEUR', 50, 115);
+        doc.fontSize(13).fillColor('#0f172a').font('Helvetica-Bold').text(`Dr. ${doctorName}`, 50, 130);
 
-        doc.fontSize(9).fillColor('#94a3b8').font('Helvetica').text('PATIENT', 300, 120);
-        doc.fontSize(13).fillColor('#0f172a').font('Helvetica-Bold').text(patientName, 300, 135);
+        // Colonne Patient (x=220)
+        doc.fontSize(9).fillColor('#94a3b8').font('Helvetica').text('PATIENT', 220, 115);
+        doc.fontSize(13).fillColor('#0f172a').font('Helvetica-Bold').text(patientName, 220, 130);
 
-        // ── Dates ─────────────────────────────────────────────
+        // Dates sous patient
         const issuedStr = prescription.issuedAt
           ? new Date(prescription.issuedAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })
           : '—';
@@ -42,30 +58,37 @@ export class PdfService {
           ? new Date(prescription.expiresAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })
           : '—';
 
-        doc.fontSize(9).fillColor('#94a3b8').font('Helvetica').text("DATE D'ÉMISSION", 50, 165);
-        doc.fontSize(12).fillColor('#0f172a').font('Helvetica-Bold').text(issuedStr, 50, 180);
+        doc.fontSize(9).fillColor('#94a3b8').font('Helvetica').text("DATE D'ÉMISSION", 220, 152);
+        doc.fontSize(10).fillColor('#0f172a').font('Helvetica-Bold').text(issuedStr, 220, 164);
 
-        doc.fontSize(9).fillColor('#94a3b8').font('Helvetica').text("DATE D'EXPIRATION", 300, 165);
-        doc.fontSize(12).fillColor('#0f172a').font('Helvetica-Bold').text(expiresStr, 300, 180);
+        doc.fontSize(9).fillColor('#94a3b8').font('Helvetica').text("DATE D'EXPIRATION", 220, 180);
+        doc.fontSize(10).fillColor('#0f172a').font('Helvetica-Bold').text(expiresStr, 220, 192);
+
+        // Colonne QR Code (x=400, width=95) — reste dans la zone utile (max 545)
+        if (qrImageBuffer) {
+          doc.image(qrImageBuffer, 400, 108, { width: 95, height: 95 });
+          doc.fontSize(7).fillColor('#64748b').font('Helvetica')
+            .text('Scanner pour vérifier', 400, 206, { width: 95, align: 'center' });
+        }
 
         // Ligne séparatrice
-        doc.moveTo(50, 210).lineTo(545, 210).strokeColor('#e2e8f0').lineWidth(1).stroke();
+        doc.moveTo(50, 225).lineTo(545, 225).strokeColor('#e2e8f0').lineWidth(1).stroke();
 
         // ── Médicaments ───────────────────────────────────────
-        doc.fontSize(9).fillColor('#94a3b8').font('Helvetica').text('MÉDICAMENTS PRESCRITS', 50, 225);
+        doc.fontSize(9).fillColor('#94a3b8').font('Helvetica').text('MÉDICAMENTS PRESCRITS', 50, 238);
 
         // En-tête tableau
-        doc.rect(50, 240, 495, 24).fillColor('#1a56db').fill();
+        doc.rect(50, 253, 495, 24).fillColor('#1a56db').fill();
         doc.fontSize(10).fillColor('white').font('Helvetica-Bold');
-        doc.text('Médicament', 58, 248);
-        doc.text('Dosage', 220, 248);
-        doc.text('Posologie', 310, 248);
-        doc.text('Durée', 440, 248);
-        doc.text('Qté', 500, 248);
+        doc.text('Médicament', 58, 261);
+        doc.text('Dosage', 220, 261);
+        doc.text('Posologie', 310, 261);
+        doc.text('Durée', 440, 261);
+        doc.text('Qté', 500, 261);
 
-        // Lignes médicaments — ignorer les lignes vides
+        // Lignes médicaments
         const meds = (prescription.medications ?? []).filter((m: any) => m.name && m.name.trim());
-        let y = 270;
+        let y = 283;
         meds.forEach((m: any, i: number) => {
           if (i % 2 === 0) {
             doc.rect(50, y - 4, 495, 22).fillColor('#f8fafc').fill();
@@ -95,7 +118,6 @@ export class PdfService {
           doc.fontSize(9).fillColor('#94a3b8').font('Helvetica').text('BON D\'IMAGERIE MÉDICALE', 50, y);
           y += 14;
 
-          // En-tête tableau imagerie
           doc.rect(50, y, 495, 22).fillColor('#0f275a').fill();
           doc.fontSize(10).fillColor('white').font('Helvetica-Bold');
           doc.text('Type d\'examen', 58, y + 6);
@@ -125,14 +147,12 @@ export class PdfService {
         doc.moveTo(50, y).lineTo(545, y).strokeColor('#e2e8f0').lineWidth(1).stroke();
         y += 16;
 
-        // Colonne gauche : signature manuscrite + cachet
         doc.fontSize(9).fillColor('#94a3b8').font('Helvetica').text('CACHET ET SIGNATURE DU MÉDECIN', 50, y);
         y += 14;
         doc.rect(50, y, 200, 90).strokeColor('#e2e8f0').lineWidth(1).stroke();
         doc.fontSize(11).fillColor('#0f172a').font('Helvetica-Bold').text(`Dr. ${doctorName}`, 60, y + 8);
         doc.fontSize(9).fillColor('#64748b').font('Helvetica').text('Médecin MediConnect', 60, y + 22);
 
-        // Image de signature manuscrite si disponible
         if (prescription.signatureImage) {
           try {
             const sigBuffer = Buffer.from(
@@ -149,7 +169,6 @@ export class PdfService {
           }) + ' à ' + new Date(prescription.signedAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
           doc.fontSize(8).fillColor('#16a34a').font('Helvetica').text(`Signé le ${signedStr}`, 60, y + 76);
 
-          // Hash court de la signature HMAC
           const sigDisplay = prescription.electronicSignature
             ? prescription.electronicSignature.replace('HMAC-SHA256:', '').substring(0, 20) + '...'
             : '';
@@ -160,15 +179,12 @@ export class PdfService {
           doc.fontSize(8).fillColor('#94a3b8').font('Helvetica-Oblique').text('Signature en attente', 60, y + 76);
         }
 
-        // Colonne droite : infos légales
         doc.fontSize(9).fillColor('#94a3b8').font('Helvetica').text('VALIDITÉ ET AUTHENTICITÉ', 310, y - 14);
         doc.rect(310, y, 235, 80).strokeColor('#e2e8f0').lineWidth(1).stroke();
         doc.fontSize(9).fillColor('#374151').font('Helvetica').text('Ordonnance valable 90 jours', 320, y + 10);
         doc.fontSize(9).fillColor('#374151').text(`Émise le : ${prescription.issuedAt ? new Date(prescription.issuedAt).toLocaleDateString('fr-FR') : '—'}`, 320, y + 26);
         doc.fontSize(9).fillColor('#374151').text(`Expire le : ${prescription.expiresAt ? new Date(prescription.expiresAt).toLocaleDateString('fr-FR') : '—'}`, 320, y + 42);
         doc.fontSize(8).fillColor('#94a3b8').font('Helvetica-Oblique').text('Document généré par MediConnect', 320, y + 60);
-
-        y += 100;
 
         // ── Pied de page ──────────────────────────────────────
         doc.moveTo(50, 760).lineTo(545, 760).strokeColor('#e2e8f0').lineWidth(1).stroke();
