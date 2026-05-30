@@ -20,13 +20,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       secretOrKey: configService.get<string>('JWT_SECRET', 'mediconnect-secret'),
-      // ✅ Le secret DOIT être identique à celui utilisé pour signer le token
+      
     });
   }
 
   async validate(payload: any) {
     return { 
-      id: payload.sub,    // ✅ req.user.id dans le controller
+      id: payload.sub,    
       email: payload.email, 
       role: payload.role 
     };

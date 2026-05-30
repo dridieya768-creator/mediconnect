@@ -25,7 +25,7 @@ import { NotificationType } from '../notifications/notification.entity';
 import * as fs from "fs";
 import { join } from "path";
 import * as speakeasy from 'speakeasy';
-// Remplacez les deux fonctions en haut du fichier
+
 
 function base32Encode(buffer: Buffer): string {
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
@@ -45,7 +45,7 @@ function base32Encode(buffer: Buffer): string {
 }
 
 function generateTotpSecret(): string {
-  // Stocker en HEX en base, mais retourner aussi le base32
+  
   return crypto.randomBytes(20).toString('hex').toUpperCase();
 }
 
@@ -140,7 +140,7 @@ export class AuthService {
     const isPharmacien = registerDto.role === UserRole.PHARMACIEN;
     const isProfessionnel = isMedecin || isPharmacien;
 
-    // Vérification RPPS (médecin)
+    
     if (isMedecin && (registerDto as any).rpps) {
       const rpps = String((registerDto as any).rpps).trim();
       if (!/^\d{11}$/.test(rpps)) {
@@ -154,7 +154,7 @@ export class AuthService {
       }
     }
 
-    // Vérification numéro d'ordre pharmacien
+    
     if (isPharmacien && (registerDto as any).numeroOrdre) {
       const numeroOrdre = String((registerDto as any).numeroOrdre).trim();
       if (!/^(PH-\d{4}|\d{4,8})$/i.test(numeroOrdre)) {
@@ -200,7 +200,7 @@ export class AuthService {
             relatedId: savedUser.id,
           });
         }
-        // Notification temps réel via WebSocket
+        
         this.notificationsGateway.sendToAdmins('admin:new-pro', {
           type:      NotificationType.DOCTOR_PENDING_APPROVAL,
           title:     'Nouveau compte pro a valider',
@@ -328,7 +328,7 @@ async disable2fa(userId: string) {
 async changePassword(userId: string, currentPassword: string, newPassword: string) {
   const user = await this.userRepository
     .createQueryBuilder("user")
-    .addSelect("user.password")   // ← la seule vraie correction
+    .addSelect("user.password")   
     .where("user.id = :id", { id: userId })
     .getOne();
   if (!user) throw new NotFoundException("Utilisateur introuvable");

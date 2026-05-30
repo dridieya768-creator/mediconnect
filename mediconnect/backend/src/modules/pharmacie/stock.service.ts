@@ -17,7 +17,7 @@ export class StockService {
     private readonly mouvementRepo: Repository<StockMouvement>,
   ) {}
 
-  // ── Réception livraison fournisseur ──────────────────────────────────────
+  
 
   async receptionnerLivraison(dto: ReceptionLivraisonDto, pharmacienId: string) {
     const results = [];
@@ -41,7 +41,7 @@ export class StockService {
         });
       }
 
-      // Ajouter le lot (FIFO : tri par dateExpiration)
+      
       item.lots = [
         ...item.lots,
         {
@@ -59,7 +59,7 @@ export class StockService {
 
       await this.stockRepo.save(item);
 
-      // Enregistrer le mouvement
+      
       await this.mouvementRepo.save(this.mouvementRepo.create({
         stockItemId: item.id,
         type: TypeMouvement.RECEPTION,
@@ -75,7 +75,6 @@ export class StockService {
     return results;
   }
 
-  // ── Liste stock avec alertes ──────────────────────────────────────────────
 
   async getStock(pharmacienId?: string) {
     const items = await this.stockRepo.find({ order: { nom: 'ASC' } });
@@ -94,12 +93,12 @@ export class StockService {
         alerteStockBas,
         alertePeremption,
         lotsExpirantBientot,
-        prochaineLot: item.lots.find((l) => l.quantite > 0) ?? null, // FIFO
+        prochaineLot: item.lots.find((l) => l.quantite > 0) ?? null, 
       };
     });
   }
 
-  // ── Alertes ───────────────────────────────────────────────────────────────
+  
 
   async getAlertes() {
     const items = await this.stockRepo.find();
@@ -118,7 +117,7 @@ export class StockService {
     return { stockBas, ruptures, peremptionProche, perimes };
   }
 
-  // ── Inventaire mensuel ────────────────────────────────────────────────────
+  
 
   async realiserInventaire(dto: InventaireDto, pharmacienId: string) {
     const rapport = [];
@@ -132,7 +131,7 @@ export class StockService {
       if (ecart !== 0) {
         // Ajustement
         item.quantiteTotale = ligne.quantiteReelle;
-        // Ajuster le premier lot disponible
+        
         if (item.lots.length > 0) {
           const diff = ecart;
           item.lots[0].quantite = Math.max(0, item.lots[0].quantite + diff);
@@ -161,7 +160,7 @@ export class StockService {
     return rapport;
   }
 
-  // ── Retour fournisseur ────────────────────────────────────────────────────
+  
 
   async retourFournisseur(dto: RetourFournisseurDto, pharmacienId: string) {
     const item = await this.stockRepo.findOne({ where: { id: dto.stockItemId } });
@@ -170,7 +169,7 @@ export class StockService {
       throw new BadRequestException('Quantité insuffisante en stock');
     }
 
-    // Décrémenter FIFO
+    
     let restant = dto.quantite;
     for (const lot of item.lots) {
       if (restant <= 0) break;
@@ -204,7 +203,6 @@ export class StockService {
     };
   }
 
-  // ── Tableau de bord ───────────────────────────────────────────────────────
 
   async getDashboard() {
     const items = await this.stockRepo.find();
@@ -223,7 +221,7 @@ export class StockService {
       0,
     );
 
-    // Top 10 produits par valeur
+    
     const top10 = [...items]
       .sort((a, b) => b.quantiteTotale * Number(b.prixAchat) - a.quantiteTotale * Number(a.prixAchat))
       .slice(0, 10)
@@ -234,7 +232,7 @@ export class StockService {
         valeur: i.quantiteTotale * Number(i.prixAchat),
       }));
 
-    // Derniers mouvements
+    
     const derniersMouvements = await this.mouvementRepo.find({
       relations: ['stockItem'],
       order: { createdAt: 'DESC' },
@@ -252,7 +250,7 @@ export class StockService {
     };
   }
 
-  // ── Historique mouvements ─────────────────────────────────────────────────
+  
 
   async getMouvements(stockItemId?: string) {
     const where = stockItemId ? { stockItemId } : {};
@@ -264,7 +262,7 @@ export class StockService {
     });
   }
 
-  // ── Décrémenter stock lors d'une délivrance (appelé par DelivranceService) ─
+  
 
   async decrementerStock(cip: string, quantite: number, pharmacienId: string) {
     const item = await this.stockRepo.findOne({ where: { cip } });
@@ -291,7 +289,7 @@ export class StockService {
     }));
   }
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
+  
 
   private calculerStatut(item: StockItem): StockStatut {
     if (item.quantiteTotale === 0) return StockStatut.RUPTURE;

@@ -30,12 +30,12 @@ import { ChatMessage } from '../../../../../core/models/ai-chat.model';
         </div>
       </div>
 
-      <!-- Disclaimer -->
+      
       <div class="disclaimer">
-        ⚠️ Ceci est une aide à l'orientation uniquement. Consultez toujours un médecin pour un diagnostic.
+         Ceci est une aide à l'orientation uniquement. Consultez toujours un médecin pour un diagnostic.
       </div>
 
-      <!-- Messages -->
+      
       <div class="messages-area" #messagesContainer>
         <div
           *ngFor="let msg of messages()"
@@ -44,7 +44,7 @@ import { ChatMessage } from '../../../../../core/models/ai-chat.model';
           [class.message-ai]="msg.role === 'assistant'"
         >
           <div class="message-avatar">
-            {{ msg.role === 'user' ? '👤' : '🤖' }}
+            {{ msg.role === 'user' ? '' : '🤖' }}
           </div>
           <div class="message-bubble">
             <p class="message-content">{{ msg.content }}</p>
@@ -63,15 +63,15 @@ import { ChatMessage } from '../../../../../core/models/ai-chat.model';
         </div>
       </div>
 
-      <!-- Bouton spécialité recommandée -->
+      
       <div class="specialite-banner" *ngIf="specialiteRecommandee()">
-        <span class="specialite-label">🎯 Spécialité recommandée : <strong>{{ specialiteRecommandee() }}</strong></span>
+        <span class="specialite-label"> Spécialité recommandée : <strong>{{ specialiteRecommandee() }}</strong></span>
         <button class="btn-find-doctor" (click)="navigateToSearch()">
-          🔍 Trouver un {{ specialiteRecommandee() | lowercase }}
+           Trouver un {{ specialiteRecommandee() | lowercase }}
         </button>
       </div>
 
-      <!-- Input -->
+      
       <div class="input-area">
         <textarea
           class="chat-input"
@@ -319,14 +319,14 @@ export class AiChatbotComponent implements OnInit, AfterViewChecked {
     const text = this.userInputText.trim();
     if (!text || this.isLoading()) return;
 
-    // Ajouter le message utilisateur
+    
     const userMsg: ChatMessage = { role: 'user', content: text, timestamp: new Date() };
     this.messages.update(msgs => [...msgs, userMsg]);
     this.userInputText = '';
     this.isLoading.set(true);
     this.shouldScroll = true;
 
-    // Fenêtre glissante : max 20 messages
+    
     const history = this.messages().slice(-20);
 
     this.aiService.analyzeSymptoms(history)
@@ -334,7 +334,7 @@ export class AiChatbotComponent implements OnInit, AfterViewChecked {
         catchError(() => {
           const errMsg: ChatMessage = {
             role: 'assistant',
-            content: '⚠️ Service temporairement indisponible. Veuillez réessayer dans quelques instants.',
+            content: ' Service temporairement indisponible. Veuillez réessayer dans quelques instants.',
             timestamp: new Date(),
           };
           this.messages.update(msgs => [...msgs, errMsg]);

@@ -70,7 +70,7 @@ export class DossierAccesService {
       where: { patientId, medecinId, actif: true },
     });
     if (!acces) {
-      // Pas d'accès — tout est refusé
+      
       return { permissions: { allergies: false, documents: false, observations: false }, niveauAcces: null };
     }
     return {
@@ -98,7 +98,7 @@ export class DossierAccesService {
       }));
     } catch (err: any) {
       console.warn('[listerAcces] error:', err?.message);
-      // Fallback sans relations si la colonne permissions n'existe pas encore
+      
       const list = await this.accesRepo.find({ where: { patientId } });
       return list.map(a => ({
         id:          a.id,

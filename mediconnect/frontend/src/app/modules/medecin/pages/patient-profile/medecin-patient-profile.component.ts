@@ -28,7 +28,7 @@ import { of } from 'rxjs';
 
       <div class="content" *ngIf="!loading() && patient()">
 
-        <!-- Header patient -->
+        
         <div class="patient-header">
           <div class="avatar">
             <img *ngIf="patient()?.avatarUrl" [src]="patient()?.avatarUrl" alt="photo">
@@ -47,7 +47,7 @@ import { of } from 'rxjs';
 
         <div class="cards-grid">
 
-          <!-- Infos générales -->
+          
           <div class="card">
             <div class="card-title">Informations générales</div>
             <div class="info-row"><span class="label">Téléphone</span><span>{{ patient()?.telephone || '—' }}</span></div>
@@ -56,7 +56,7 @@ import { of } from 'rxjs';
             <div class="info-row"><span class="label">NSS</span><span>{{ patient()?.nss || '—' }}</span></div>
           </div>
 
-          <!-- Informations médicales -->
+          
           <div class="card">
             <div class="card-title">Informations médicales</div>
             <div class="info-row"><span class="label">Groupe sanguin</span><span class="blood-badge">{{ patient()?.groupeSanguin || '—' }}</span></div>
@@ -77,7 +77,7 @@ import { of } from 'rxjs';
             <div *ngIf="!permissions().allergies" class="no-access-msg"> Accès non autorisé par le patient</div>
           </div>
 
-          <!-- Médicaments actuels -->
+          
           <div class="card card-full">
             <div class="card-title">Médicaments actuels</div>
             <div *ngIf="patient()?.medicamentsActuels?.length">
@@ -89,7 +89,7 @@ import { of } from 'rxjs';
             <p class="empty-text" *ngIf="!patient()?.medicamentsActuels?.length">Aucun médicament en cours</p>
           </div>
 
-          <!-- Documents médicaux -->
+          
           <div class="card card-full" *ngIf="permissions().documents">
             <div class="card-title"> Documents médicaux</div>
             <div *ngIf="patient()?.documents?.length">
@@ -109,7 +109,7 @@ import { of } from 'rxjs';
             <div class="no-access-msg"> Accès non autorisé par le patient</div>
           </div>
 
-          <!-- Observations médecin -->
+          
           <div class="card card-full">
             <div class="card-title">Observations médicales</div>
             <!-- Observation existante : soumise à permission -->
@@ -122,7 +122,7 @@ import { of } from 'rxjs';
   Accès non autorisé par le patient
 </div>
 
-<!-- Écriture : toujours visible -->
+
 <textarea
   class="obs-textarea"
   [(ngModel)]="newObservation"
@@ -244,7 +244,7 @@ export class MedecinPatientProfileComponent implements OnInit {
         this.newObservation = data?.observationsMedecin ?? '';
         this.loading.set(false);
 
-        // Charger les permissions accordées par ce patient au médecin connecté
+        
         if (data?.id) {
           this.http.get<any>(`/api/v1/dossier-medical/${data.id}/acces/my-permissions`)
             .pipe(catchError((err) => {

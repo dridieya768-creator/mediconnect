@@ -10,7 +10,7 @@ export class UploadController {
 
   @Post('photo')
   @UseInterceptors(FileInterceptor('file', {
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+    limits: { fileSize: 5 * 1024 * 1024 }, 
     fileFilter: (req, file, cb) => {
       if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
         return cb(new BadRequestException('Seuls les fichiers JPG, JPEG et PNG sont acceptés'), false);

@@ -53,9 +53,7 @@ type PlanningView = "calendar" | "requests" | "slots" | "conges";
         </button>
       </div>
 
-      <!-- ══════════════════════════════════════════
-           VUE CALENDRIER
-           ══════════════════════════════════════════ -->
+     
       <ng-container *ngIf="activeView() === 'calendar'">
         <div class="calendar-card">
 
@@ -153,9 +151,9 @@ type PlanningView = "calendar" | "requests" | "slots" | "conges";
         </div>
       </ng-container>
 
-      <!-- ══════════════════════════════════════════
-           VUE DEMANDES EN ATTENTE
-           ══════════════════════════════════════════ -->
+     
+           
+           
       <ng-container *ngIf="activeView() === 'requests'">
         <div class="section-title">
            Demandes de rendez-vous en attente
@@ -259,9 +257,9 @@ type PlanningView = "calendar" | "requests" | "slots" | "conges";
         </div>
       </ng-container>
 
-      <!-- ══════════════════════════════════════════
-           VUE DISPONIBILITÉS
-           ══════════════════════════════════════════ -->
+      
+           
+           
       <ng-container *ngIf="activeView() === 'slots'">
         <div class="form-card">
           <h2 class="section-title"> Gérer mes disponibilités</h2>
@@ -331,9 +329,7 @@ type PlanningView = "calendar" | "requests" | "slots" | "conges";
         </div>
       </ng-container>
 
-      <!-- ══════════════════════════════════════════
-           VUE CONGÉS
-           ══════════════════════════════════════════ -->
+     
       <ng-container *ngIf="activeView() === 'conges'">
         <div class="form-card">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
@@ -543,7 +539,7 @@ type PlanningView = "calendar" | "requests" | "slots" | "conges";
       .request-card { flex-direction:column; }
     }
 
-    /* ── Congés ─────────────────────────────────────────────── */
+    
     .conges-list { display:flex; flex-direction:column; gap:12px; margin-bottom:20px; }
     .conge-item { display:flex; align-items:flex-start; gap:14px; background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:12px; padding:16px; transition:border-color .15s; }
     .conge-item:hover { border-color:#4f46e5; }
@@ -602,13 +598,13 @@ export class MedecinPlanningComponent implements OnInit {
   morningTimes   = ["07:00","07:30","08:00","08:30","09:00","09:30","10:00","10:30","11:00","11:30","12:00","12:30","13:00"];
   afternoonTimes = ["12:00","12:30","13:00","13:30","14:00","14:30","15:00","15:30","16:00","16:30","17:00","17:30","18:00","18:30","19:00"];
 
-  // ── Congés ────────────────────────────────────────────────────────────────
+  
   conges         = signal<any[]>([]);
   showCongeForm  = signal(false);
   isSavingConge  = signal(false);
   newConge: any  = { label: '', startDate: '', endDate: '', message: '' };
 
-  // ── Computed ──────────────────────────────────────────────────────────────
+  
   pendingAppointments = computed(() =>
     this.appointments().filter(a => a.status === "REQUESTED")
   );
@@ -641,7 +637,7 @@ export class MedecinPlanningComponent implements OnInit {
     return `${start.toLocaleDateString("fr-FR", { day:"2-digit", month:"long" })} – ${end.toLocaleDateString("fr-FR", { day:"2-digit", month:"long", year:"numeric" })}`;
   });
 
-  // ── Lifecycle ─────────────────────────────────────────────────────────────
+  
 ngOnInit() { 
   this.loadAppointments(); 
   this.loadAvailability();
@@ -656,10 +652,9 @@ loadAvailability() {
     .subscribe(res => {
       console.log('[Availability] réponse brute:', JSON.stringify(res));
       
-      // Le backend retourne { workDays, defaultDuration, acceptsTeleconsultation }
-      // mais peut-être wrappé dans { data: ... } ou { success: true, data: ... }
+      
       const raw  = res?.data ?? res;
-// Si workDays encore null, essayer de lire depuis tarifs (fallback)
+
 const data = (raw?.workDays !== null && raw?.workDays !== undefined)
   ? raw
   : (() => {
@@ -703,11 +698,10 @@ const data = (raw?.workDays !== null && raw?.workDays !== undefined)
       .pipe(catchError(() => of(null)))
       .subscribe(res => {
         console.log("[Planning] doctorId résolu:", res?.data?.data?.id);
-        // ── Réponse brute confirmée : { success: true, data: { id, userId, ... } }
-        // On lit directement res.data.userId (confirmé par les logs)
+
        const doctorId =
-  res?.data?.data?.id     ||  // ← AJOUTER EN PREMIER
-  res?.data?.data?.userId ||  // ← AJOUTER
+  res?.data?.data?.id     ||  
+  res?.data?.data?.userId ||  
   res?.data?.userId       ||
   res?.data?.id           ||
   res?.userId             ||
@@ -727,7 +721,7 @@ const data = (raw?.workDays !== null && raw?.workDays !== undefined)
             return of([]);
           }))
           .subscribe(appts => {
-            // Normalise : tableau direct OU { data: [...] } OU { data: { data: [...] } }
+            
             const list: any[] =
               Array.isArray(appts)             ? appts :
               Array.isArray(appts?.data)       ? appts.data :
@@ -740,7 +734,7 @@ const data = (raw?.workDays !== null && raw?.workDays !== undefined)
       });
   }
 
-  // ── Calendar navigation ────────────────────────────────────────────────────
+  
   prevWeek() {
     const d = new Date(this.currentWeekStart());
     d.setDate(d.getDate() - 7);
@@ -753,36 +747,34 @@ const data = (raw?.workDays !== null && raw?.workDays !== undefined)
   }
   goToday() { this.currentWeekStart.set(this.getMonday(new Date())); }
 
-  // ── Modal ──────────────────────────────────────────────────────────────────
+  
   openApptModal(appt: any) { this.modalAppt.set(appt); }
   closeModal()             { this.modalAppt.set(null); }
 
-  // ── Accept / Refuse ────────────────────────────────────────────────────────
-// Remplacez la méthode acceptRequest par celle-ci :
+  
 
 acceptRequest(req: any) {
   this.processingId.set(req.id);
   
-  // ✅ Utiliser le bon endpoint avec PATCH
+  
   this.http.patch<any>(`/api/v1/medecins/appointments/${req.id}/accept`, {}).subscribe({
     next: (response) => {
-      console.log('✅ Rendez-vous accepté:', response);
+      console.log(' Rendez-vous accepté:', response);
       
-      // Mettre à jour le statut du rendez-vous
+      
       this.appointments.update(list =>
         list.map(a => a.id === req.id ? { ...a, status: "CONFIRMED" } : a)
       );
       this.processingId.set(null);
-      this.showSuccess("✅ Rendez-vous confirmé ! Le patient a été ajouté à votre liste.");
+      this.showSuccess(" Rendez-vous confirmé ! Le patient a été ajouté à votre liste.");
       
-      // Optionnel: recharger la liste des patients dans le composant patients
-      // Vous pouvez émettre un événement ou recharger les données
+      
     },
     error: (err) => {
       this.processingId.set(null);
       console.error('❌ Erreur lors de l\'acceptation:', err);
       
-      // Extraire le message d'erreur correctement
+      
       let errorMessage = "Erreur lors de la confirmation du rendez-vous.";
       
       if (err?.error?.message) {
@@ -798,12 +790,12 @@ acceptRequest(req: any) {
         errorMessage = err.message;
       }
       
-      // Message personnalisé pour conflit de créneau
+      
       if (errorMessage.includes('déjà réservé') || 
           errorMessage.includes('créneau') || 
           errorMessage.includes('conflict') || 
           errorMessage.includes('occupé')) {
-        this.showError('⏰ Ce créneau est déjà occupé. Veuillez choisir un autre horaire.');
+        this.showError(' Ce créneau est déjà occupé. Veuillez choisir un autre horaire.');
       } else {
         this.showError(errorMessage);
       }
@@ -851,7 +843,7 @@ acceptRequest(req: any) {
     });
   }
 
-  // ── Complete ───────────────────────────────────────────────────────────────
+  
   completeAppt(appt: any) {
     this.http.patch<any>(`/api/v1/appointments/${appt.id}/complete`, {}).subscribe({
       next: () => {
@@ -865,13 +857,12 @@ acceptRequest(req: any) {
     });
   }
 
-  // ── Join video ─────────────────────────────────────────────────────────────
+  
   joinVideo(appt: any) {
     this.router.navigate(['/medecin/video', appt.id]);
   }
 
-  // ── Save availability ──────────────────────────────────────────────────────
-// ── Save availability ──────────────────────────────────────────────────────
+  
 saveAvailability() {
   this.isSavingSlots.set(true);
   const payload = {
@@ -889,9 +880,9 @@ saveAvailability() {
     });
 }
 
-  // ── Helpers ────────────────────────────────────────────────────────────────
+  
   getPatientName(a: any): string {
-    // Si RDV pour un bénéficiaire, afficher son nom
+    
     if (a.beneficiaryPrenom || a.beneficiaryNom) {
       return `${a.beneficiaryPrenom ?? ''} ${a.beneficiaryNom ?? ''}`.trim();
     }
@@ -903,7 +894,7 @@ saveAvailability() {
   }
 
   getPatientBookedBy(a: any): string | null {
-    // Retourne le nom du patient qui a fait la réservation (si différent du bénéficiaire)
+    
     if (!a.beneficiaryPrenom && !a.beneficiaryNom) return null;
     const p = a.patient;
     if (!p) return null;
@@ -916,13 +907,13 @@ saveAvailability() {
     return !!(a.beneficiaryDocMembrePath || a.beneficiaryDocPatientPath);
   }
 
-  /** Extrait le nom du fichier depuis un chemin Windows ou Unix */
+  
   getDocFilename(filePath: string): string {
     if (!filePath) return '';
-    // Normalise les backslashes et extrait le nom du fichier
+    
     const normalized = filePath.replace(/\\/g, '/');
     const parts = normalized.split('/');
-    // Retourne "family-docs/filename.pdf"
+    
     const idx = parts.indexOf('family-docs');
     if (idx >= 0) return parts.slice(idx).join('/');
     return parts[parts.length - 1];
@@ -948,7 +939,7 @@ saveAvailability() {
   }
 
   getTypeLabel(t: string): string {
-    return ({ PHYSICAL: "🏥 Présentiel", TELECONSULTATION: "💻 Téléconsultation", HOME_VISIT: "🏠 À domicile" } as any)[t] || t;
+    return ({ PHYSICAL: " Présentiel", TELECONSULTATION: "💻 Téléconsultation", HOME_VISIT: "🏠 À domicile" } as any)[t] || t;
   }
 
   getStatusLabel(s: string): string {
@@ -971,7 +962,7 @@ saveAvailability() {
     return date;
   }
 
-  // ── Congés ────────────────────────────────────────────────────────────────
+  
   addConge() {
     this.newConge = { label: '', startDate: '', endDate: '', message: '' };
     this.showCongeForm.set(true);

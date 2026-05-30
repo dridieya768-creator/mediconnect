@@ -8,7 +8,7 @@ export interface DrugInteraction {
   description: string;
 }
 
-// Données embarquées directement — pas besoin de fichier JSON externe
+
 const INTERACTIONS: DrugInteraction[] = [
   { drug1: 'warfarine',      drug2: 'aspirine',        severity: 'severe',  description: 'Risque hémorragique majeur — association contre-indiquée' },
   { drug1: 'fluoxetine',     drug2: 'tramadol',        severity: 'severe',  description: 'Risque de syndrome sérotoninergique potentiellement fatal' },

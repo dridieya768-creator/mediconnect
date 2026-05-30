@@ -206,7 +206,7 @@ export class WeeklyCalendarComponent {
     const weekStart = this.bookingState.currentWeekStart();
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    // Disable if going back would put us before today's week start
+    
     const prevWeekStart = new Date(weekStart);
     prevWeekStart.setDate(weekStart.getDate() - 7);
     return prevWeekStart < today;
@@ -232,7 +232,7 @@ export class WeeklyCalendarComponent {
         month: '2-digit',
       });
 
-      // Block conge days entirely
+      
       const isConge = this.isDateInConge(date);
       const slots = availability && !isConge
         ? this.generateSlotsForDay(date, availability, selectedSlot, occupiedSlots)
@@ -250,7 +250,7 @@ export class WeeklyCalendarComponent {
     occupiedSlots: OccupiedSlot[],
   ): TimeSlot[] {
     const dayOfWeek = date.getDay();
-    // Récupérer TOUTES les plages pour ce jour (matin + après-midi)
+    
     const workDayRanges = availability.workDays.filter(
       wd => DAY_MAP[wd.day] === dayOfWeek,
     );
@@ -268,8 +268,8 @@ export class WeeklyCalendarComponent {
       const [endH, endM] = workDay.endTime.split(':').map(Number);
       if (isNaN(startH) || isNaN(endH)) continue;
 
-      // Construire les dates en utilisant les composantes locales de `date`
-      // pour éviter tout décalage UTC
+      
+      
       const y = date.getFullYear();
       const m = date.getMonth();
       const d = date.getDate();
@@ -296,7 +296,7 @@ export class WeeklyCalendarComponent {
       }
     }
 
-    // Trier par heure
+    
     slots.sort((a, b) => a.start.getTime() - b.start.getTime());
     return slots;
   }
@@ -306,7 +306,7 @@ export class WeeklyCalendarComponent {
       const osStart = new Date(os.appointmentDate);
       const osEnd = new Date(osStart);
       osEnd.setMinutes(osEnd.getMinutes() + os.durationMinutes);
-      // Overlap: slotStart < osEnd && slotEnd > osStart
+      
       return slotStart < osEnd && slotEnd > osStart;
     });
   }

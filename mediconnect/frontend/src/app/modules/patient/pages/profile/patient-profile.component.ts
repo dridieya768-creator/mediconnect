@@ -342,11 +342,11 @@ export class PatientProfileComponent implements OnInit {
     this.loading.set(true);
     this.http.get<any>('/api/v1/patients/me').subscribe({
       next: res => {
-        // TransformInterceptor wraps: { success, data: { success, id, data: {...} }, timestamp }
+        
         const outer = res?.data ?? res;
         const profile = outer?.data ?? outer;
         this.profile.set(profile);
-        // Synchroniser la photo avec le signal AuthService → navbar se met à jour
+        
         const avatarUrl = profile?.avatarUrl ?? profile?.user?.avatarUrl;
         if (avatarUrl) {
           this.avatarPreview.set(avatarUrl);
@@ -379,7 +379,7 @@ export class PatientProfileComponent implements OnInit {
     this.saving.set(true);
     this.errorMsg.set('');
 
-    // Nettoyer le payload — ne pas envoyer les champs vides/null
+    
     const payload: any = {};
     if (this.form.telephone)      payload.telephone      = this.form.telephone;
     if (this.form.dateNaissance)  payload.dateNaissance  = this.form.dateNaissance;
@@ -388,7 +388,7 @@ export class PatientProfileComponent implements OnInit {
     if (this.form.languePreferee) payload.languePreferee = this.form.languePreferee;
     if (this.form.groupeSanguin)  payload.groupeSanguin  = this.form.groupeSanguin;
 
-    // Tableaux — toujours inclus
+    
     payload.allergies = this.form.allergiesStr
       ? this.form.allergiesStr.split(',').map((s: string) => s.trim()).filter(Boolean)
       : [];
@@ -402,7 +402,7 @@ export class PatientProfileComponent implements OnInit {
 
     this.http.patch<any>(`/api/v1/patients/${patientId}`, payload).subscribe({
       next: () => {
-        // Recharger le profil complet depuis /me pour avoir les données fraîches
+        
         this.http.get<any>('/api/v1/patients/me').subscribe({
           next: res => {
             const outer = res?.data ?? res;
@@ -473,13 +473,13 @@ export class PatientProfileComponent implements OnInit {
       return;
     }
 
-    // Redimensionner et compresser via canvas avant upload
+    
     const img = new Image();
     const objectUrl = URL.createObjectURL(file);
     img.onload = () => {
       URL.revokeObjectURL(objectUrl);
       const canvas = document.createElement('canvas');
-      const MAX = 200; // max 200x200px
+      const MAX = 200; 
       let w = img.width, h = img.height;
       if (w > h) { if (w > MAX) { h = h * MAX / w; w = MAX; } }
       else        { if (h > MAX) { w = w * MAX / h; h = MAX; } }
@@ -498,7 +498,7 @@ export class PatientProfileComponent implements OnInit {
             this.uploadingAvatar.set(false);
             return;
           }
-          // Mettre à jour le signal AuthService → sidebar se rafraîchit automatiquement
+          
           this.authService.updateAvatar(base64);
           this.uploadingAvatar.set(false);
           this.successMsg.set('Photo de profil mise à jour');

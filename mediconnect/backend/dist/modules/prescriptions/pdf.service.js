@@ -114,7 +114,26 @@ let PdfService = class PdfService {
                     });
                     y += 10;
                 }
-                y = Math.max(y + 20, 580);
+                const analyses = prescription.analysisRequests ?? [];
+                if (analyses.length > 0) {
+                    y += 10;
+                    doc.fontSize(9).fillColor('#94a3b8').font('Helvetica').text('BON D\'ANALYSE MÉDICALE', 50, y);
+                    y += 14;
+                    doc.rect(50, y, 495, 22).fillColor('#064e3b').fill();
+                    doc.fontSize(10).fillColor('white').font('Helvetica-Bold');
+                    doc.text('Type d\'analyse', 58, y + 6);
+                    doc.text('Motif / Indication', 260, y + 6);
+                    y += 26;
+                    analyses.forEach((ana, i) => {
+                        if (i % 2 === 0)
+                            doc.rect(50, y - 4, 495, 22).fillColor('#f0fdf4').fill();
+                        doc.fontSize(11).fillColor('#0f172a').font('Helvetica');
+                        doc.text(ana.typeAnalyse || '—', 58, y, { width: 195 });
+                        doc.text(ana.motif || '—', 260, y, { width: 280 });
+                        y += 22;
+                    });
+                    y += 10;
+                }
                 doc.moveTo(50, y).lineTo(545, y).strokeColor('#e2e8f0').lineWidth(1).stroke();
                 y += 16;
                 doc.fontSize(9).fillColor('#94a3b8').font('Helvetica').text('CACHET ET SIGNATURE DU MÉDECIN', 50, y);

@@ -24,6 +24,11 @@ interface ImagingRequest {
   urgency: 'NORMAL' | 'URGENT';
 }
 
+interface AnalysisRequest {
+  typeAnalyse: string;
+  motif: string;
+}
+
 interface DrugInteraction {
   drug1: string;
   drug2: string;
@@ -38,7 +43,7 @@ interface DrugInteraction {
   template: `
     <div class="rx-page">
 
-      <!-- HEADER -->
+      
       <div class="page-header">
         <div>
           <h1 class="page-title">Rediger une Ordonnance</h1>
@@ -63,7 +68,7 @@ interface DrugInteraction {
 
       <div class="rx-grid">
 
-        <!-- ── COLONNE GAUCHE : Patient + Medicaments ── -->
+        
         <div class="rx-left">
 
           <!-- PATIENT -->
@@ -97,7 +102,7 @@ interface DrugInteraction {
             </div>
           </div>
 
-          <!-- MEDICAMENTS -->
+          
           <div class="rx-card">
             <div class="card-title-row">
               <div class="card-title">Medicaments</div>
@@ -122,6 +127,7 @@ interface DrugInteraction {
                 <div class="med-header">
                   <span class="med-num">{{ i + 1 }}</span>
                   <input class="form-input med-name-input" [(ngModel)]="med.name"
+                         (ngModelChange)="checkInteractions()"
                          placeholder="Nom du medicament" />
                   <button class="btn-rm-med" (click)="removeMedication(i)">x</button>
                 </div>
@@ -157,7 +163,7 @@ interface DrugInteraction {
             </div>
           </div>
 
-          <!-- BON IMAGERIE -->
+          
           <div class="rx-card">
             <div class="card-title-row">
               <div class="card-title">Bon d Imagerie Medicale</div>
@@ -207,9 +213,51 @@ interface DrugInteraction {
             </div>
           </div>
 
+          <!-- BON D'ANALYSE MÉDICALE -->
+          <div class="rx-card">
+            <div class="card-title-row">
+              <div class="card-title"> Bon d'Analyse Médicale</div>
+              <button class="btn-add-med" (click)="addAnalysis()">+ Ajouter</button>
+            </div>
+            <div class="imaging-list" *ngIf="analysisRequests().length > 0">
+              <div class="imaging-item" *ngFor="let ana of analysisRequests(); let i = index">
+                <div class="imaging-header">
+                  <span class="med-num">{{ i + 1 }}</span>
+                  <button class="btn-rm-med" (click)="removeAnalysis(i)">x</button>
+                </div>
+                <div class="med-fields">
+                  <div class="med-field">
+                    <label>Type d'analyse</label>
+                    <select class="form-input-sm" [(ngModel)]="ana.typeAnalyse">
+                      <option value="">Sélectionner...</option>
+                      <option value="NFS">NFS (Numération Formule Sanguine)</option>
+                      <option value="GLYCEMIE">Glycémie</option>
+                      <option value="BILAN_LIPIDIQUE">Bilan lipidique</option>
+                      <option value="BILAN_HEPATIQUE">Bilan hépatique</option>
+                      <option value="BILAN_RENAL">Bilan rénal (créatinine, urée)</option>
+                      <option value="TSH">TSH (Thyroïde)</option>
+                      <option value="CRP">CRP / VS</option>
+                      <option value="IONOGRAMME">Ionogramme sanguin</option>
+                      <option value="URINE">Analyse d'urine (ECBU)</option>
+                      <option value="COAGULATION">Bilan de coagulation (TP, TCA)</option>
+                      <option value="AUTRE">Autre</option>
+                    </select>
+                  </div>
+                  <div class="med-field">
+                    <label>Motif / Indication clinique</label>
+                    <input class="form-input-sm" [(ngModel)]="ana.motif" placeholder="Ex: Suivi diabète, contrôle post-traitement..." />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="empty-meds" *ngIf="analysisRequests().length === 0">
+              Aucune analyse ajoutée.
+            </div>
+          </div>
+
         </div>
 
-        <!-- ── COLONNE DROITE : Notes + Signature ── -->
+        
         <div class="rx-right">
 
           <!-- NOTES -->
@@ -219,7 +267,7 @@ interface DrugInteraction {
                       placeholder="Instructions particulieres, recommandations..."></textarea>
           </div>
 
-          <!-- SIGNATURE MANUSCRITE + PIN -->
+          
           <div class="rx-card">
             <div class="card-title">Signature Manuscrite</div>
             <p class="sign-hint">Dessinez votre signature ci-dessous puis saisissez votre PIN.</p>
@@ -253,7 +301,7 @@ interface DrugInteraction {
             </div>
           </div>
 
-          <!-- RECAP -->
+          
           <div class="rx-card recap-card">
             <div class="card-title">Recapitulatif</div>
             <div class="recap-row">
@@ -418,6 +466,7 @@ export class OrdonnanceFormComponent implements OnInit, AfterViewInit {
   drugResults    = signal<any[]>([]);
   medications    = signal<Medication[]>([]);
   imagingRequests = signal<ImagingRequest[]>([]);
+  analysisRequests = signal<AnalysisRequest[]>([]);
   interactions   = signal<DrugInteraction[]>([]);
 
   patientSearch = '';
@@ -434,7 +483,7 @@ export class OrdonnanceFormComponent implements OnInit, AfterViewInit {
   private medecinId: string | null = null;
   private medecinName = '';
 
-  // Catalogue medicaments local (fallback si API indisponible)
+  
   private drugCatalog = [
     { name: 'Amoxicilline', dci: 'Amoxicilline', cip: 'AMX500' },
     { name: 'Paracetamol', dci: 'Paracetamol', cip: 'PAR500' },
@@ -529,7 +578,7 @@ export class OrdonnanceFormComponent implements OnInit, AfterViewInit {
         this.medecinName = `${data.firstName ?? ''} ${data.lastName ?? ''}`.trim();
       }
     });
-    // Charger les patients du médecin pour la recherche
+    
     this.http.get<any>('/api/v1/medecins/my-patients').pipe(catchError(() => of([]))).subscribe(res => {
       const list = Array.isArray(res) ? res : Array.isArray(res?.data) ? res.data : [];
       this.myPatients = list;
@@ -549,7 +598,7 @@ export class OrdonnanceFormComponent implements OnInit, AfterViewInit {
 
   searchPatient(q: string) {
     if (!q || q.length < 1) {
-      // Afficher tous les patients du médecin si la recherche est vide
+      
       this.patientResults.set(this.myPatients.slice(0, 8));
       return;
     }
@@ -609,13 +658,24 @@ export class OrdonnanceFormComponent implements OnInit, AfterViewInit {
     this.imagingRequests.update(list => list.filter((_, idx) => idx !== i));
   }
 
+  addAnalysis() {
+    this.analysisRequests.update(list => [...list, { typeAnalyse: '', motif: '' }]);
+  }
+
+  removeAnalysis(i: number) {
+    this.analysisRequests.update(list => list.filter((_, idx) => idx !== i));
+  }
+
   checkInteractions() {
     const meds = this.medications();
     if (meds.length < 2) { this.interactions.set([]); return; }
     this.http.post<any>('/api/v1/prescriptions/check-interactions', { medications: meds })
       .pipe(catchError(() => of({ interactions: [] })))
       .subscribe(res => {
-        this.interactions.set(res?.interactions ?? res?.data?.interactions ?? []);
+        const list = Array.isArray(res) ? res
+          : Array.isArray(res?.data) ? res.data
+          : res?.interactions ?? res?.data?.interactions ?? [];
+        this.interactions.set(list);
       });
   }
 
@@ -634,6 +694,7 @@ export class OrdonnanceFormComponent implements OnInit, AfterViewInit {
       doctorId:     this.medecinId,
       medications:  this.medications().filter(m => m.name && m.name.trim() !== ''),
       imagingRequests: this.imagingRequests().length > 0 ? this.imagingRequests() : undefined,
+      analysisRequests: this.analysisRequests().length > 0 ? this.analysisRequests() : undefined,
       notes:        this.notes || undefined,
       pin:          this.pin,
       signatureImage: sigDataUrl || undefined,

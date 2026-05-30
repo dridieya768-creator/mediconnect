@@ -1,7 +1,8 @@
-import { Component, inject } from "@angular/core";
+import { Component, inject, OnInit } from "@angular/core";
 import { RouterOutlet, RouterLink, RouterLinkActive } from "@angular/router";
 import { CommonModule } from "@angular/common";
 import { TranslateModule } from "@ngx-translate/core";
+import { HttpClient } from "@angular/common/http";
 import { AuthService } from "@core/services/auth.service";
 import { LangSwitcherComponent } from "../../../shared/components/lang-switcher/lang-switcher.component";
 
@@ -42,10 +43,22 @@ import { LangSwitcherComponent } from "../../../shared/components/lang-switcher/
         <div class="nav-user">
           <app-lang-switcher />
           <a routerLink="/patient/notifications" class="notif-btn">
-            🔔 <span class="notif-badge"></span>
-          </a>
+  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
+       fill="none" stroke="currentColor" stroke-width="2"
+       stroke-linecap="round" stroke-linejoin="round">
+    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+  </svg>
+  <span class="notif-badge"></span>
+</a>
           <a routerLink="/patient/profil" class="user-avatar-btn">
-            <div class="user-avatar">{{ userInitials }}</div>
+            <div class="user-avatar">
+              @if (currentUser()?.avatarUrl) {
+                <img [src]="currentUser()!.avatarUrl" alt="photo profil" class="avatar-img">
+              } @else {
+                {{ userInitials }}
+              }
+            </div>
             <span class="user-name-nav">{{ currentUser()?.firstName }}</span>
           </a>
         </div>
@@ -81,6 +94,8 @@ import { LangSwitcherComponent } from "../../../shared/components/lang-switcher/
       &:hover { color: #1a56db; background: #eff6ff; }
       &.active { color: #1a56db; background: #eff6ff; font-weight: 600; }
     }
+    .user-avatar { width: 34px; height: 34px; background: #1a56db; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; overflow: hidden; }
+    .avatar-img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
     .nav-badge { background: #1a56db; color: white; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 10px; }
     .nav-user { display: flex; align-items: center; gap: 12px; margin-left: auto; flex-shrink: 0; }
     .notif-btn { position: relative; font-size: 18px; text-decoration: none; cursor: pointer; }
@@ -91,9 +106,6 @@ import { LangSwitcherComponent } from "../../../shared/components/lang-switcher/
     .btn-logout { padding: 7px 14px; background: #ef4444; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
     .btn-logout:hover { background: #dc2626; }
     .page-container {
-      padding-top: 64px;
-      overflow-x: hidden;
-      padding: 0;
       padding-top: 64px;
       margin-left: 0 !important;
     }

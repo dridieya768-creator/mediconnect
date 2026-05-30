@@ -398,11 +398,11 @@ export class MedecinProfileComponent implements OnInit, OnDestroy, AfterViewChec
       iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34],
     });
 
-    // Centre par défaut : Tunis
+    
     let center: [number, number] = [36.8065, 10.1815];
     let zoom = 7;
 
-    // Si coordonnées déjà sauvegardées
+    
     if (this.form.geoGoogleMaps) {
       const match = this.form.geoGoogleMaps.match(/(-?\d+\.?\d*)[,\s]+(-?\d+\.?\d*)/);
       if (match) {
@@ -416,7 +416,7 @@ export class MedecinProfileComponent implements OnInit, OnDestroy, AfterViewChec
       attribution: '© OpenStreetMap', maxZoom: 18,
     }).addTo(this.profileMap);
 
-    // Placer marker si coords existantes
+    
     if (this.form.geoGoogleMaps) {
       this.profileMarker = L.marker(center, { icon, draggable: true })
         .addTo(this.profileMap)
@@ -427,7 +427,7 @@ export class MedecinProfileComponent implements OnInit, OnDestroy, AfterViewChec
       });
     }
 
-    // Clic sur la carte → placer/déplacer le marker
+    
     this.profileMap.on('click', (e: L.LeafletMouseEvent) => {
       const { lat, lng } = e.latlng;
       this.form.geoGoogleMaps = `${lat.toFixed(6)},${lng.toFixed(6)}`;
@@ -445,7 +445,7 @@ export class MedecinProfileComponent implements OnInit, OnDestroy, AfterViewChec
       }
     });
 
-    // Géolocalisation
+    
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(pos => {
         if (!this.form.geoGoogleMaps) {
@@ -504,7 +504,7 @@ export class MedecinProfileComponent implements OnInit, OnDestroy, AfterViewChec
         return;
       }
       
-      // Vérifier le type
+      
       if (!file.type.match(/image\/(jpeg|png|jpg)/)) {
         this.errorMsg.set("Format accepté: JPEG, PNG, JPG");
         setTimeout(() => this.errorMsg.set(null), 3000);
@@ -550,7 +550,7 @@ export class MedecinProfileComponent implements OnInit, OnDestroy, AfterViewChec
           continue;
         }
         
-        // Vérifier le type
+        
         if (!file.type.match(/image\/(jpeg|png|jpg)/)) {
           this.errorMsg.set(`Format non accepté pour "${file.name}"`);
           setTimeout(() => this.errorMsg.set(null), 3000);

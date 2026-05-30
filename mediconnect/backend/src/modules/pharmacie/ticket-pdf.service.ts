@@ -29,7 +29,7 @@ export interface TicketData {
 @Injectable()
 export class TicketPdfService {
   async generateTicket(data: TicketData): Promise<string> {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    
     const PDFDocument = require('pdfkit');
     const ticketsDir = path.join(process.cwd(), 'uploads', 'tickets');
     fs.mkdirSync(ticketsDir, { recursive: true });
@@ -46,7 +46,7 @@ export class TicketPdfService {
         stream.on('error', reject);
         doc.on('error', reject);
 
-        // ── En-tête ──────────────────────────────────────────
+        
         doc.fontSize(20).fillColor('#1a56db').text('MediConnect', 50, 50);
         doc.fontSize(10).fillColor('#64748b').text('Plateforme e-Santé', 50, 75);
         doc.fontSize(18).fillColor('#0f172a').text('TICKET DE DÉLIVRANCE', 300, 50, { align: 'right' });
@@ -65,18 +65,18 @@ export class TicketPdfService {
 
         doc.moveTo(50, 110).lineTo(545, 110).strokeColor('#1a56db').lineWidth(2).stroke();
 
-        // ── Section Patient ───────────────────────────────────
+        
         doc.fontSize(9).fillColor('#94a3b8').font('Helvetica').text('PATIENT', 50, 130);
         doc.fontSize(13).fillColor('#0f172a').font('Helvetica-Bold').text(`${data.patient.prenom} ${data.patient.nom}`, 50, 145);
         doc.fontSize(10).fillColor('#475569').font('Helvetica').text(`NSS : ${data.patient.nss}`, 50, 162);
 
-        // ── Section Pharmacien ────────────────────────────────
+        
         doc.fontSize(9).fillColor('#94a3b8').font('Helvetica').text('PHARMACIEN', 300, 130);
         doc.fontSize(13).fillColor('#0f172a').font('Helvetica-Bold').text(`${data.pharmacien.prenom} ${data.pharmacien.nom}`, 300, 145);
 
         doc.moveTo(50, 185).lineTo(545, 185).strokeColor('#e2e8f0').lineWidth(1).stroke();
 
-        // ── Tableau médicaments ───────────────────────────────
+        
         doc.fontSize(9).fillColor('#94a3b8').font('Helvetica').text('MÉDICAMENTS DÉLIVRÉS', 50, 200);
 
         doc.rect(50, 215, 495, 24).fillColor('#1a56db').fill();
@@ -109,7 +109,7 @@ export class TicketPdfService {
         doc.moveTo(50, y).lineTo(545, y).strokeColor('#e2e8f0').lineWidth(1).stroke();
         y += 16;
 
-        // ── Récapitulatif financier ───────────────────────────
+        
         doc.fontSize(9).fillColor('#94a3b8').font('Helvetica').text('RÉCAPITULATIF FINANCIER', 50, y);
         y += 16;
 
@@ -130,14 +130,14 @@ export class TicketPdfService {
 
         y += 120;
 
-        // ── Référence QR-ORD ──────────────────────────────────
+      
         doc.moveTo(50, y).lineTo(545, y).strokeColor('#e2e8f0').lineWidth(1).stroke();
         y += 16;
         doc.fontSize(9).fillColor('#94a3b8').font('Helvetica').text('RÉFÉRENCE ORDONNANCE', 50, y);
         y += 14;
         doc.fontSize(10).fillColor('#475569').font('Helvetica-Oblique').text(`QR-ORD : ${data.qrOrdCode}`, 50, y);
 
-        // ── Pied de page ──────────────────────────────────────
+        
         doc.moveTo(50, 760).lineTo(545, 760).strokeColor('#e2e8f0').lineWidth(1).stroke();
         doc.fontSize(9).fillColor('#94a3b8').font('Helvetica');
         doc.text(`Délivrance ID : ${data.delivranceId}`, 50, 770);

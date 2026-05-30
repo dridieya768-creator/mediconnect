@@ -24,7 +24,6 @@ async function bootstrap() {
         },
         logger: ["log", "error", "warn"],
     });
-    app.useStaticAssets((0, path_1.join)(__dirname, '..', 'uploads'), { prefix: '/uploads' });
     const configService = app.get(config_1.ConfigService);
     const expressApp = app.getHttpAdapter().getInstance();
     expressApp.use(require('express').json({ limit: '50mb' }));
@@ -32,12 +31,15 @@ async function bootstrap() {
     const uploadsPath = (0, path_1.join)(process.cwd(), 'uploads');
     if (!fs.existsSync(uploadsPath)) {
         fs.mkdirSync(uploadsPath, { recursive: true });
+    }
+    app.useStaticAssets(uploadsPath, {
+        prefix: '/uploads',
+    });
+    if (!fs.existsSync(uploadsPath)) {
+        fs.mkdirSync(uploadsPath, { recursive: true });
         console.log(`[Static] Dossier uploads créé : ${uploadsPath}`);
     }
     console.log(`[Static] Servir les fichiers depuis : ${uploadsPath}`);
-    app.useStaticAssets(uploadsPath, {
-        prefix: '/uploads/',
-    });
     app.use((0, helmet_1.default)({
         crossOriginEmbedderPolicy: false,
         crossOriginResourcePolicy: { policy: "cross-origin" }
@@ -69,7 +71,7 @@ async function bootstrap() {
     try {
         await app.listen(port);
         console.log("\n╔══════════════════════════════════════════════╗");
-        console.log("║   🏥  MediConnect API — Démarré !            ║");
+        console.log("║     MediConnect API — Démarré !            ║");
         console.log("╠══════════════════════════════════════════════╣");
         console.log(`║   API:     http://localhost:${port}/api/v1/auth/login  ║`);
         console.log(`║   Swagger: http://localhost:${port}/api/docs           ║`);
@@ -87,7 +89,7 @@ bootstrap().catch((err) => {
     console.error("\n❌ Erreur au démarrage:", err.message);
     console.error("Stack complète:", err.stack);
     if (err.message.includes("password")) {
-        console.error("💡 Vérifiez DB_PASSWORD dans le fichier .env");
+        console.error(" Vérifiez DB_PASSWORD dans le fichier .env");
     }
     process.exit(1);
 });

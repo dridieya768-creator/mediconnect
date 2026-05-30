@@ -32,7 +32,7 @@ interface Appointment {
   template: `
     <div class="patients-page">
 
-      <!-- HEADER -->
+      
       <div class="page-header">
         <div>
           <h1 class="page-title"> Mes Patients</h1>
@@ -53,7 +53,7 @@ interface Appointment {
         </div>
       </div>
 
-      <!-- LOADING -->
+      
       <div class="loading-state" *ngIf="isLoading()">
         <div class="spinner"></div>
         <p>Chargement des patients...</p>
@@ -61,7 +61,7 @@ interface Appointment {
 
       <div *ngIf="!isLoading()">
 
-        <!-- STATS -->
+        
         <div class="stats-row">
           <div class="stat-card indigo">
             <div class="stat-icon"></div>
@@ -93,7 +93,7 @@ interface Appointment {
           </div>
         </div>
 
-        <!-- TABS -->
+        
         <div class="tabs-bar">
           <button class="tab-btn" [class.active]="activeTab() === 'patients'" (click)="activeTab.set('patients')">
              Patients <span class="tab-pill">{{ filteredPatients().length }}</span>
@@ -106,7 +106,7 @@ interface Appointment {
           </button>
         </div>
 
-        <!-- ══ TAB PATIENTS ══ -->
+        
         <div *ngIf="activeTab() === 'patients'">
           <div class="patients-grid" *ngIf="filteredPatients().length > 0">
             <div class="patient-card" *ngFor="let p of filteredPatients()" (click)="selectPatient(p)">
@@ -133,7 +133,7 @@ interface Appointment {
           </div>
         </div>
 
-        <!-- ══ TAB RDV ══ -->
+        
         <div *ngIf="activeTab() === 'rdv'">
           <div class="table-card">
             <table class="rdv-table">
@@ -175,7 +175,7 @@ interface Appointment {
           </div>
         </div>
 
-        <!-- ══ TAB À VENIR ══ -->
+        
         <div *ngIf="activeTab() === 'upcoming'">
           <div class="upcoming-list">
             <div class="upcoming-item" *ngFor="let a of upcomingList()">
@@ -204,7 +204,7 @@ interface Appointment {
 
       </div>
 
-      <!-- MODAL PATIENT DETAIL -->
+      
       <ng-container *ngIf="selectedPatient() as p">
         <div class="modal-overlay" (click)="selectedPatient.set(null)">
           <div class="modal-card" (click)="$event.stopPropagation()">
@@ -238,7 +238,7 @@ interface Appointment {
         </div>
       </ng-container>
 
-      <!-- MODAL RDV DETAIL -->
+      
       <ng-container *ngIf="selectedAppt() as a">
         <div class="modal-overlay" (click)="selectedAppt.set(null)">
           <div class="modal-card" (click)="$event.stopPropagation()">
@@ -403,7 +403,7 @@ export class MedecinPatientsComponent implements OnInit {
   selectedPatient = signal<PatientSummary | null>(null);
   selectedAppt    = signal<Appointment | null>(null);
 
-  // ── Computed ──────────────────────────────────────────────────────────────
+  
   filteredPatients = computed(() => {
     const term = this.searchTerm().toLowerCase();
     if (!term) return this.patients();
@@ -436,7 +436,7 @@ export class MedecinPatientsComponent implements OnInit {
       .slice(0, 20);
   });
 
-  // ── Lifecycle ─────────────────────────────────────────────────────────────
+  
   ngOnInit() { this.loadData(); }
 
   loadData() {
@@ -447,7 +447,7 @@ export class MedecinPatientsComponent implements OnInit {
         const doctorId = res?.data?.data?.id || res?.data?.id || res?.id || null;
         if (!doctorId) { this.isLoading.set(false); return; }
 
-        // Charger les RDV (pour les tabs RDV et À venir)
+        
         this.http.get<any>(`/api/v1/appointments/doctor/${doctorId}`)
           .pipe(catchError(() => of([])))
           .subscribe(appts => {
@@ -458,7 +458,7 @@ export class MedecinPatientsComponent implements OnInit {
             this.appointments.set(list);
           });
 
-        // ✅ Charger les patients filtrés par RDV CONFIRMED/COMPLETED
+        
         this.http.get<any>("/api/v1/medecins/my-patients")
           .pipe(catchError(() => of([])))
           .subscribe(res => {
@@ -471,7 +471,7 @@ export class MedecinPatientsComponent implements OnInit {
       });
   }
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
+  
   getFullName(p: PatientSummary): string {
     const first = p.firstName || "";
     const last  = p.lastName  || "";

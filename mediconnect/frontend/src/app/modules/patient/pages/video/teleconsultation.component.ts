@@ -111,7 +111,7 @@ export class TeleconsultationComponent implements OnInit, OnDestroy {
         if (!room) { this.error.set('Impossible de créer la salle vidéo'); this.loading.set(false); return; }
 
         this.roomId.set(room);
-        // Construire l'URL Jitsi avec paramètres pour une meilleure UX
+        
         const url = `https://meet.jit.si/${room}#config.startWithAudioMuted=false&config.startWithVideoMuted=false&userInfo.displayName=MediConnect`;
         this.jitsiUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(url));
         this.loading.set(false);

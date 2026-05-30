@@ -28,7 +28,7 @@ export class StockMouvement {
   type: TypeMouvement;
 
   @Column({ name: 'quantite', type: 'int' })
-  quantite: number; // positif = entrée, négatif = sortie
+  quantite: number; 
 
   @Column({ name: 'lot', nullable: true })
   lot: string;
@@ -40,7 +40,7 @@ export class StockMouvement {
   pharmacienId: string;
 
   @Column({ name: 'avoir_montant', type: 'decimal', precision: 10, scale: 3, nullable: true })
-  avoirMontant: number; // pour retours fournisseurs
+  avoirMontant: number; 
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

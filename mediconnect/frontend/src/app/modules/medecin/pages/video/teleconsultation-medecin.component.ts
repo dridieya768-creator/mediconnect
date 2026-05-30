@@ -46,7 +46,7 @@ import { of } from 'rxjs';
           </div>
         </div>
 
-        <!-- Panneau dossier patient -->
+        
         <div class="dossier-panel" *ngIf="showDossier()">
           <div class="panel-header">
             <span>✎ᝰ. Dossier patient</span>
@@ -59,7 +59,7 @@ import { of } from 'rxjs';
           </div>
 
           <div class="panel-content" *ngIf="!dossierLoading() && dossier()">
-            <!-- Identité -->
+            
             <div class="section">
               <div class="section-title">Patient</div>
               <div class="info-row"><span class="lbl">Nom</span><span>{{ dossier()?.firstName }} {{ dossier()?.lastName }}</span></div>
@@ -67,7 +67,7 @@ import { of } from 'rxjs';
               <div class="info-row"><span class="lbl">Groupe sanguin</span><span class="blood">{{ dossier()?.groupeSanguin || '—' }}</span></div>
             </div>
 
-            <!-- Allergies -->
+            
             <div class="section" *ngIf="permissions().allergies">
               <div class="section-title">Allergies</div>
               <div class="tags" *ngIf="dossier()?.allergies?.length">
@@ -76,7 +76,7 @@ import { of } from 'rxjs';
               <p class="empty" *ngIf="!dossier()?.allergies?.length">Aucune allergie</p>
             </div>
 
-            <!-- Maladies chroniques -->
+            
             <div class="section" *ngIf="permissions().allergies">
               <div class="section-title">Maladies chroniques</div>
               <div class="tags" *ngIf="dossier()?.maladiesChroniques?.length">
@@ -85,7 +85,7 @@ import { of } from 'rxjs';
               <p class="empty" *ngIf="!dossier()?.maladiesChroniques?.length">Aucune</p>
             </div>
 
-            <!-- Médicaments -->
+            
             <div class="section">
               <div class="section-title">Médicaments actuels</div>
               <div class="med-list" *ngIf="dossier()?.medicamentsActuels?.length">
@@ -96,7 +96,7 @@ import { of } from 'rxjs';
               <p class="empty" *ngIf="!dossier()?.medicamentsActuels?.length">Aucun</p>
             </div>
 
-            <!-- Accès refusé -->
+            
             <div class="no-access" *ngIf="!permissions().allergies && !permissions().documents">
               ꗃ Accès limité — le patient n'a pas accordé de permissions
             </div>
@@ -193,7 +193,7 @@ export class TeleconsultationMedecinComponent implements OnInit {
         const room = data?.videoRoomId ?? data?.data?.videoRoomId;
         if (!room) { this.error.set('Impossible de créer la salle'); this.loading.set(false); return; }
         this.roomId.set(room);
-        // Récupérer le patientId depuis la réponse si disponible
+        
         if (data?.patientId) this.patientId = data.patientId;
         const url = `https://meet.jit.si/${room}#config.startWithAudioMuted=false&config.startWithVideoMuted=false`;
         this.jitsiUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(url));
@@ -213,31 +213,43 @@ export class TeleconsultationMedecinComponent implements OnInit {
   private loadDossier() {
     this.dossierLoading.set(true);
 
-    // Charger le RDV pour obtenir le patientId
+    const doLoad = (pid: string) => {
+      this.patientId = pid;
+      this.http.get<any>(`/api/v1/dossier-medical/${pid}`)
+        .pipe(catchError(() => of(null)))
+        .subscribe(r => {
+          const d = r?.data ?? r;
+          if (!d) { this.dossier.set(null); this.dossierLoading.set(false); return; }
+          this.dossier.set(d);
+
+          this.http.get<any>(`/api/v1/dossier-medical/${pid}/acces/my-permissions`)
+            .pipe(catchError(() => of(null)))
+            .subscribe(p => {
+              const perms = p?.data?.permissions ?? p?.permissions;
+              if (perms) this.permissions.set(perms);
+              this.dossierLoading.set(false);
+            });
+        });
+    };
+
+    
+    if (this.patientId) {
+      doLoad(this.patientId);
+      return;
+    }
+
+    
     this.http.get<any>(`/api/v1/appointments/${this.appointmentId}`)
       .pipe(catchError(() => of(null)))
       .subscribe(res => {
         const appt = res?.data ?? res;
-        const pid = appt?.patientId ?? this.patientId;
-        if (!pid) { this.dossierLoading.set(false); return; }
-        this.patientId = pid;
-
-        // Charger le dossier médical
-        this.http.get<any>(`/api/v1/dossier-medical/${pid}`)
-          .pipe(catchError(() => of(null)))
-          .subscribe(r => {
-            const d = r?.data ?? r;
-            this.dossier.set(d);
-
-            // Charger les permissions
-            this.http.get<any>(`/api/v1/dossier-medical/${pid}/acces/my-permissions`)
-              .pipe(catchError(() => of(null)))
-              .subscribe(p => {
-                const perms = p?.data?.permissions ?? p?.permissions;
-                if (perms) this.permissions.set(perms);
-                this.dossierLoading.set(false);
-              });
-          });
+        const pid = appt?.patientId;
+        if (!pid) {
+          this.dossier.set(null);
+          this.dossierLoading.set(false);
+          return;
+        }
+        doLoad(pid);
       });
   }
 

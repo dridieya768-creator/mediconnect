@@ -87,8 +87,6 @@ export class AdminController {
     return this.adminService.resetPassword(id);
   }
 
-  // ✅ FIX : endpoint documents — retourne directement le tableau
-  // Le frontend dans loadDoctorDocs() gère les deux formats (array direct ou { data: [] })
   @Get('users/:id/documents')
   @ApiOperation({ summary: 'Documents soumis par un médecin lors de son inscription' })
   async getDoctorDocuments(@Param('id') id: string) {
@@ -96,7 +94,7 @@ export class AdminController {
     return docs;
   }
 
-  // ── Logs d'audit ──────────────────────────────────────────────────────────
+ 
   @Get('audit-logs')
   @ApiOperation({ summary: 'Logs d\'audit du système' })
   @ApiQuery({ name: 'page',    required: false, type: Number })

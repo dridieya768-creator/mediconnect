@@ -32,7 +32,7 @@ export class PatientsController {
       relations: ['user'],
       take: 10,
     });
-    // Filtrer aussi sur le nom/prénom depuis users
+    
     const all = await this.patientRepo.find({ relations: ['user'], take: 50 });
     const filtered = all.filter(p =>
       (p.user?.firstName ?? '').toLowerCase().includes(q.toLowerCase()) ||
@@ -61,7 +61,7 @@ export class PatientsController {
       success: true,
       id: patient.id,
       data: {
-        // Identité
+        
         id:             patient.id,
         userId:         user.id,
         firstName:      user.firstName,
@@ -72,7 +72,7 @@ export class PatientsController {
         role:           user.role,
         avatarUrl:      user.avatarUrl,
         mfaEnabled:     (user as any).mfaEnabled,
-        // Profil patient
+        
         telephone:      (user as any).phone ?? null,
         dateNaissance:  patient.dateNaissance,
         sexe:           patient.sexe,
@@ -81,7 +81,7 @@ export class PatientsController {
         groupeSanguin:  patient.groupeSanguin,
         nss:            patient.nss,
         qrCode:         patient.qrCode,
-        // Médical
+        
         allergies:          patient.allergies,
         maladiesChroniques: patient.maladiesChroniques,
         medicamentsActuels: patient.medicamentsActuels,
@@ -98,7 +98,7 @@ export class PatientsController {
     if (!userId) return { success: false, message: "Non authentifié" };
     if (!body.avatarUrl) return { success: false, message: "avatarUrl requis" };
 
-    // Limiter la taille (base64 ~1.37x la taille originale, 2Mo → ~2.7Mo base64)
+    
     if (body.avatarUrl.length > 3_000_000) {
       return { success: false, message: "Image trop grande (max 2 Mo)" };
     }
@@ -162,7 +162,7 @@ export class PatientsController {
       return { success: false, message: 'Réservé aux médecins' };
     }
 
-    // Cherche par patient.id ou patient.userId
+    
     let patient = await this.patientRepo.findOne({ where: { id } });
     if (!patient) patient = await this.patientRepo.findOne({ where: { userId: id } });
     if (!patient) return { success: false, message: 'Patient introuvable' };
@@ -174,12 +174,12 @@ export class PatientsController {
   @Get(":id/observations-history")
   @ApiOperation({ summary: "Historique des observations médicales d'un patient" })
   async getObservationsHistory(@Param("id") id: string, @Req() req: any) {
-    // Cherche par patient.id ou patient.userId
+    
     let patient = await this.patientRepo.findOne({ where: { id } });
     if (!patient) patient = await this.patientRepo.findOne({ where: { userId: id } });
     if (!patient) return [];
 
-    // Retourner l'observation actuelle comme historique simple
+  
     if (!patient.observationsMedecin) return [];
 
     return [{
@@ -202,29 +202,29 @@ export class PatientsController {
     if (!patient) return { success: false, message: "Patient introuvable" };
     if (patient.userId !== userId) return { success: false, message: "Non autorisé" };
 
-    // Mettre à jour le téléphone dans la table users si fourni
+    
     if (body.telephone !== undefined && body.telephone !== null) {
       await this.userRepo.update(userId, { phone: body.telephone } as any);
     }
 
-    // Whitelist des champs autorisés — exclure les valeurs null/undefined
+    
     const allowed = ['dateNaissance','sexe','ville','languePreferee',
                      'groupeSanguin','allergies','maladiesChroniques','medicamentsActuels',
                      'rappelsAuto','documents'];
     const updateData: any = {};
     for (const key of allowed) {
       const val = body[key];
-      // Pour les tableaux, inclure même vides
+      
       if (Array.isArray(val)) {
         updateData[key] = val;
       } else if (val !== undefined && val !== null && val !== '') {
         updateData[key] = val;
       }
     }
-    // nss séparé — ne pas écraser si vide
+    
     if (body.nss && body.nss.trim()) updateData.nss = body.nss.trim();
 
-    // Convertir les champs liste (string CSV → array pour JSONB, ou garder array)
+    
     for (const field of ['allergies', 'maladiesChroniques', 'medicamentsActuels']) {
       if (updateData[field] !== undefined) {
         if (typeof updateData[field] === 'string') {
@@ -233,11 +233,11 @@ export class PatientsController {
             .map((s: string) => s.trim())
             .filter((s: string) => s.length > 0);
         }
-        // Si c'est déjà un array, on le garde tel quel
+        
       }
     }
 
-    // documents — parser si c'est une string JSON
+    
     if (body.documents !== undefined) {
       try {
         updateData.documents = typeof body.documents === 'string'

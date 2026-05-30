@@ -156,7 +156,7 @@ export class PaiementComponent implements OnInit {
   paymentStatus = signal<'success' | 'cancelled' | 'simulated' | null>(null);
 
   ngOnInit() {
-    // Vérifier les query params (retour depuis Flouci ou mode simulé)
+    
     const payment = this.route.snapshot.queryParamMap.get('payment');
     const appointmentId = this.route.snapshot.queryParamMap.get('appointmentId');
 
@@ -170,7 +170,7 @@ export class PaiementComponent implements OnInit {
     }
     if (payment === 'cancelled') { this.paymentStatus.set('cancelled'); return; }
     if (payment === 'simulated') {
-      // Confirmer le RDV en mode simulé
+      
       if (appointmentId) {
         this.http.get(`/api/v1/payments/verify?payment_id=sim_${appointmentId}&appointmentId=${appointmentId}`).subscribe();
       }
@@ -186,7 +186,7 @@ export class PaiementComponent implements OnInit {
     this.http.get<any>('/api/v1/payments/history').subscribe({
       next: (res) => {
         const data = res?.data ?? res;
-        // Afficher tous les RDV sauf les NO_SHOW
+        
         const all = Array.isArray(data) ? data : [];
         this.rdvAPayer.set(all.filter((r: any) => r.status !== 'NO_SHOW'));
         this.loading.set(false);
@@ -208,7 +208,7 @@ export class PaiementComponent implements OnInit {
           this.paying.set(null);
           return;
         }
-        // Mode simulé : URL interne → navigation Angular
+        
         if (url.includes('/patient/paiement')) {
           const urlObj = new URL(url, window.location.origin);
           const payment = urlObj.searchParams.get('payment');
@@ -218,7 +218,7 @@ export class PaiementComponent implements OnInit {
             queryParams: { payment, appointmentId }
           });
         } else {
-          // URL externe Flouci → redirection
+          
           window.location.href = url;
         }
       },

@@ -17,7 +17,7 @@ import { ScanQrOrdDto } from './dto/scan-qr-ord.dto';
 import { ScanMedCipDto } from './dto/scan-med-cip.dto';
 import { ConfirmerDelivranceDto, MedicamentDelivreDto } from './dto/confirmer-delivrance.dto';
 
-// ─── DTOs de réponse ──────────────────────────────────────────────────────────
+
 
 export interface PrescriptionDetailDto {
   id: string;
@@ -86,7 +86,7 @@ export interface DelivranceResultDto {
   delivreAt: Date;
 }
 
-// ─── Service ─────────────────────────────────────────────────────────────────
+
 
 @Injectable()
 export class DelivranceService {
@@ -98,13 +98,13 @@ export class DelivranceService {
     private readonly prescriptionRepo: Repository<Prescription>,
   ) {}
 
-  // ── 3.1 — Scan QR-ORD ──────────────────────────────────────────────────────
+  
 
   async scanQrOrd(
     dto: ScanQrOrdDto,
     pharmacienId: string,
   ): Promise<PrescriptionDetailDto> {
-    // 1. Vérifier la signature JWT via QrCodesService
+    
     let result: { valid: boolean; data: any };
     try {
       result = await this.qrCodesService.scanQr(dto.qrCode, pharmacienId);
@@ -116,7 +116,7 @@ export class DelivranceService {
       throw new BadRequestException('Signature QR invalide');
     }
 
-    // 2. Charger la prescription avec ses relations
+    
     const entityId: string =
       result.data.prescription_id ?? result.data.entityId ?? result.data.entity_id;
 
@@ -129,7 +129,7 @@ export class DelivranceService {
       throw new NotFoundException('Ordonnance introuvable');
     }
 
-    // 3. Vérifier l'expiration (avant le statut, pour mettre à jour si nécessaire)
+    
     if (prescription.expiresAt < new Date()) {
       await this.prescriptionRepo.update(prescription.id, {
         status: PrescriptionStatus.EXPIRED,
@@ -137,7 +137,7 @@ export class DelivranceService {
       throw new BadRequestException('Ordonnance expirée');
     }
 
-    // 4. Vérifier le statut
+    
     switch (prescription.status) {
       case PrescriptionStatus.FULLY_USED:
         throw new BadRequestException('Ordonnance déjà entièrement délivrée');
@@ -147,17 +147,17 @@ export class DelivranceService {
         throw new BadRequestException('Ordonnance révoquée');
     }
 
-    // 5. Mapper vers PrescriptionDetailDto
+    
     return this.mapToPrescriptionDetailDto(prescription);
   }
 
-  // ── 3.4 — Scan QR-MED-CIP ──────────────────────────────────────────────────
+  
 
   async scanMedCip(
     dto: ScanMedCipDto,
     sessionCounts: Record<string, number>,
   ): Promise<{ cip: string; nom: string; quantiteSession: number }> {
-    // 1. Charger la prescription
+    
     const prescription = await this.prescriptionRepo.findOne({
       where: { id: dto.prescriptionId },
     });
@@ -166,7 +166,7 @@ export class DelivranceService {
       throw new NotFoundException('Ordonnance introuvable');
     }
 
-    // 2. Extraire le CIP (JSON { cip, hash } ou valeur directe)
+    
     let cip: string;
     try {
       const parsed = JSON.parse(dto.qrMedCip);
@@ -175,16 +175,16 @@ export class DelivranceService {
       cip = dto.qrMedCip;
     }
 
-    // 3. Trouver le médicament dans la prescription
-    // Si le CIP en base est vide, matcher par nom (ordonnances créées manuellement)
+    
+    
     let med = prescription.medications.find((m) => m.cip === cip);
     if (!med) {
-      // Fallback : chercher un médicament sans CIP ou avec clé temporaire MED_X
+      
       const isTempKey = /^MED_\d+$/.test(cip);
       let medWithoutCip: typeof prescription.medications[0] | undefined;
 
       if (isTempKey) {
-        // Extraire l'index depuis MED_0, MED_1, etc.
+        
         const idx = parseInt(cip.replace('MED_', ''), 10);
         medWithoutCip = prescription.medications[idx];
       } else {
@@ -194,7 +194,7 @@ export class DelivranceService {
       }
 
       if (medWithoutCip) {
-        // Assigner le CIP scanné à ce médicament
+        
         medWithoutCip.cip = cip;
         await this.prescriptionRepo.save(prescription);
         med = medWithoutCip;
@@ -204,10 +204,10 @@ export class DelivranceService {
       throw new BadRequestException(`Médicament non prescrit : CIP ${cip}`);
     }
 
-    // 4. Calculer la quantité de session
+    
     const quantiteSession = (sessionCounts[cip] ?? 0) + 1;
 
-    // 5. Vérifier le dépassement
+    
     const alreadyDelivered = med.quantityDelivered ?? 0;
     if (alreadyDelivered + quantiteSession > med.quantity) {
       throw new BadRequestException(`Quantité dépassée pour ${med.name}`);
@@ -216,7 +216,7 @@ export class DelivranceService {
     return { cip, nom: med.name, quantiteSession };
   }
 
-  // ── 3.7 — Calcul financier ─────────────────────────────────────────────────
+  
 
   calculerFinancier(medicaments: MedicamentDelivreDto[]): FinancierDto {
     const lignes: FinancierLigneDto[] = medicaments.map((med) => {
@@ -224,10 +224,10 @@ export class DelivranceService {
       const partCnam = montantTotal * med.tauxCnam;
       const partPatient = montantTotal - partCnam;
 
-      // Trouver le nom du médicament (on utilise le CIP comme fallback)
+      
       return {
         cip: med.cip,
-        nom: med.cip, // sera enrichi dans confirmerDelivrance si besoin
+        nom: med.cip, 
         quantite: med.quantiteDelivree,
         prixUnitaire: med.prixUnitaire,
         montantTotal,
@@ -243,7 +243,7 @@ export class DelivranceService {
     return { lignes, totalCnam, totalPatient, totalGeneral };
   }
 
-  // ── 3.9 — Confirmer la délivrance ─────────────────────────────────────────
+  
 
   async confirmerDelivrance(
     dto: ConfirmerDelivranceDto,
@@ -264,7 +264,7 @@ export class DelivranceService {
 
     try {
       const result = await this.dataSource.transaction(async (em) => {
-        // 1. Mettre à jour quantityDelivered pour chaque médicament délivré
+        
         for (const medDelivre of dto.medicamentsDelivres) {
           const med = prescription.medications.find((m) => m.cip === medDelivre.cip);
           if (med) {
@@ -272,7 +272,7 @@ export class DelivranceService {
           }
         }
 
-        // 2. Calculer le nouveau statut
+        
         const allFull = prescription.medications.every(
           (m) => (m.quantityDelivered ?? 0) >= m.quantity,
         );
@@ -280,11 +280,10 @@ export class DelivranceService {
           ? PrescriptionStatus.FULLY_USED
           : PrescriptionStatus.PARTIALLY_USED;
 
-        // 3. Persister la prescription
+        
         await em.save(Prescription, prescription);
 
-        // 4. Générer le ticket PDF (hors transaction car I/O fichier)
-        // Construire les données financières enrichies avec les noms
+        
         const financierLignes = dto.medicamentsDelivres.map((medDelivre) => {
           const med = prescription.medications.find((m) => m.cip === medDelivre.cip);
           const nom = med?.name ?? medDelivre.cip;
@@ -336,7 +335,7 @@ export class DelivranceService {
           financier: { totalCnam, totalPatient, totalGeneral },
         });
 
-        // 5. Créer l'entrée DossierHistorique dans la transaction
+        
         await em.save(DossierHistorique, {
           patientId: prescription.patientId,
           modifieParId: pharmacienId,
@@ -361,7 +360,7 @@ export class DelivranceService {
           commentaire: `Délivrance pharmacie — ${prescription.qrCode}`,
         });
 
-        // Construire le résultat
+       
         const financierDto: FinancierDto = {
           lignes: financierLignes.map((l) => ({
             cip: l.cip,
@@ -403,7 +402,7 @@ export class DelivranceService {
 
       return result;
     } catch (error) {
-      // Ne pas re-wrapper les exceptions NestJS déjà levées
+      
       if (
         error instanceof BadRequestException ||
         error instanceof NotFoundException
@@ -416,7 +415,7 @@ export class DelivranceService {
     }
   }
 
-  // ── Helpers privés ─────────────────────────────────────────────────────────
+  
 
   private mapToPrescriptionDetailDto(prescription: Prescription): PrescriptionDetailDto {
     const patient = prescription.patient;
@@ -438,7 +437,7 @@ export class DelivranceService {
         id: doctor?.id ?? prescription.doctorId,
         nom: doctor?.lastName ?? '',
         prenom: doctor?.firstName ?? '',
-        rpps: null, // RPPS est dans MedecinProfile, pas dans User
+        rpps: null, 
       },
       medications: (prescription.medications ?? []).map((m) => ({
         cip: m.cip,

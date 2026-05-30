@@ -1,8 +1,6 @@
-// ══════════════════════════════════════════════════════
-// ADMIN DASHBOARD — styles cohérents avec le projet mc
-// ══════════════════════════════════════════════════════
 
-// ── Layout ──────────────────────────────────────────────
+
+
 .admin-layout {
   display: flex;
   min-height: 100vh;
@@ -10,7 +8,7 @@
   font-family: 'DM Sans', 'Segoe UI', sans-serif;
 }
 
-// ── Sidebar ─────────────────────────────────────────────
+
 .admin-sidebar {
   width: 230px;
   min-height: 100vh;
@@ -101,14 +99,14 @@
   .su-role { color: rgba(255,255,255,.4); font-size: 10px; }
 }
 
-// ── Main ────────────────────────────────────────────────
+
 .admin-main {
   margin-left: 230px;
   padding: 32px 36px;
   flex: 1;
 }
 
-// ── Page header ─────────────────────────────────────────
+
 .admin-page-header {
   display: flex;
   justify-content: space-between;
@@ -132,7 +130,7 @@
   color: #1e3a5f;
 }
 
-// ── Médecins en attente ──────────────────────────────────
+
 .pending-doctors-section {
   background: linear-gradient(135deg, #fff8e1, #fffde7);
   border: 1.5px solid #ffe082;
@@ -241,7 +239,7 @@
   &:hover { opacity: .85; }
 }
 
-// ── Stats cards ─────────────────────────────────────────
+
 .admin-stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -269,7 +267,7 @@
 .asc-value { font-size: 26px; font-weight: 800; color: #0d1b3e; line-height: 1; }
 .asc-label { font-size: 12px; color: #8a9bbf; font-weight: 500; margin-top: 3px; }
 
-// ── Filtres ─────────────────────────────────────────────
+
 .admin-filters {
   display: flex;
   gap: 12px;
@@ -325,7 +323,7 @@
   white-space: nowrap;
 }
 
-// ── Table ────────────────────────────────────────────────
+
 .admin-table-card { padding: 0 !important; overflow: hidden; }
 
 .admin-table {
@@ -376,7 +374,7 @@
   border-top: 1px solid #f0f4fa;
 }
 
-// ── User cell ────────────────────────────────────────────
+
 .user-cell {
   display: flex;
   align-items: center;
@@ -394,7 +392,7 @@
 
 .user-fullname { font-weight: 600; }
 
-// ── Badges ───────────────────────────────────────────────
+
 .role-badge {
   display: inline-flex;
   align-items: center;
@@ -422,7 +420,7 @@
   &.status-pending              { background: #fff3cd; color: #856404; }
 }
 
-// ── Action buttons ───────────────────────────────────────
+
 .action-buttons {
   display: flex;
   gap: 6px;
@@ -460,7 +458,7 @@
   }
 }
 
-// ── Loading ──────────────────────────────────────────────
+
 .admin-loading {
   text-align: center;
   padding: 80px 20px;
@@ -468,12 +466,12 @@
   p { margin-top: 12px; }
 }
 
-// ── Utilitaires ──────────────────────────────────────────
+
 .text-muted { color: #5a6a8a; }
 .text-mono  { font-family: 'DM Mono', monospace; font-size: 12px; color: #5a6a8a; }
 .text-sm    { font-size: 12px; }
 
-// ── Modal ────────────────────────────────────────────────
+
 .mc-modal-overlay {
   position: fixed;
   inset: 0;
@@ -549,7 +547,7 @@
   margin-top: 20px;
 }
 
-// ── Formulaire modal ─────────────────────────────────────
+
 .modal-form {
   display: flex;
   flex-direction: column;
@@ -601,7 +599,7 @@ textarea.form-input {
   min-height: 80px;
 }
 
-// ── Profil médecin (modal doctor) ────────────────────────
+
 .doctor-profile {
   display: flex;
   gap: 20px;
@@ -658,7 +656,7 @@ textarea.form-input {
   font-weight: 500;
 }
 
-// ── Documents review ─────────────────────────────────────
+
 .docs-review-section {
   margin-bottom: 20px;
 }
@@ -751,7 +749,7 @@ textarea.form-input {
   &:hover { opacity: .85; }
 }
 
-// ── Notice ───────────────────────────────────────────────
+
 .doctor-notice {
   background: #e8f4fd;
   border: 1px solid #b3d9f5;
@@ -763,7 +761,7 @@ textarea.form-input {
   p { margin: 0; font-size: 12px; color: #5a8ab5; }
 }
 
-// ── Boutons ──────────────────────────────────────────────
+
 .btn-mc {
   display: inline-flex;
   align-items: center;
@@ -801,7 +799,7 @@ textarea.form-input {
   }
 }
 
-// ── Toast ────────────────────────────────────────────────
+
 .mc-toast {
   position: fixed;
   bottom: 28px;
@@ -819,13 +817,13 @@ textarea.form-input {
   &.error { background: #e74c3c; }
 }
 
-// ── Animations ───────────────────────────────────────────
+
 @keyframes fadeIn  { from { opacity: 0 } to { opacity: 1 } }
 @keyframes slideUp { from { opacity: 0; transform: translateY(12px) } to { opacity: 1; transform: none } }
 @keyframes slideIn { from { opacity: 0; transform: translateX(20px) } to { opacity: 1; transform: none } }
 @keyframes spin    { to { transform: rotate(360deg) } }
 
-// ── Responsive ───────────────────────────────────────────
+
 @media (max-width: 900px) {
   .admin-sidebar { display: none; }
   .admin-main { margin-left: 0; padding: 20px; }
@@ -835,7 +833,7 @@ textarea.form-input {
   .mc-modal--doctor { width: 95vw; }
 }
 
-// ── Onglets admin ────────────────────────────────────────
+
 .admin-tabs {
   display: flex;
   gap: 4px;
@@ -863,7 +861,7 @@ textarea.form-input {
   }
 }
 
-// ── Badge action audit ───────────────────────────────────
+
 .audit-action-badge {
   display: inline-block;
   padding: 3px 10px;

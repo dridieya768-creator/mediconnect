@@ -84,7 +84,7 @@ export class RegisterComponent implements OnInit {
   ];
 
   form = this.fb.group({
-    // ✅ CODE CORRIGÉ : Tous les validateurs sont regroupés dans un tableau []
+    
 firstName: ["", [
   Validators.required,
   Validators.minLength(2),

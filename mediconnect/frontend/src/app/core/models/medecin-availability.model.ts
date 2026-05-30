@@ -1,25 +1,25 @@
 ﻿export interface WorkDay {
   day: 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
-  startTime: string; // "HH:mm"
-  endTime: string;   // "HH:mm"
+  startTime: string; 
+  endTime: string;   
 }
 
 export interface CongesPeriod {
-  startDate: string; // ISO date
-  endDate: string;   // ISO date
+  startDate: string; 
+  endDate: string;   
   message?: string;
 }
 
 export interface AvailabilityConfig {
   workDays: WorkDay[];
-  defaultDuration: number; // minutes (15, 30, 45, 60)
+  defaultDuration: number; 
   acceptsTeleconsultation: boolean;
   disponTeleconsult?: boolean;
   conges?: CongesPeriod[];
 }
 
 export interface OccupiedSlot {
-  appointmentDate: string; // ISO datetime
+  appointmentDate: string; 
   durationMinutes: number;
 }
 

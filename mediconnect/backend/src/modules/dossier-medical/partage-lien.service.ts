@@ -15,7 +15,7 @@ export interface LienPartagePayload {
     documents: boolean;
     observations: boolean;
   };
-  expiresAt: string; // ISO string
+  expiresAt: string; 
 }
 
 @Injectable()
@@ -27,7 +27,7 @@ export class PartageLienService {
     private readonly emailService: EmailService,
   ) {}
 
-  // ── Générer un lien chiffré et l'envoyer par email ───────────────────────
+  
 
   async genererEtEnvoyerLien(
     patientId: string,
@@ -48,7 +48,7 @@ export class PartageLienService {
     return { ...result, emailEnvoye };
   }
 
-  // ── Générer un lien chiffré ───────────────────────────────────────────────
+  
 
   genererLien(
     patientId: string,
@@ -74,7 +74,7 @@ export class PartageLienService {
     return { token, lien, expiresAt };
   }
 
-  // ── Accéder au dossier via le lien ────────────────────────────────────────
+
 
   async accederVieLien(token: string): Promise<{
     patient: Partial<Patient>;
@@ -106,7 +106,7 @@ export class PartageLienService {
 
     if (!patient) throw new NotFoundException('Patient introuvable');
 
-    // Filtrer les données selon les permissions
+    
     const dossierFiltre: any = {
       id:            patient.id,
       nom:           patient.user?.lastName  ?? '',

@@ -44,6 +44,17 @@ let PrescriptionsService = class PrescriptionsService {
             console.warn('[PrescriptionsService] Migration warning:', err?.message);
         }
     }
+    async regeneratePdf(id) {
+        const prescription = await this.findOne(id);
+        const pdfBuffer = await this.pdfService.generatePrescriptionPdf(prescription, 'Médecin', 'Patient');
+        const dir = (0, path_1.join)(process.cwd(), 'uploads', 'prescriptions');
+        if (!(0, fs_1.existsSync)(dir))
+            (0, fs_1.mkdirSync)(dir, { recursive: true });
+        (0, fs_1.writeFileSync)((0, path_1.join)(dir, `prescription-${id}.pdf`), pdfBuffer);
+        const pdfUrl = `/uploads/prescriptions/prescription-${id}.pdf`;
+        await this.repo.update(id, { pdfUrl });
+        return { message: 'PDF régénéré', url: pdfUrl };
+    }
     generateElectronicSignature(prescriptionId, doctorId, patientId, medications, pin, issuedAt) {
         const payload = JSON.stringify({
             prescriptionId,
@@ -192,7 +203,12 @@ let PrescriptionsService = class PrescriptionsService {
             return await this.repo.find({
                 where: { patientId },
                 order: { createdAt: 'DESC' },
-                relations: ['doctor'],
+                select: [
+                    'id', 'patientId', 'doctorId', 'qrCode', 'status',
+                    'medications', 'notes', 'issuedAt', 'expiresAt',
+                    'signedAt', 'pdfUrl', 'emailSentAt', 'imagingRequests',
+                    'analysisRequests', 'createdAt', 'updatedAt',
+                ],
             });
         }
         catch (err) {

@@ -38,13 +38,13 @@ export class StockComponent implements OnInit {
   errorMsg = signal('');
   searchQuery = '';
 
-  // Réception
+  
   lotsReception: any[] = [this.newLot()];
 
-  // Inventaire
+  
   lignesInventaire: any[] = [];
 
-  // Retour
+  
   retourForm = { stockItemId: '', quantite: 1, lot: '', motif: '' };
 
   ngOnInit() {

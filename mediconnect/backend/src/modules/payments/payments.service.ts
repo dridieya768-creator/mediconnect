@@ -27,7 +27,7 @@ export class PaymentsService {
     this.frontendUrl      = this.config.get('FRONTEND_URL', 'http://localhost:4200');
   }
 
-  // ── Créer un lien de paiement Flouci ─────────────────────────────────────
+  
 
   async createCheckoutSession(
     appointmentId: string,
@@ -39,7 +39,7 @@ export class PaymentsService {
     });
 
     if (!appointment) throw new NotFoundException('Rendez-vous introuvable');
-    // Vérification souple : accepter userId ou patientId
+    
     if (appointment.patientId !== patientId && (appointment as any).patient?.id !== patientId) {
       throw new BadRequestException('Accès non autorisé');
     }
@@ -50,10 +50,10 @@ export class PaymentsService {
       throw new BadRequestException('Ce rendez-vous est déjà terminé');
     }
 
-    // Montant en millimes (50 TND = 50000 millimes)
+    
     const amountMillimes = 50000;
 
-    // Mode simulé si les clés Flouci ne sont pas configurées
+    
     if (!this.flouciPublicKey || !this.flouciPrivateKey) {
       return {
         paymentId: `sim_${appointmentId}`,
@@ -63,7 +63,7 @@ export class PaymentsService {
       };
     }
 
-    // Appel API Flouci
+    
     try {
       const response = await fetch('https://developers.flouci.com/api/v2/generate_payment', {
         method: 'POST',
@@ -96,7 +96,7 @@ export class PaymentsService {
     }
   }
 
-  // ── Vérifier un paiement Flouci ───────────────────────────────────────────
+  
 
   async verifyPayment(paymentId: string, appointmentId: string): Promise<void> {
     if (!this.flouciPublicKey || paymentId.startsWith('sim_')) {
@@ -122,11 +122,11 @@ export class PaymentsService {
         });
       }
     } catch {
-      // Ignorer les erreurs de vérification
+      
     }
   }
 
-  // ── Historique paiements du patient ───────────────────────────────────────
+  
 
   async getPaymentHistory(patientId: string) {
     const appointments = await this.appointmentRepo.find({

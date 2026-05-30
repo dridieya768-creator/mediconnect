@@ -31,7 +31,7 @@ import { UpdateFamilyMemberDto } from './dto/update-family-member.dto';
 export class FamilyMembersController {
   constructor(private readonly familyMembersService: FamilyMembersService) {}
 
-  // GET /api/v1/family-members
+  
   @Get()
   @ApiOperation({ summary: 'Lister les membres familiaux du patient connecté' })
   async findAll(@Req() req: any) {
@@ -39,7 +39,7 @@ export class FamilyMembersController {
     return this.familyMembersService.findAllByPatient(patientId);
   }
 
-  // POST /api/v1/family-members
+  
   @Post()
   @ApiOperation({ summary: 'Ajouter un membre familial' })
   async create(@Body() dto: CreateFamilyMemberDto, @Req() req: any) {
@@ -47,7 +47,7 @@ export class FamilyMembersController {
     return this.familyMembersService.create(patientId, dto);
   }
 
-  // PATCH /api/v1/family-members/:id
+  
   @Patch(':id')
   @ApiOperation({ summary: 'Modifier un membre familial' })
   async update(
@@ -59,7 +59,7 @@ export class FamilyMembersController {
     return this.familyMembersService.update(id, patientId, dto);
   }
 
-  // DELETE /api/v1/family-members/:id
+  
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Supprimer un membre familial (soft delete)' })
@@ -68,7 +68,7 @@ export class FamilyMembersController {
     return this.familyMembersService.remove(id, patientId);
   }
 
-  // POST /api/v1/family-members/:id/documents
+  
   @Post(':id/documents')
   @ApiOperation({ summary: 'Uploader les documents justificatifs (مضمون ولادة)' })
   @UseInterceptors(

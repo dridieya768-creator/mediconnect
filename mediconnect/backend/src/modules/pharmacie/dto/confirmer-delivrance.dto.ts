@@ -16,7 +16,7 @@ export class MedicamentDelivreDto {
 
   @IsNumber()
   @Min(0)
-  tauxCnam: number;  // ex: 0.70
+  tauxCnam: number;  
 }
 
 export class ConfirmerDelivranceDto {

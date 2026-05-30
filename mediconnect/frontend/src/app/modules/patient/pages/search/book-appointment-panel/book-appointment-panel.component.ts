@@ -7,6 +7,7 @@
   SimpleChanges,
   inject,
   signal,
+  effect,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
@@ -33,10 +34,10 @@ import { profile } from 'console';
       aria-hidden="true"
     ></div>
 
-    <!-- Panel -->
+    
     <div class="panel" *ngIf="medecin" role="dialog" aria-modal="true" [attr.aria-label]="'Prendre rendez-vous avec ' + doctorFullName">
 
-      <!-- Header -->
+      
       <div class="panel-header">
         <div class="doctor-info">
           <img
@@ -312,6 +313,17 @@ export class BookAppointmentPanelComponent implements OnChanges {
   loadingAvailability = signal<boolean>(false);
   errorMessage = signal<string | null>(null);
 
+  constructor() {
+    
+    effect(() => {
+      const _week = this.bookingState.currentWeekStart(); 
+      const medecinId = this.medecin?.id ?? this.medecin?.userId;
+      if (medecinId && this.availability()) {
+        this.loadOccupiedSlots(medecinId);
+      }
+    });
+  }
+
   get doctorFullName(): string {
     if (!this.medecin) return '';
     const prenom = this.medecin.prenom ?? this.medecin.firstName ?? '';
@@ -390,7 +402,7 @@ export class BookAppointmentPanelComponent implements OnChanges {
   }
 
   onSlotSelected(_date: Date): void {
-    // Slot selection is handled by BookingStateService via WeeklyCalendarComponent
+    
     this.errorMessage.set(null);
   }
 
@@ -403,7 +415,7 @@ export class BookAppointmentPanelComponent implements OnChanges {
     this.bookingState.isLoading.set(true);
     this.errorMessage.set(null);
 
-    // Récupérer le vrai patient.id depuis /patients/me
+    
     this.http.get<any>('/api/v1/patients/me').subscribe({
       next: (res) => {
         const outer = res?.data ?? res;

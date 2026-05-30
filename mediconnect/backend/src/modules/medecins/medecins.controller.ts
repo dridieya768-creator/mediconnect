@@ -54,7 +54,7 @@ export class MedecinsController {
     const result = await this.medecinsService.acceptAppointment(user.id, appointmentId);
     try {
       const appt = result.appointment;
-      // Résoudre le patient.id depuis le patientId (qui peut être un user_id)
+      
       const patientRows = await (this.medecinsService as any).appointmentRepository?.manager?.query(
         `SELECT id FROM patients WHERE id = $1 OR user_id = $1 LIMIT 1`,
         [appt?.patientId]
@@ -122,7 +122,7 @@ async getRevenus(
   return this.medecinsService.getRevenus(user.id, from, to);
 }
 
-// ── Routes :id — TOUJOURS EN DERNIER ──
+
 @Get(':id/availability')
 async getMedecinAvailabilityById(@Param('id') id: string) {
   return this.medecinsService.getMedecinAvailabilityById(id);

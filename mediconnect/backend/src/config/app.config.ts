@@ -1,4 +1,4 @@
-// app.config.ts
+
 import { registerAs } from '@nestjs/config';
 
 export const appConfig = registerAs('app', () => ({
@@ -8,7 +8,7 @@ export const appConfig = registerAs('app', () => ({
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:4200',
 }));
 
-// database.config.ts
+
 export const databaseConfig = registerAs('database', () => ({
   host: process.env.DB_HOST || 'localhost',
   port: parseInt(process.env.DB_PORT, 10) || 5432,
@@ -17,7 +17,7 @@ export const databaseConfig = registerAs('database', () => ({
   database: process.env.DB_DATABASE || 'mediconnect_db',
 }));
 
-// jwt.config.ts
+
 export const jwtConfig = registerAs('jwt', () => ({
   secret: process.env.JWT_SECRET || 'default_secret_change_me',
   expiresIn: process.env.JWT_EXPIRES_IN || '7d',

@@ -26,7 +26,7 @@ export class StockItem {
   dci: string;
 
   @Column({ name: 'forme', nullable: true })
-  forme: string; // comprimé, sirop, etc.
+  forme: string; 
 
   @Column({ name: 'dosage', nullable: true })
   dosage: string;
@@ -49,7 +49,7 @@ export class StockItem {
   @Column({ type: 'enum', enum: StockStatut, default: StockStatut.DISPONIBLE })
   statut: StockStatut;
 
-  // Lots FIFO stockés en JSONB : [{ lot, quantite, dateExpiration, dateReception }]
+  
   @Column({ name: 'lots', type: 'jsonb', default: [] })
   lots: {
     lot: string;

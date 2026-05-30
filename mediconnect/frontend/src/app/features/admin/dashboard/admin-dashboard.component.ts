@@ -103,7 +103,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     )
   );
 
-  // ── WebSocket notifications temps réel ─────────────────────────────────────
+  
   wsNotifications = signal<Array<{ title: string; message: string; createdAt: string }>>([]);
 
   ngOnInit() {
@@ -116,12 +116,12 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     if (!token) return;
     this.adminWs.connect(token);
     this.wsSub = this.adminWs.newProNotification$.subscribe(notif => {
-      // Ajouter la notification en tête de liste
+      
       this.wsNotifications.update(list => [
         { title: notif.title, message: notif.message, createdAt: new Date().toISOString() },
         ...list,
       ]);
-      // Recharger la liste des utilisateurs pour afficher le nouveau compte
+      
       this.loadUsers();
       this.showToast(` ${notif.message}`, 'success');
     });
@@ -277,7 +277,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ── Validation médecins ────────────────────────────────
+  
   openDoctorModal(user: AdminUser) {
     this.doctorModal.set(user);
     this.rejectReason = '';
@@ -401,14 +401,14 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   getAuditAction(log: any): string {
     const champs = log.champsModifies ?? {};
     const keys = Object.keys(champs);
-    if (keys.includes('delivrance_pharmacie')) return '💊 Délivrance pharmacie';
-    if (keys.includes('allergies'))            return '🔴 Allergies modifiées';
-    if (keys.includes('maladies_chroniques'))  return '🏥 Maladies chroniques';
-    if (keys.includes('medicaments_actuels'))  return '💊 Médicaments actuels';
-    if (keys.includes('documents'))            return '📄 Document ajouté';
-    if (keys.includes('observations'))         return '📝 Observations';
+    if (keys.includes('delivrance_pharmacie')) return ' Délivrance pharmacie';
+    if (keys.includes('allergies'))            return ' Allergies modifiées';
+    if (keys.includes('maladies_chroniques'))  return ' Maladies chroniques';
+    if (keys.includes('medicaments_actuels'))  return ' Médicaments actuels';
+    if (keys.includes('documents'))            return ' Document ajouté';
+    if (keys.includes('observations'))         return ' Observations';
     if (keys.length > 0)                       return `✏️ ${keys[0]}`;
-    return '📋 Modification dossier';
+    return ' Modification dossier';
   }
 
   showToast(msg: string, type: 'success' | 'error' = 'success') {

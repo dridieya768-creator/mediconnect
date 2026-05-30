@@ -1,6 +1,6 @@
 export type Relation = 'ENFANT' | 'CONJOINT' | 'PARENT' | 'AUTRE';
 
-/** Relations qui nécessitent des documents justificatifs (مضمون ولادة) */
+
 export const RELATIONS_AVEC_DOCUMENTS: Relation[] = ['ENFANT', 'CONJOINT', 'PARENT'];
 
 export interface FamilyMember {

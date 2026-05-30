@@ -33,7 +33,7 @@ export class DossierMedicalController {
     return req.user?.role ?? '';
   }
 
-  // ── Dossier ──────────────────────────────────────────────────────────────
+  
 
   @Get(':patientId')
   @ApiOperation({ summary: 'Consulter le dossier médical d\'un patient' })
@@ -54,7 +54,7 @@ export class DossierMedicalController {
     return this.dossierService.updateDossierParMedecin(patientId, this.getDemandeurId(req), body);
   }
 
-  // ── Historique ────────────────────────────────────────────────────────────
+  
 
   @Get(':patientId/historique')
   @ApiOperation({ summary: 'Historique des modifications du dossier' })
@@ -66,7 +66,7 @@ export class DossierMedicalController {
     const demandeurId = this.getDemandeurId(req);
     const role = this.getDemandeurRole(req);
 
-    // Vérifier : propriétaire ou ACCES_COMPLET
+    
     const patient = await this.dossierService.getDossier(patientId, demandeurId, role);
     const isProprietaire = (patient as any).userId === demandeurId;
 
@@ -77,7 +77,7 @@ export class DossierMedicalController {
     return this.historiqueService.getHistorique(patientId, query);
   }
 
-  // ── Accès médecins ────────────────────────────────────────────────────────
+  
 
   @Get(':patientId/acces/my-permissions')
   @ApiOperation({ summary: 'Récupérer les permissions du médecin connecté pour ce patient' })
@@ -133,7 +133,7 @@ export class DossierMedicalController {
     return this.accesService.revoquerAcces(accesId, patientId);
   }
 
-  // ── Helper ────────────────────────────────────────────────────────────────
+  
 
   private async verifierProprietaire(patientId: string, req: any): Promise<void> {
     const demandeurId = this.getDemandeurId(req);

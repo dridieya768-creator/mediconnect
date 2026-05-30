@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators'; // ✅ import map
+import { map } from 'rxjs/operators'; 
 
 export type UserRole =
   | 'PATIENT'
@@ -50,8 +50,8 @@ export interface DoctorDocument {
   userId?: string;
   type: string;
   filename: string;
-  originalName: string;  // ✅ camelCase — correspond à l'alias SQL "originalName"
-  filePath?: string;     // ✅ camelCase — correspond à l'alias SQL "filePath"
+  originalName: string;  
+  filePath?: string;     
   base64?: string;
   status: string;
   createdAt: string;
@@ -115,7 +115,7 @@ export class AdminUserService {
     return this.http.get<AdminStats>('/api/v1/admin/stats');
   }
 
-  // ✅ FIX : utilise map() pour normaliser la réponse (array direct ou { data: [] })
+  
   getDoctorDocs(userId: string): Observable<DoctorDocument[]> {
     return this.http.get<any>(`${API}/${userId}/documents`).pipe(
       map((res: any) => {

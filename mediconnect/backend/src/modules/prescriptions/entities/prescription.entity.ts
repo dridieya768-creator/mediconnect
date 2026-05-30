@@ -33,10 +33,10 @@ export class Prescription {
   doctorId: string;
 
   @Column({ name: 'qr_code', unique: true })
-  qrCode: string; // QR-ORD-UUID-XXXX
+  qrCode: string; 
 
   @Column({ name: 'qr_jwt', type: 'text', nullable: true })
-  qrJwt: string; // JWT signé
+  qrJwt: string; 
 
   @Column({ type: 'enum', enum: PrescriptionStatus, default: PrescriptionStatus.ACTIVE })
   status: PrescriptionStatus;
@@ -78,7 +78,7 @@ export class Prescription {
   electronicSignature: string;
 
   @Column({ name: 'signature_image', nullable: true, type: 'text' })
-  signatureImage: string; // base64 PNG de la signature manuscrite
+  signatureImage: string; 
 
   @Column({ name: 'imaging_requests', type: 'jsonb', nullable: true })
   imagingRequests: {

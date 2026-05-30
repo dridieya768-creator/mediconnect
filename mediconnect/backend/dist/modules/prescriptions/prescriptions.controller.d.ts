@@ -1,12 +1,14 @@
 import { PrescriptionsService } from "./prescriptions.service";
+import { PdfService } from './pdf.service';
 export declare class PrescriptionsController {
     private readonly prescriptionsService;
-    constructor(prescriptionsService: PrescriptionsService);
+    private readonly pdfService;
+    constructor(prescriptionsService: PrescriptionsService, pdfService: PdfService);
     create(dto: any): Promise<import("./entities/prescription.entity").Prescription>;
     checkInteractions(body: {
         medications: any[];
     }): import("./interaction-checker.service").DrugInteraction[];
-    findByPatient(patientId: string): Promise<import("./entities/prescription.entity").Prescription[]>;
+    findByPatient(patientId: string): Promise<Partial<import("./entities/prescription.entity").Prescription>[]>;
     findByQrCode(qrCode: string): Promise<import("./entities/prescription.entity").Prescription>;
     findOne(id: string): Promise<import("./entities/prescription.entity").Prescription>;
     scanAtPharmacy(body: {
@@ -19,4 +21,8 @@ export declare class PrescriptionsController {
     envoyer(id: string, body: {
         patientEmail: string;
     }): Promise<import("./entities/prescription.entity").Prescription>;
+    regeneratePdf(id: string): Promise<{
+        message: string;
+        url: string;
+    }>;
 }

@@ -17,7 +17,7 @@ export class PharmaciePublicController {
     private readonly dataSource: DataSource,
   ) {}
 
-  // ── Pharmacien : voir son profil ─────────────────────────────────────────
+  
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Get('my-profile')
@@ -43,7 +43,7 @@ export class PharmaciePublicController {
     };
   }
 
-  // ── Pharmacien : mettre à jour son profil ─────────────────────────────────
+  
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Put('my-profile')
@@ -66,14 +66,14 @@ export class PharmaciePublicController {
       photoUrl:        body.photoUrl,
     });
     await this.pharmacienRepo.save(profile);
-    // Mettre à jour le téléphone dans users
+    
     if (body.telephone) {
       await this.userRepo.update(userId, { phone: body.telephone } as any);
     }
     return { success: true, message: 'Profil mis à jour' };
   }
 
-  // ── Liste publique des pharmacies ─────────────────────────────────────────
+  
   @Get()
   async getPharmacies() {
     const profiles = await this.pharmacienRepo.find({ relations: ['user'] });
@@ -97,7 +97,7 @@ export class PharmaciePublicController {
     return { success: true, data: result };
   }
 
-  // ── Patient envoie son QR-ORD à une pharmacie ─────────────────────────────
+  
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Post('send-qr')
@@ -118,7 +118,7 @@ export class PharmaciePublicController {
     }
   }
 
-  // ── Pharmacien voit les QR-ORD reçus ─────────────────────────────────────
+  
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Get('my-qr-requests')

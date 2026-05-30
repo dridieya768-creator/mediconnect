@@ -82,7 +82,6 @@ export class LandingComponent {
     this.router.navigate(['/auth/login']);
   }
 
-  // ── Services Carousel ──────────────────────────────────────
   svcIndex = 0;
   readonly svcCardWidth = 296;
 
@@ -102,7 +101,7 @@ export class LandingComponent {
   svcNext() { if (this.svcIndex < this.svcMaxIndex) this.svcIndex++; }
   svcGo(i: number) { this.svcIndex = i; }
 
-  // ── Specialites Carousel ───────────────────────────────────
+  
   specIndex = 0;
   readonly specCardWidth = 194; // 180px + 14px gap
 
@@ -122,9 +121,9 @@ export class LandingComponent {
   specNext() { if (this.specIndex < this.specMaxIndex) this.specIndex++; }
   specGo(i: number) { this.specIndex = i; }
 
-  // ── Procedures Carousel ────────────────────────────────────
+  
   procIndex = 0;
-  readonly procCardWidth = 240; // 220px + 20px gap
+  readonly procCardWidth = 240; 
 
   get procVisible(): number {
     if (typeof window === 'undefined') return 4;

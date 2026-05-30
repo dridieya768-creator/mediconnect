@@ -49,12 +49,12 @@
   </div>
 
   <div class="empty-state" *ngIf="prescriptions().length === 0">
-    <div style="font-size:48px">📋</div>
+    <div style="font-size:48px"></div>
     <p>Aucune ordonnance pour le moment</p>
   </div>
 </div>
 
-<!-- Modal QR Code agrandi -->
+
 <div class="modal-overlay" *ngIf="selectedRx()" (click)="closeQr()">
   <div class="modal-box" (click)="$event.stopPropagation()">
     <button class="modal-close" (click)="closeQr()">✕</button>

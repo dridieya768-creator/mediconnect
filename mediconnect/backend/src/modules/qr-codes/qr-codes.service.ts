@@ -79,7 +79,7 @@ export class QrCodesService {
   }
 
   async generateQrImage(qrCode: string): Promise<string> {
-    // Use callback-based overload wrapped in Promise to avoid type conflicts
+    
     return new Promise<string>((resolve, reject) => {
       QRCode.toDataURL(
         qrCode,

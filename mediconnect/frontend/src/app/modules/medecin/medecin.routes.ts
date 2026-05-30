@@ -22,7 +22,7 @@ export const MEDECIN_ROUTES: Routes = [
         redirectTo: "planning",
         pathMatch: "full",
       },
-      // ✅ Nouvelle route profil
+      
       {
         path: "profil",
         loadComponent: () =>

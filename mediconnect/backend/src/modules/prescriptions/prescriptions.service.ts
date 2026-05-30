@@ -23,7 +23,7 @@ export class PrescriptionsService implements OnModuleInit {
     private emailService: EmailService,
   ) {}
 
-  // ── Migration automatique au démarrage ───────────────────────────────────
+  
   async onModuleInit() {
     try {
       await this.dataSource.query(
@@ -40,8 +40,21 @@ export class PrescriptionsService implements OnModuleInit {
       console.warn('[PrescriptionsService] Migration warning:', err?.message);
     }
   }
-
-  // ── Génère une signature HMAC-SHA256 réelle ──────────────────────────────
+async regeneratePdf(id: string) {
+  const prescription = await this.findOne(id);
+  const pdfBuffer = await this.pdfService.generatePrescriptionPdf(
+    prescription,
+    'Médecin',
+    'Patient',
+  );
+  const dir = join(process.cwd(), 'uploads', 'prescriptions');
+  if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+  writeFileSync(join(dir, `prescription-${id}.pdf`), pdfBuffer);
+  const pdfUrl = `/uploads/prescriptions/prescription-${id}.pdf`;
+  await this.repo.update(id, { pdfUrl });
+  return { message: 'PDF régénéré', url: pdfUrl };
+}
+  
   private generateElectronicSignature(
     prescriptionId: string,
     doctorId: string,
@@ -50,7 +63,7 @@ export class PrescriptionsService implements OnModuleInit {
     pin: string,
     issuedAt: Date,
   ): string {
-    // Payload canonique : contenu de l'ordonnance
+    
     const payload = JSON.stringify({
       prescriptionId,
       doctorId,
@@ -62,14 +75,14 @@ export class PrescriptionsService implements OnModuleInit {
       issuedAt: issuedAt.toISOString(),
     });
 
-    // Clé = HMAC(PIN + doctorId, SECRET_KEY)
+    
     const secretKey = process.env.SIGNATURE_SECRET || "mediconnect-pfe-2026-secret-key";
     const signingKey = crypto
       .createHmac("sha256", secretKey)
       .update(`${pin}:${doctorId}`)
       .digest("hex");
 
-    // Signature finale = HMAC-SHA256(payload, signingKey)
+    
     const signature = crypto
       .createHmac("sha256", signingKey)
       .update(payload)
@@ -78,7 +91,7 @@ export class PrescriptionsService implements OnModuleInit {
     return `HMAC-SHA256:${signature.toUpperCase()}`;
   }
 
-  // ── Vérifie une signature ────────────────────────────────────────────────
+  
   verifySignature(prescription: Prescription, pin: string): boolean {
     if (!prescription.electronicSignature) return false;
     const expected = this.generateElectronicSignature(
@@ -102,7 +115,7 @@ export class PrescriptionsService implements OnModuleInit {
       const expiresAt = new Date(now);
       expiresAt.setDate(expiresAt.getDate() + 90);
 
-      // Résoudre le vrai patient.id depuis userId si nécessaire
+      
       let patientId = dto.patientId;
       const patientRow = await this.dataSource.query(
         `SELECT id FROM patients WHERE id = $1 OR user_id = $1 LIMIT 1`,
@@ -127,7 +140,7 @@ export class PrescriptionsService implements OnModuleInit {
         status:      PrescriptionStatus.ACTIVE,
         qrCode:      tempCode,
         qrJwt:       '',
-        // Signature électronique HMAC-SHA256 réelle si PIN fourni
+        
         signedAt:    dto.pin ? now : undefined,
         electronicSignature: dto.pin
           ? this.generateElectronicSignature(
@@ -156,7 +169,7 @@ export class PrescriptionsService implements OnModuleInit {
         });
         await this.repo.update(saved.id, { qrCode });
 
-        // Re-signer avec l'ID réel (la première signature utilisait 'PENDING')
+        
         if (dto.pin) {
           const realSignature = this.generateElectronicSignature(
             saved.id,
@@ -172,7 +185,7 @@ export class PrescriptionsService implements OnModuleInit {
           });
         }
 
-        // Générer le PDF
+        
         try {
           const prescription = await this.findOne(saved.id);
           console.log('[PrescriptionsService] Generating PDF for prescription:', saved.id);
@@ -182,7 +195,7 @@ export class PrescriptionsService implements OnModuleInit {
             dto.patientName || 'Patient',
           );
           console.log('[PrescriptionsService] PDF generated, size:', pdfBuffer.length, 'bytes');
-          // Sauvegarder le PDF
+          
           const uploadsDir = join(process.cwd(), 'uploads', 'prescriptions');
           if (!existsSync(uploadsDir)) mkdirSync(uploadsDir, { recursive: true });
           const filename = `prescription-${saved.id}.pdf`;
@@ -197,7 +210,7 @@ export class PrescriptionsService implements OnModuleInit {
         console.warn('[PrescriptionsService] QR generation failed:', qrErr?.message);
       }
 
-      // ── Log d'audit ──────────────────────────────────────────────────────
+      
       try {
         await this.dataSource.query(
           `INSERT INTO dossier_historique
@@ -235,23 +248,28 @@ export class PrescriptionsService implements OnModuleInit {
     if (!p) throw new NotFoundException("Prescription introuvable");
     return p;
   }
-
+  //houni namil  SELECT * FROM prescriptions WHERE qr_code = '...' bi repo.findOne({ where: { qrCode } })
   async findByQrCode(qrCode: string): Promise<Prescription> {
     const p = await this.repo.findOne({ where: { qrCode } });
     if (!p) throw new NotFoundException("Ordonnance introuvable");
     return p;
   }
 
-  async findByPatient(patientId: string): Promise<Prescription[]> {
+  async findByPatient(patientId: string): Promise<Partial<Prescription>[]> {
     try {
+      // Exclure signatureImage (base64 lourd) de la liste — disponible via findOne si besoin
       return await this.repo.find({
         where: { patientId },
         order: { createdAt: 'DESC' },
-        relations: ['doctor'],
+        select: [
+          'id', 'patientId', 'doctorId', 'qrCode', 'status',
+          'medications', 'notes', 'issuedAt', 'expiresAt',
+          'signedAt', 'pdfUrl', 'emailSentAt', 'imagingRequests',
+          'analysisRequests', 'createdAt', 'updatedAt',
+        ],
       });
     } catch (err: any) {
       console.warn('[PrescriptionsService] findByPatient error:', err?.message);
-      // Retry without relations if join fails
       try {
         return await this.repo.find({ where: { patientId }, order: { createdAt: 'DESC' } });
       } catch {

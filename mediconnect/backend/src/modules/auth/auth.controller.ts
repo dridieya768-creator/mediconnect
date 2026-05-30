@@ -1,4 +1,4 @@
-// auth.controller.ts — remplacez l'import et le décorateur
+
 
 import {
   Controller, Post, Body, HttpCode, HttpStatus,
@@ -26,7 +26,7 @@ export class AuthController {
   @Post("register")
   @ApiOperation({ summary: "US1 - Créer un compte" })
   @ApiConsumes("multipart/form-data", "application/json")
-  @UseInterceptors(AnyFilesInterceptor({  // ← AnyFilesInterceptor accepte tous les noms de champs
+  @UseInterceptors(AnyFilesInterceptor({  
     storage: diskStorage({
       destination: (req, file, cb) => {
         const dir = join(process.cwd(), "uploads", "doctor-docs");

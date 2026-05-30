@@ -17,7 +17,7 @@ export class AdminWsService implements OnDestroy {
   private socket: Socket | null = null;
   private newPro$ = new Subject<AdminWsNotification>();
 
-  /** Observable émis à chaque nouveau compte pro en attente */
+  
   readonly newProNotification$ = this.newPro$.asObservable();
 
   connect(token: string): void {

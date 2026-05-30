@@ -14,13 +14,13 @@ import { HttpClient } from '@angular/common/http';
         <div class="subtitle">Dossier médical partagé — accès temporaire sécurisé</div>
       </div>
 
-      <!-- Chargement -->
+      
       <div class="loading" *ngIf="loading()">
         <div class="spinner"></div>
         <p>Vérification du lien...</p>
       </div>
 
-      <!-- Erreur -->
+      
       <div class="error-card" *ngIf="!loading() && error()">
         <div class="error-icon"></div>
         <h2>Accès refusé</h2>
@@ -28,7 +28,7 @@ import { HttpClient } from '@angular/common/http';
         <p class="hint">Ce lien est peut-être expiré ou invalide. Demandez au patient de générer un nouveau lien.</p>
       </div>
 
-      <!-- Dossier -->
+      
       <div class="dossier-card" *ngIf="!loading() && !error() && dossier()">
         <div class="dossier-header">
           <div class="patient-avatar">{{ initiales() }}</div>
@@ -55,7 +55,7 @@ import { HttpClient } from '@angular/common/http';
           </div>
         </div>
 
-        <!-- Allergies -->
+        
         <div class="section" *ngIf="dossier()!.permissions.allergies">
           <div class="section-title"> Allergies & Maladies chroniques</div>
           <div class="tags" *ngIf="allergies().length">
@@ -69,7 +69,7 @@ import { HttpClient } from '@angular/common/http';
           <p class="empty" *ngIf="!maladies().length">Aucune maladie chronique</p>
         </div>
 
-        <!-- Médicaments -->
+        
         <div class="section" *ngIf="dossier()!.permissions.medicamentsActuels">
           <div class="section-title"> Médicaments actuels</div>
           <div class="tags" *ngIf="medicaments().length">
@@ -78,12 +78,12 @@ import { HttpClient } from '@angular/common/http';
           <p class="empty" *ngIf="!medicaments().length">Aucun médicament en cours</p>
         </div>
 
-        <!-- Documents -->
+       
         <div class="section" *ngIf="dossier()!.permissions.documents && documents().length">
-          <div class="section-title">📄 Documents médicaux</div>
+          <div class="section-title"> Documents médicaux</div>
           <div class="docs-list">
             <div class="doc-item" *ngFor="let d of documents()">
-              <span>📄</span>
+              <span></span>
               <span class="doc-name">{{ d.name }}</span>
               <a class="btn-dl" [href]="d.url" target="_blank" download>⬇ Télécharger</a>
             </div>

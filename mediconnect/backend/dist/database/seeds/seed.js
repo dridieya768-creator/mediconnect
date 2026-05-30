@@ -20,14 +20,14 @@ async function seed() {
         const existing = await userRepo.findOne({ where: { email: u.email } });
         if (!existing) {
             await userRepo.save(userRepo.create({ ...u, password: hashedPassword, status: "ACTIVE" }));
-            console.log(`✅ Créé: ${u.email} (${u.role})`);
+            console.log(` Créé: ${u.email} (${u.role})`);
         }
         else {
             console.log(`⏭ Existe déjà: ${u.email}`);
         }
     }
     await connection.close();
-    console.log("\n🎉 Seed terminé avec succès!");
+    console.log("\n Seed terminé avec succès!");
 }
 seed().catch(console.error);
 //# sourceMappingURL=seed.js.map

@@ -2,13 +2,14 @@ import { Controller, Get, Post, Patch, Param, Body, UseGuards } from "@nestjs/co
 import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 import { AuthGuard } from "@nestjs/passport";
 import { PrescriptionsService } from "./prescriptions.service";
+import { PdfService } from './pdf.service';
 
 @ApiTags("prescriptions")
 @ApiBearerAuth()
 @UseGuards(AuthGuard("jwt"))
 @Controller("prescriptions")
 export class PrescriptionsController {
-  constructor(private readonly prescriptionsService: PrescriptionsService) {}
+  constructor(private readonly prescriptionsService: PrescriptionsService,private readonly pdfService: PdfService,) {}
 
   @Post()
   @ApiOperation({ summary: "Créer une ordonnance (médecin)" })
@@ -56,4 +57,8 @@ export class PrescriptionsController {
   envoyer(@Param("id") id: string, @Body() body: { patientEmail: string }) {
     return this.prescriptionsService.envoyerOrdonnance(id, body.patientEmail);
   }
+@Post(':id/regenerate-pdf')
+async regeneratePdf(@Param('id') id: string) {
+  return this.prescriptionsService.regeneratePdf(id);
+}
 }

@@ -17,9 +17,11 @@ const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const passport_1 = require("@nestjs/passport");
 const prescriptions_service_1 = require("./prescriptions.service");
+const pdf_service_1 = require("./pdf.service");
 let PrescriptionsController = class PrescriptionsController {
-    constructor(prescriptionsService) {
+    constructor(prescriptionsService, pdfService) {
         this.prescriptionsService = prescriptionsService;
+        this.pdfService = pdfService;
     }
     create(dto) {
         return this.prescriptionsService.create(dto);
@@ -44,6 +46,9 @@ let PrescriptionsController = class PrescriptionsController {
     }
     envoyer(id, body) {
         return this.prescriptionsService.envoyerOrdonnance(id, body.patientEmail);
+    }
+    async regeneratePdf(id) {
+        return this.prescriptionsService.regeneratePdf(id);
     }
 };
 exports.PrescriptionsController = PrescriptionsController;
@@ -112,11 +117,18 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], PrescriptionsController.prototype, "envoyer", null);
+__decorate([
+    (0, common_1.Post)(':id/regenerate-pdf'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], PrescriptionsController.prototype, "regeneratePdf", null);
 exports.PrescriptionsController = PrescriptionsController = __decorate([
     (0, swagger_1.ApiTags)("prescriptions"),
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)((0, passport_1.AuthGuard)("jwt")),
     (0, common_1.Controller)("prescriptions"),
-    __metadata("design:paramtypes", [prescriptions_service_1.PrescriptionsService])
+    __metadata("design:paramtypes", [prescriptions_service_1.PrescriptionsService, pdf_service_1.PdfService])
 ], PrescriptionsController);
 //# sourceMappingURL=prescriptions.controller.js.map

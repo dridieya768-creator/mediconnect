@@ -32,7 +32,7 @@ export class PartageLienController {
     private readonly patientRepo: Repository<Patient>,
   ) {}
 
-  // ── Patient génère un lien (authentifié) ─────────────────────────────────
+  
   @Post('generer')
   @UseGuards(JwtAuthGuard)
   async genererLien(@Body() dto: GenererLienDto, @Req() req: any) {
@@ -50,7 +50,7 @@ export class PartageLienController {
       ? `${patient.user.firstName ?? ''} ${patient.user.lastName ?? ''}`.trim()
       : 'Patient';
 
-    // Si medecinEmail fourni → générer + envoyer email
+    
     if ((dto as any).medecinEmail) {
       return this.partageLienService.genererEtEnvoyerLien(
         patient.id,
@@ -68,7 +68,7 @@ export class PartageLienController {
     );
   }
 
-  // ── Médecin tiers accède via le lien (public, pas de JWT requis) ──────────
+  
   @Get('acceder')
   async accederVieLien(@Query('token') token: string) {
     if (!token) {

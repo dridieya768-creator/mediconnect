@@ -21,6 +21,7 @@ export declare class AppointmentsService {
     generateVideoRoom(id: string): Promise<{
         videoRoomId: string;
         jitsiUrl: string;
+        patientId: string;
     }>;
     private resolvePatientUserId;
     private resolvePatientPhone;

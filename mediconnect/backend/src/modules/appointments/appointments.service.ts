@@ -58,7 +58,7 @@ export class AppointmentsService {
 
     const saved = await this.repo.save(appt);
 
-    // ── Notifier le médecin (non-bloquant) ────────────────────────────
+    
     try {
       await this.notificationsService.create({
         userId:    saved.doctorId,
@@ -76,7 +76,7 @@ export class AppointmentsService {
 
   async findByPatient(patientId: string): Promise<any[]> {
     try {
-      // patientId peut être un patient.id OU un user.id — chercher les deux
+      
       const userIdFromPatient = await this.resolvePatientUserId(patientId);
       const idsToSearch = [...new Set([patientId, userIdFromPatient])];
 
@@ -101,7 +101,7 @@ export class AppointmentsService {
       const resolvedId = await this.resolvePatientUserId(patientUserId);
       const idsToSearch = [...new Set([patientUserId, resolvedId])];
 
-      // Inclure tous les RDV (passés et futurs) sauf CANCELLED
+      
       const appts = await this.repo
         .createQueryBuilder('a')
         .leftJoinAndSelect('a.doctor', 'doctor')
@@ -171,7 +171,7 @@ export class AppointmentsService {
         (a, b) => new Date(a.appointmentDate).getTime() - new Date(b.appointmentDate).getTime()
       );
 
-      // Enrichir avec les PDFs du membre familial si beneficiaryId présent
+    
       return await this.enrichWithBeneficiaryDocs(list);
 
     } catch (err) {
@@ -228,7 +228,7 @@ export class AppointmentsService {
   await this.repo.save(appt);
 
   try {
-    // Résoudre le vrai user_id : patient_id peut être un patient.id OU un user.id
+    
     const notifUserId = await this.resolvePatientUserId(appt.patientId);
     console.log(`[Notifications] cancel → patientId=${appt.patientId} → notifUserId=${notifUserId}`);
 
@@ -264,7 +264,7 @@ export class AppointmentsService {
   await this.repo.save(appt);
 
     try {
-    // Résoudre le vrai user_id : patient_id peut être un patient.id OU un user.id
+    
     const notifUserId = await this.resolvePatientUserId(appt.patientId);
     console.log(`[Notifications] confirm → patientId=${appt.patientId} → notifUserId=${notifUserId}`);
 
@@ -280,7 +280,7 @@ export class AppointmentsService {
       relatedId: appt.id,
     });
 
-    // ── Envoi SMS ────────────────────────────────────────────────────
+    
     const patientPhone = await this.resolvePatientPhone(appt.patientId);
     if (patientPhone) {
       await this.smsService.sendSms(
@@ -325,16 +325,22 @@ export class AppointmentsService {
     return this.findOneSafe(id);
   }
 
-  async generateVideoRoom(id: string): Promise<{ videoRoomId: string; jitsiUrl: string }> {
+  async generateVideoRoom(id: string): Promise<{ videoRoomId: string; jitsiUrl: string; patientId: string }> {
     const appt = await this.findOne(id);
     if (!appt.videoRoomId) {
       appt.videoRoomId = `mediconnect-${uuid().slice(0, 8)}`;
       await this.repo.save(appt);
     }
-    return { videoRoomId: appt.videoRoomId, jitsiUrl: `https://meet.jit.si/${appt.videoRoomId}` };
+    // Résoudre le patient.id réel (appt.patientId est un user_id)
+    const patientRow = await this.repo.manager.query(
+      `SELECT id FROM patients WHERE user_id = $1 LIMIT 1`,
+      [appt.patientId]
+    );
+    const patientId = patientRow?.[0]?.id ?? appt.patientId;
+    return { videoRoomId: appt.videoRoomId, jitsiUrl: `https://meet.jit.si/${appt.videoRoomId}`, patientId };
   }
 
-  // Résout le user_id depuis un patientId qui peut être soit un patient.id soit un user.id
+  
   private async resolvePatientUserId(patientId: string): Promise<string> {
     const result = await this.repo.manager.query(
       `SELECT user_id FROM patients WHERE id = $1 LIMIT 1`,
@@ -346,9 +352,9 @@ export class AppointmentsService {
     return patientId;
   }
 
-  // Résout le numéro de téléphone du patient depuis users.phone
+  
   private async resolvePatientPhone(patientId: string): Promise<string | null> {
-    // Cherche via la jointure patients → users
+    
     const result = await this.repo.manager.query(
       `SELECT u.phone
        FROM patients p
@@ -359,7 +365,7 @@ export class AppointmentsService {
     if (result?.length > 0 && result[0].phone) {
       return result[0].phone;
     }
-    // patientId est peut-être un user_id directement
+    
     const fromUser = await this.repo.manager.query(
       `SELECT phone FROM users WHERE id = $1 LIMIT 1`,
       [patientId]

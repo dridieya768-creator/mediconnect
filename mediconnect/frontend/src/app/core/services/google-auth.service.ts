@@ -23,7 +23,7 @@ export class GoogleAuthService {
         client_id: GOOGLE_CLIENT_ID,
         callback: (response: any) => {
           if (response.credential) {
-            // NgZone.run() pour que Angular détecte les changements
+            
             this.ngZone.run(() => onSuccess(response.credential));
           }
         },

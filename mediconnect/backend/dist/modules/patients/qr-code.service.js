@@ -28,7 +28,7 @@ let QrCodeService = class QrCodeService {
             .substring(0, 12);
         const token = `${patientId}:${userId}:${signature}`;
         const encoded = Buffer.from(token).toString("base64url");
-        return `http://localhost:4200/scan/${encoded}`;
+        return `https://localhost:4200/scan/${encoded}`;
     }
     async generateQrImage(qrData) {
         return QRCode.toDataURL(qrData, {

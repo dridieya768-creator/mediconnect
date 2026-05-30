@@ -7,7 +7,7 @@ export class MedecinProfile {
   id: number;
 
   @Column({ name: 'user_id', type: 'uuid' })
-  userId: string; // Changé de number à string pour UUID
+  userId: string; 
 
   @OneToOne(() => User)
   @JoinColumn({ name: 'user_id' })

@@ -39,7 +39,7 @@ export class EmailService {
       await this.transporter.sendMail({
         from: `"${this.fromName}" <${this.fromEmail}>`,
         to: toEmail,
-        subject: "🔐 Réinitialisation de votre mot de passe MediConnect",
+        subject: " Réinitialisation de votre mot de passe MediConnect",
         text,
         html,
       });
@@ -66,7 +66,7 @@ export class EmailService {
       await this.transporter.sendMail({
         from: `"${this.fromName}" <${this.fromEmail}>`,
         to: toEmail,
-        subject: '🏥 Accès partagé à un dossier médical MediConnect',
+        subject: ' Accès partagé à un dossier médical MediConnect',
         html: `
 <!DOCTYPE html>
 <html lang="fr">
@@ -74,7 +74,7 @@ export class EmailService {
   <table width="600" style="background:white;border-radius:16px;overflow:hidden;margin:0 auto;box-shadow:0 4px 24px rgba(0,0,0,.08);">
     <tr>
       <td style="background:linear-gradient(135deg,#0f172a,#134e4a);padding:40px;text-align:center;">
-        <div style="font-size:36px;">🏥</div>
+        <div style="font-size:36px;"></div>
         <h1 style="color:white;margin:8px 0 0;font-weight:300;">MediConnect</h1>
         <p style="color:#67e8f9;margin:4px 0 0;font-size:13px;">Partage de dossier médical</p>
       </td>
@@ -88,12 +88,12 @@ export class EmailService {
         </p>
         <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px 20px;margin:24px 0;">
           <p style="margin:0;font-size:13px;color:#166534;">
-            ⏳ <strong>Accès valide jusqu'au :</strong> ${expireStr}
+             <strong>Accès valide jusqu'au :</strong> ${expireStr}
           </p>
         </div>
         <div style="background:#fef9c3;border:1px solid #fde047;border-radius:10px;padding:16px 20px;margin:0 0 24px;">
           <p style="margin:0;font-size:13px;color:#854d0e;">
-            🔒 Ce lien est à usage unique et confidentiel. Ne le partagez pas.
+             Ce lien est à usage unique et confidentiel. Ne le partagez pas.
           </p>
         </div>
         <a href="${lien}" style="display:inline-block;padding:14px 32px;background:linear-gradient(135deg,#0d9488,#14b8a6);color:white;text-decoration:none;border-radius:10px;font-weight:700;">
@@ -137,7 +137,7 @@ export class EmailService {
   <table width="600" style="background:white;border-radius:16px;overflow:hidden;margin:0 auto;box-shadow:0 4px 24px rgba(0,0,0,.08);">
     <tr>
       <td style="background:linear-gradient(135deg,#0f172a,#134e4a);padding:40px;text-align:center;">
-        <div style="font-size:36px;">💊</div>
+        <div style="font-size:36px;"></div>
         <h1 style="color:white;margin:8px 0 0;font-weight:300;">MediConnect</h1>
         <p style="color:#67e8f9;margin:4px 0 0;font-size:13px;">Ordonnance médicale</p>
       </td>
@@ -150,9 +150,9 @@ export class EmailService {
         </p>
         <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px 20px;margin:24px 0;">
           <p style="margin:0;font-size:13px;color:#166534;">
-            📋 <strong>Référence :</strong> ${prescription.qrCode || prescription.id}<br>
-            📅 <strong>Émise le :</strong> ${prescription.issuedAt ? new Date(prescription.issuedAt).toLocaleDateString('fr-FR') : '—'}<br>
-            ⏳ <strong>Expire le :</strong> ${prescription.expiresAt ? new Date(prescription.expiresAt).toLocaleDateString('fr-FR') : '—'}
+             <strong>Référence :</strong> ${prescription.qrCode || prescription.id}<br>
+             <strong>Émise le :</strong> ${prescription.issuedAt ? new Date(prescription.issuedAt).toLocaleDateString('fr-FR') : '—'}<br>
+             <strong>Expire le :</strong> ${prescription.expiresAt ? new Date(prescription.expiresAt).toLocaleDateString('fr-FR') : '—'}
           </p>
         </div>
         ${pdfUrl ? `<a href="${pdfUrl}" style="display:inline-block;padding:14px 32px;background:linear-gradient(135deg,#0d9488,#14b8a6);color:white;text-decoration:none;border-radius:10px;font-weight:700;">Télécharger l'ordonnance PDF →</a>` : ''}
@@ -179,7 +179,7 @@ export class EmailService {
       await this.transporter.sendMail({
         from: `"${this.fromName}" <${this.fromEmail}>`,
         to: toEmail,
-        subject: "🏥 Bienvenue sur MediConnect !",
+        subject: " Bienvenue sur MediConnect !",
         html: this.buildWelcomeEmailHtml(toName),
       });
       return true;
@@ -217,7 +217,7 @@ export class EmailService {
           <!-- Header -->
           <tr>
             <td style="background:linear-gradient(135deg,#0f172a,#134e4a);padding:40px 48px;text-align:center;">
-              <div style="font-size:36px;margin-bottom:8px;">🏥</div>
+              <div style="font-size:36px;margin-bottom:8px;"></div>
               <h1 style="color:white;margin:0;font-size:24px;font-weight:300;letter-spacing:1px;">MediConnect</h1>
               <p style="color:#67e8f9;margin:4px 0 0;font-size:13px;">Plateforme e-Santé SaaS</p>
             </td>
@@ -226,7 +226,7 @@ export class EmailService {
           <tr>
             <td style="padding:48px;">
               <h2 style="color:#0f172a;margin:0 0 16px;font-size:22px;font-weight:600;">
-                🔐 Réinitialisation de votre mot de passe
+                 Réinitialisation de votre mot de passe
               </h2>
               <p style="color:#64748b;font-size:15px;line-height:1.7;margin:0 0 24px;">
                 Bonjour <strong style="color:#0f172a;">${name}</strong>,
@@ -250,7 +250,7 @@ export class EmailService {
               <!-- Security note -->
               <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:16px 20px;margin-bottom:24px;">
                 <p style="margin:0;font-size:13px;color:#64748b;">
-                  🔒 <strong>Sécurité :</strong> Si vous n'avez pas demandé cette réinitialisation,
+                   <strong>Sécurité :</strong> Si vous n'avez pas demandé cette réinitialisation,
                   ignorez cet email. Votre mot de passe ne sera pas modifié.
                 </p>
               </div>
@@ -287,7 +287,7 @@ export class EmailService {
   <table width="600" style="background:white;border-radius:16px;overflow:hidden;margin:0 auto;box-shadow:0 4px 24px rgba(0,0,0,.08);">
     <tr>
       <td style="background:linear-gradient(135deg,#0f172a,#134e4a);padding:40px;text-align:center;">
-        <div style="font-size:36px;">🏥</div>
+        <div style="font-size:36px;"></div>
         <h1 style="color:white;margin:8px 0 0;font-weight:300;">MediConnect</h1>
       </td>
     </tr>
@@ -299,10 +299,10 @@ export class EmailService {
           Vous pouvez maintenant accéder à tous nos services de santé en ligne.
         </p>
         <ul style="color:#64748b;line-height:2;">
-          <li>📅 Prise de rendez-vous en ligne</li>
-          <li>📋 Dossier médical personnel</li>
-          <li>💊 Gestion des ordonnances</li>
-          <li>🧪 Résultats d'analyses</li>
+          <li> Prise de rendez-vous en ligne</li>
+          <li> Dossier médical personnel</li>
+          <li> Gestion des ordonnances</li>
+          <li> Résultats d'analyses</li>
         </ul>
         <a href="http://localhost:4200/auth/login"
           style="display:inline-block;padding:14px 32px;background:linear-gradient(135deg,#0d9488,#14b8a6);color:white;text-decoration:none;border-radius:10px;font-weight:700;margin-top:16px;">

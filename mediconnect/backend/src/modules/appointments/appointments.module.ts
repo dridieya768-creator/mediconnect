@@ -6,7 +6,7 @@ import { Appointment }            from "./entities/appointment.entity";
 import { NotificationsModule } from "../notifications/notifications.module";
  
 @Module({
-  // Dans appointments.module.ts — ajoutez NotificationsModule aux imports
+  
 imports: [TypeOrmModule.forFeature([Appointment]), NotificationsModule],
   controllers: [AppointmentsController],
   providers:   [AppointmentsService],

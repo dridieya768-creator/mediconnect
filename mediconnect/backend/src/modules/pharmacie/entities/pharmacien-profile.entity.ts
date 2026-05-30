@@ -16,14 +16,14 @@ export class PharmacienProfile {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  // ─── Informations professionnelles ───────────────────────
+  
   @Column({ name: 'numero_ordre', nullable: true })
-  numeroOrdre: string; // Numéro d'ordre national des pharmaciens
+  numeroOrdre: string; 
 
   @Column({ name: 'nom_pharmacie', nullable: true })
   nomPharmacie: string;
 
-  // ─── Localisation ─────────────────────────────────────────
+  
   @Column({ name: 'adresse_pharmacie', type: 'text', nullable: true })
   adressePharmacie: string;
 
@@ -39,24 +39,21 @@ export class PharmacienProfile {
   @Column({ nullable: true, type: 'decimal', precision: 10, scale: 7 })
   longitude: number;
 
-  // ─── Contact ──────────────────────────────────────────────
-  // (nom, prénom, téléphone, email personnels → dans users)
-
-  // ─── Horaires & Disponibilité ─────────────────────────────
+  
   @Column({ name: 'horaires_ouverture', type: 'jsonb', nullable: true })
-  horairesOuverture: Record<string, string>; // { lun: "8h-20h", mar: "8h-20h", ... }
+  horairesOuverture: Record<string, string>; 
 
   @Column({ name: 'is_garde', default: false })
-  isGarde: boolean; // Pharmacie de garde
+  isGarde: boolean; 
 
   @Column({ name: 'is_ouverte_24h', default: false })
   isOuverte24h: boolean;
 
-  // ─── Médias ───────────────────────────────────────────────
+  
   @Column({ name: 'photo_url', type: 'text', nullable: true })
   photoUrl: string;
 
-  // ─── Timestamps ───────────────────────────────────────────
+  
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

@@ -1,4 +1,4 @@
-<!-- Onglets -->
+
 <div class="tab-bar">
   <button class="tab-btn" [class.active]="activeTab() === 'dashboard'" (click)="activeTab.set('dashboard')">
      Tableau de bord
@@ -18,11 +18,11 @@
   </button>
 </div>
 
-<!-- Messages -->
+
 <div class="success-box" *ngIf="successMsg()"> {{ successMsg() }}</div>
 <div class="error-box" *ngIf="errorMsg()"> {{ errorMsg() }}</div>
 
-<!-- ── TABLEAU DE BORD ── -->
+
 <div *ngIf="activeTab() === 'dashboard' && dashboard()">
   <div class="stat-grid">
     <div class="stat-card">
@@ -66,7 +66,7 @@
   </div>
 </div>
 
-<!-- ── LISTE STOCK ── -->
+
 <div *ngIf="activeTab() === 'stock'">
   <!-- Alertes -->
   <div class="alert-box" *ngIf="alertes() && (alertes().ruptures?.length > 0 || alertes().peremptionProche?.length > 0)">
@@ -110,7 +110,7 @@
   </div>
 </div>
 
-<!-- ── RÉCEPTION LIVRAISON ── -->
+
 <div *ngIf="activeTab() === 'reception'">
   <div class="card">
     <div class="section-title"> Réception livraison fournisseur</div>
@@ -184,7 +184,7 @@
   </div>
 </div>
 
-<!-- ── INVENTAIRE ── -->
+
 <div *ngIf="activeTab() === 'inventaire'">
   <div class="card">
     <div class="section-title"> Inventaire mensuel</div>
@@ -227,7 +227,7 @@
   </div>
 </div>
 
-<!-- ── RETOURS FOURNISSEUR ── -->
+
 <div *ngIf="activeTab() === 'retours'">
   <div class="card">
     <div class="section-title">↩  Retour fournisseur</div>

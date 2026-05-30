@@ -17,7 +17,7 @@ export class MedecinQrController {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  // ✅ PUBLIC — sans authentification — scan de la carte médecin
+  
   @Get("public/:token")
   @ApiOperation({ summary: "Page publique QR code médecin" })
   async getPublicMedecinInfo(@Param("token") token: string) {
@@ -52,7 +52,7 @@ export class MedecinQrController {
     }
   }
 
-  // 🔒 PROTÉGÉ — nécessite JWT — obtenir son propre QR code
+  
   @Get()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -73,7 +73,7 @@ export class MedecinQrController {
     };
   }
 
-  // 🔒 PROTÉGÉ — télécharger la carte médecin en PDF
+  
   @Get("pdf")
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -98,14 +98,14 @@ export class MedecinQrController {
     );
     doc.pipe(res);
 
-    // ── En-tête ──────────────────────────────────────────────
+    
     doc.rect(0, 0, doc.page.width, 80).fill("#0f172a");
     doc.fillColor("white").fontSize(20).font("Helvetica-Bold")
        .text("MediConnect", 40, 20);
     doc.fillColor("#94a3b8").fontSize(10).font("Helvetica")
        .text("Carte d'identification médecin", 40, 48);
 
-    // ── Infos médecin ─────────────────────────────────────────
+    
     doc.fillColor("#0f172a").fontSize(16).font("Helvetica-Bold")
        .text(`Dr. ${medecin.firstName} ${medecin.lastName}`, 40, 100);
     doc.fillColor("#64748b").fontSize(10).font("Helvetica")
@@ -113,14 +113,14 @@ export class MedecinQrController {
        .text(`Email : ${medecin.email}`, 40, 138)
        .text(`ID : QR-MED-${userId.substring(0, 8).toUpperCase()}`, 40, 154);
 
-    // ── QR code centré ────────────────────────────────────────
+    
     const base64Data = qrImage.replace(/^data:image\/png;base64,/, "");
     const qrBuffer   = Buffer.from(base64Data, "base64");
     const pageWidth  = doc.page.width;
     const qrX        = (pageWidth - 180) / 2;
     doc.image(qrBuffer, qrX, 175, { width: 180, height: 180 });
 
-    // ── Sous-titre ────────────────────────────────────────────
+    
     doc.fillColor("#64748b").fontSize(9).font("Helvetica")
        .text(
          "Présentez ce QR code pour identifier votre identité professionnelle",
@@ -128,7 +128,7 @@ export class MedecinQrController {
          { align: "center", width: pageWidth - 80 }
        );
 
-    // ── Pied de page ──────────────────────────────────────────
+    
     doc.rect(0, doc.page.height - 40, doc.page.width, 40).fill("#f8fafc");
     doc.fillColor("#94a3b8").fontSize(8)
        .text(

@@ -71,13 +71,13 @@ export class PdfService {
             .text('Scanner pour vérifier', 400, 206, { width: 95, align: 'center' });
         }
 
-        // Ligne séparatrice
+        
         doc.moveTo(50, 225).lineTo(545, 225).strokeColor('#e2e8f0').lineWidth(1).stroke();
 
-        // ── Médicaments ───────────────────────────────────────
+        
         doc.fontSize(9).fillColor('#94a3b8').font('Helvetica').text('MÉDICAMENTS PRESCRITS', 50, 238);
 
-        // En-tête tableau
+        
         doc.rect(50, 253, 495, 24).fillColor('#1a56db').fill();
         doc.fontSize(10).fillColor('white').font('Helvetica-Bold');
         doc.text('Médicament', 58, 261);
@@ -86,7 +86,7 @@ export class PdfService {
         doc.text('Durée', 440, 261);
         doc.text('Qté', 500, 261);
 
-        // Lignes médicaments
+        
         const meds = (prescription.medications ?? []).filter((m: any) => m.name && m.name.trim());
         let y = 283;
         meds.forEach((m: any, i: number) => {
@@ -102,7 +102,7 @@ export class PdfService {
           y += 26;
         });
 
-        // ── Notes ─────────────────────────────────────────────
+        
         if (prescription.notes) {
           y += 10;
           doc.fontSize(9).fillColor('#94a3b8').font('Helvetica').text('NOTES', 50, y);
@@ -111,7 +111,7 @@ export class PdfService {
           y += 30;
         }
 
-        // ── Bon d'imagerie médicale ────────────────────────────
+        
         const imaging = prescription.imagingRequests ?? [];
         if (imaging.length > 0) {
           y += 10;
@@ -142,8 +142,28 @@ export class PdfService {
           y += 10;
         }
 
-        // ── Signature électronique ────────────────────────────
-        y = Math.max(y + 20, 580);
+        // ── Bon d'analyse médicale ────────────────────────────
+        const analyses = prescription.analysisRequests ?? [];
+        if (analyses.length > 0) {
+          y += 10;
+          doc.fontSize(9).fillColor('#94a3b8').font('Helvetica').text('BON D\'ANALYSE MÉDICALE', 50, y);
+          y += 14;
+
+          doc.rect(50, y, 495, 22).fillColor('#064e3b').fill();
+          doc.fontSize(10).fillColor('white').font('Helvetica-Bold');
+          doc.text('Type d\'analyse', 58, y + 6);
+          doc.text('Motif / Indication', 260, y + 6);
+          y += 26;
+
+          analyses.forEach((ana: any, i: number) => {
+            if (i % 2 === 0) doc.rect(50, y - 4, 495, 22).fillColor('#f0fdf4').fill();
+            doc.fontSize(11).fillColor('#0f172a').font('Helvetica');
+            doc.text(ana.typeAnalyse || '—', 58, y, { width: 195 });
+            doc.text(ana.motif || '—', 260, y, { width: 280 });
+            y += 22;
+          });
+          y += 10;
+        }
         doc.moveTo(50, y).lineTo(545, y).strokeColor('#e2e8f0').lineWidth(1).stroke();
         y += 16;
 
@@ -186,7 +206,7 @@ export class PdfService {
         doc.fontSize(9).fillColor('#374151').text(`Expire le : ${prescription.expiresAt ? new Date(prescription.expiresAt).toLocaleDateString('fr-FR') : '—'}`, 320, y + 42);
         doc.fontSize(8).fillColor('#94a3b8').font('Helvetica-Oblique').text('Document généré par MediConnect', 320, y + 60);
 
-        // ── Pied de page ──────────────────────────────────────
+        
         doc.moveTo(50, 760).lineTo(545, 760).strokeColor('#e2e8f0').lineWidth(1).stroke();
         doc.fontSize(9).fillColor('#94a3b8').font('Helvetica');
         doc.text(`Code QR: ${prescription.qrCode || 'N/A'}`, 50, 770);

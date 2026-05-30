@@ -149,7 +149,7 @@ export class MedecinsService {
     profile:   profileMap.get(u.id) || null,
   }));
  
-  // Filtres sur le profil
+  
   if (trimmedSpecialite) {
     result = result.filter(d =>
       (d.profile?.specialite || '').toLowerCase().includes(trimmedSpecialite.toLowerCase())
@@ -171,7 +171,7 @@ async updateAvailability(userId: string, dto: UpdateAvailabilityDto) {
 
   if (!profile) throw new NotFoundException('Profile not found');
 
-  // Stocker tout dans la colonne tarifs (JSON)
+  
   const availabilityData = {
     workDays:                dto.workDays,
     defaultDuration:         dto.defaultDuration,
@@ -196,7 +196,7 @@ async getAvailability(userId: string) {
 
   if (!profile) throw new NotFoundException('Profile not found');
 
-  // âœ… Parser tarifs car c'est du TEXT en DB, pas du JSON automatique
+  
   let saved: any = {};
   if (profile.tarifs) {
     try {
@@ -217,12 +217,12 @@ async getAvailability(userId: string) {
     connexionVideoIntegree:  profile.connexionVideoIntegree,
   };
 }
-  // Ajouter un patient Ã  la liste du mÃ©decin
+  
 async addPatientToDoctorList(doctorId: string, patientId: string) {
   console.log(`[Service] ðŸ”µ addPatientToDoctorList: doctor=${doctorId}, patient=${patientId}`);
   
   try {
-    // VÃ©rifier d'abord si le patient existe dans users
+    
     const patientExists = await this.userRepository.findOne({
       where: { id: patientId }
     });
@@ -236,13 +236,13 @@ async addPatientToDoctorList(doctorId: string, patientId: string) {
       };
     }
     
-    // VÃ©rifier si la relation existe dÃ©jÃ 
+    
     const existingRelation = await this.doctorPatientRepository.findOne({
       where: { doctorId, patientId }
     });
     
     if (!existingRelation) {
-      // CrÃ©er la relation mÃ©decin-patient
+      
       const newRelation = this.doctorPatientRepository.create({
         doctorId,
         patientId,
@@ -263,13 +263,13 @@ async addPatientToDoctorList(doctorId: string, patientId: string) {
   }
 }
 
-  // Accepter un rendez-vous et ajouter le patient
- // Accepter un rendez-vous et ajouter le patient
+  
+ 
 async acceptAppointment(doctorId: string, appointmentId: string) {
   console.log(`[Service] ðŸ”µ acceptAppointment called with doctorId=${doctorId}, appointmentId=${appointmentId}`);
   
   try {
-    // 1. RÃ©cupÃ©rer le rendez-vous
+    
     const appointment = await this.appointmentRepository.findOne({
       where: { id: appointmentId, doctorId: doctorId },
       relations: ['patient']
@@ -286,29 +286,29 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
       throw new NotFoundException(`Rendez-vous ${appointmentId} non trouvÃ©`);
     }
     
-    // VÃ©rifier que le patient existe
+  
     if (!appointment.patientId) {
       throw new BadRequestException('Le rendez-vous n\'a pas de patient associÃ©');
     }
     
-    // VÃ©rifier que le patient existe dans la table users
+    
     const patientExists = await this.userRepository.findOne({
       where: { id: appointment.patientId }
     });
     
     if (!patientExists) {
       console.warn(`[Service] âš ï¸ Patient ${appointment.patientId} not found in users, but continuing with appointment acceptance`);
-      // On continue quand mÃªme pour accepter le rendez-vous, mÃªme si le patient n'existe pas
+      
     }
     
-    // 2. Mettre Ã  jour le statut du rendez-vous
+    
     if (appointment.status !== AppointmentStatus.CONFIRMED) {
       await this.appointmentRepository.update(
         { id: appointmentId },
         { status: AppointmentStatus.CONFIRMED }
       );
 
-      // Notifier le patient
+      
       try {
         const patientUserId = await this.resolvePatientUserId(appointment.patientId);
         const dateStr = new Date(appointment.appointmentDate).toLocaleDateString('fr-FR', { weekday: 'long', day: '2-digit', month: 'long' });
@@ -322,7 +322,7 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
         });
         console.log(`[Notifications] acceptAppointment -> notif envoyee a userId=${patientUserId}`);
 
-        // ── Envoi SMS ────────────────────────────────────────────────
+        
         try {
           const patientPhone = await this.resolvePatientPhone(appointment.patientId);
           if (patientPhone) {
@@ -342,7 +342,7 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
       console.log(`[Service] â„¹ï¸ Appointment already confirmed`);
     }
     
-    // 3. Ajouter le patient Ã  la liste du mÃ©decin (seulement s'il existe)
+    
     let addedPatient = null;
     if (patientExists) {
       addedPatient = await this.addPatientToDoctorList(doctorId, appointment.patientId);
@@ -368,7 +368,7 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
   }
 }
   
-  // RÃ©cupÃ©rer tous les patients du mÃ©decin
+  
   
   private async resolvePatientUserId(patientId: string): Promise<string> {
     const result = await this.appointmentRepository.manager.query(
@@ -405,7 +405,7 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
       return [];
     }
     
-    // RÃ©cupÃ©rer les informations complÃ¨tes des patients
+    
     const patients = await this.userRepository
       .createQueryBuilder('user')
       .where('user.id IN (:...ids)', { ids: patientIds })
@@ -415,7 +415,7 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
     return patients;
   }
 
-  // Vérifier si un patient est dans la liste du médecin
+
   async isPatientInDoctorList(doctorId: string, patientId: string) {
     const relation = await this.doctorPatientRepository.findOne({
       where: { doctorId, patientId }
@@ -431,11 +431,11 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
     relations: ['patient'],
   });
 
-  // DÃ©dupliquer par userId patient
+
   const seen = new Map<string, any>();
   for (const appt of appointments) {
     if (appt.patient && !seen.has(appt.patientId)) {
-      // RÃ©soudre le vrai patient.id depuis la table patients
+      
       const patientRecord = await this.patientRepository.findOne({
         where: { userId: appt.patientId }
       });
@@ -453,7 +453,7 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
 
   return Array.from(seen.values());
 }
-  // Supprimer un patient de la liste
+  
   async removePatientFromDoctorList(doctorId: string, patientId: string) {
     const relation = await this.doctorPatientRepository.findOne({
       where: { doctorId, patientId }
@@ -468,12 +468,12 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
   }
   
   async getMedecinAvailabilityById(id: string) {
-    // Cherche par userId (UUID)
+    
     const profile = await this.medecinProfileRepository.findOne({
       where: { userId: id },
     });
 
-    // Si pas de profil, retourner des valeurs par défaut sans erreur
+    
     if (!profile) {
       return {
         workDays: [
@@ -501,7 +501,7 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
       }
     }
 
-    // Horaires par dÃ©faut si le mÃ©decin n'a pas configurÃ© ses disponibilitÃ©s
+    
     const defaultWorkDays = [
       { day: 'monday',    startTime: '08:00', endTime: '17:00' },
       { day: 'tuesday',   startTime: '08:00', endTime: '17:00' },
@@ -510,7 +510,7 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
       { day: 'friday',    startTime: '08:00', endTime: '17:00' },
     ];
 
-    // Mapping des noms franÃ§ais/anciens vers le format standard
+    
     const dayNameMap: Record<string, string> = {
       'Lundi': 'monday', 'Mardi': 'tuesday', 'Mercredi': 'wednesday',
       'Jeudi': 'thursday', 'Vendredi': 'friday', 'Samedi': 'saturday', 'Dimanche': 'sunday',
@@ -520,7 +520,7 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
 
     let workDays = saved?.workDays ?? null;
 
-    // Convertir l'ancien format (name/active/morningStart...) vers le nouveau (day/startTime/endTime)
+    
     if (Array.isArray(workDays) && workDays.length > 0 && workDays[0].name !== undefined) {
       const converted: any[] = [];
       for (const wd of workDays) {
@@ -568,8 +568,8 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
         .andWhere('appointment.status IN (:...statuses)', {
           statuses: [AppointmentStatus.CONFIRMED, AppointmentStatus.REQUESTED],
         })
-        .andWhere('appointment.appointmentDate >= :startDate', { startDate })
-        .andWhere('appointment.appointmentDate <= :endDate', { endDate })
+        .andWhere('appointment.appointmentDate >= :startDate', { startDate: new Date(startDate + 'T00:00:00') })
+        .andWhere('appointment.appointmentDate <= :endDate', { endDate: new Date(endDate + 'T23:59:59') })
         .select(['appointment.appointmentDate', 'appointment.durationMinutes'])
         .getMany();
 
@@ -619,7 +619,7 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
 
 
 
-// ── Revenus médecin ────────────────────────────────────────────────────────
+
 export class RevenusService {
   static async getRevenus(
     appointmentRepo: Repository<Appointment>,
@@ -641,7 +641,7 @@ export class RevenusService {
     qb.orderBy('a.appointmentDate', 'DESC');
     const appointments = await qb.getMany();
 
-    const TARIF = 50; // TND par consultation (valeur par défaut)
+    const TARIF = 50; 
 
     const factures = appointments.map((a, idx) => ({
       numero:          `FAC-${String(idx + 1).padStart(4, '0')}`,

@@ -27,19 +27,19 @@ export const PATIENT_ROUTES: Routes = [
         loadComponent: () =>
           import("./pages/notifications/patient-notifications.component").then((m) => m.PatientNotificationsComponent),
       },
-      // ✅ Nouvelle route recherche médecin
+    
       {
         path: "recherche",
         loadComponent: () =>
           import("./pages/search/patient-search-medecin.component").then((m) => m.PatientSearchMedecinComponent),
       },
-      // ✅ Profil patient
+      
       {
         path: "profil",
         loadComponent: () =>
           import("./pages/profile/patient-profile.component").then((m) => m.PatientProfileComponent),
       },
-      // ✅ Ordonnances patient
+      
       {
         path: "prescriptions",
         loadComponent: () =>

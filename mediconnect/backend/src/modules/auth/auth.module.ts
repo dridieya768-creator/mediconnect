@@ -25,7 +25,7 @@ import { MulterModule } from "@nestjs/platform-express";
       }),
       inject: [ConfigService],
     }),
-    forwardRef(() => NotificationsModule), // ✅
+    forwardRef(() => NotificationsModule), 
   ],
   providers: [AuthService, JwtStrategy, LocalStrategy],
   controllers: [AuthController],

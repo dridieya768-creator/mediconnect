@@ -4,7 +4,7 @@ import { CommonModule } from "@angular/common";
 import { TranslateModule } from "@ngx-translate/core";
 import { AuthService } from "@core/services/auth.service";
 import { LangSwitcherComponent } from "../../../shared/components/lang-switcher/lang-switcher.component";
-
+import { environment } from 'src/environments/environment';
 @Component({
   selector: "app-pharmacie-layout",
   standalone: true,

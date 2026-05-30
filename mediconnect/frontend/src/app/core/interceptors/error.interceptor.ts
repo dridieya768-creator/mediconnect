@@ -8,7 +8,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
-      // Auto refresh on 401
+      
       if (error.status === 401 && !req.url.includes('/auth/')) {
         return authService.refreshToken().pipe(
           switchMap((res) => {

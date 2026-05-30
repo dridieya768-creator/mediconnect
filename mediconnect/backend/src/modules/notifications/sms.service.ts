@@ -28,7 +28,7 @@ export class SmsService {
       return;
     }
 
-    // Normaliser le numéro : ajouter +216 si numéro tunisien à 8 chiffres
+    
     const normalized = this.normalizePhone(to);
 
     const payload = JSON.stringify({

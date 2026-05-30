@@ -23,14 +23,14 @@ export class AppointmentsReminderService {
     });
   }
 
-  // Tâche exécutée toutes les heures
+  
   @Cron(CronExpression.EVERY_HOUR)
   async sendReminders() {
     this.logger.log(' Vérification des rappels RDV...');
 
     const now = new Date();
 
-    // Fenêtres : 48h et 24h
+    
     for (const hoursAhead of [48, 24]) {
       const from = new Date(now.getTime() + (hoursAhead - 0.5) * 60 * 60 * 1000);
       const to   = new Date(now.getTime() + (hoursAhead + 0.5) * 60 * 60 * 1000);
@@ -51,7 +51,7 @@ export class AppointmentsReminderService {
           await this.appointmentsRepository.save(appt);
           this.logger.log(` Rappel ${hoursAhead}h envoyé pour RDV ${appt.id}`);
         } catch (err) {
-          this.logger.error(`❌ Erreur rappel RDV ${appt.id}:`, err.message);
+          this.logger.error(` Erreur rappel RDV ${appt.id}:`, err.message);
         }
       }
     }
@@ -100,7 +100,7 @@ export class AppointmentsReminderService {
               </div>
               <div style="display:flex;">
                 <span style="color:#64748b; width:120px; font-size:13px;"> Type</span>
-                <strong style="color:#0f172a; font-size:13px;">${appt.consultationType === 'TELECONSULTATION' ? '💻 Téléconsultation' : '🏥 Présentiel'}</strong>
+                <strong style="color:#0f172a; font-size:13px;">${appt.consultationType === 'TELECONSULTATION' ? ' Téléconsultation' : ' Présentiel'}</strong>
               </div>
             </div>
 

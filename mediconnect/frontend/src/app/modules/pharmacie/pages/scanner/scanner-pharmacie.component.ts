@@ -191,7 +191,7 @@ export class ScannerPharmacieComponent {
         const outer = res?.data ?? res;
         const data = outer?.data ?? outer;
         this.prescription.set(data);
-        // Initialiser les quantités à 0
+        
         (data?.medications ?? []).forEach((m: any, i: number) => {
           this.dispensed[m.cip || m.name || i] = 0;
         });

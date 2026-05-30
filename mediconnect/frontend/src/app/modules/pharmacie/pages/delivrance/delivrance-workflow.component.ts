@@ -383,7 +383,7 @@ interface Financier {
 export class DelivranceWorkflowComponent {
   private http = inject(HttpClient);
 
-  // ── State signals ──────────────────────────────────────────────────────────
+  
   currentStep = signal<Step>('scan-qr');
   prescription = signal<PrescriptionDetail | null>(null);
   boitesScannees = signal<Record<string, number>>({});
@@ -392,13 +392,13 @@ export class DelivranceWorkflowComponent {
   error = signal<string>('');
   loading = signal<boolean>(false);
 
-  // ── Local form state ───────────────────────────────────────────────────────
+  
   qrCodeInput = '';
   cipInputs: Record<string, string> = {};
   prixInputs: Record<string, number> = {};
   tauxInputs: Record<string, number> = {};
 
-  // ── Step helpers ───────────────────────────────────────────────────────────
+  
   private readonly stepOrder: Step[] = ['scan-qr', 'verification', 'scan-boites', 'recapitulatif', 'confirmation'];
 
   isStepDone(step: Step): boolean {
@@ -407,7 +407,7 @@ export class DelivranceWorkflowComponent {
     return stepIdx < currentIdx;
   }
 
-  // ── Étape 1 : Scan QR-ORD ─────────────────────────────────────────────────
+  
   scanQrOrd(): void {
     const code = this.qrCodeInput.trim();
     if (!code) return;
@@ -418,9 +418,9 @@ export class DelivranceWorkflowComponent {
       next: (res) => {
         const data = res?.data ?? res;
         const detail: PrescriptionDetail = data?.data ?? data;
-        // Initialiser les prix/taux par défaut
+        
         (detail.medications ?? []).forEach((med: MedicationDetail, idx: number) => {
-          // Si CIP vide, utiliser l'index comme clé temporaire
+          
           if (!med.cip || med.cip.trim() === '') {
             med.cip = `MED_${idx}`;
           }
@@ -442,14 +442,14 @@ export class DelivranceWorkflowComponent {
     });
   }
 
-  // ── Étape 2 → 3 ───────────────────────────────────────────────────────────
+  
   goToScanBoites(): void {
     this.error.set('');
     this.boitesScannees.set({});
     this.currentStep.set('scan-boites');
   }
 
-  // ── Étape 3 : Scan médicament CIP ─────────────────────────────────────────
+  
   scanMedCip(cipMed: string): void {
     const cipSaisi = this.cipInputs[cipMed]?.trim();
     if (!cipSaisi) return;
@@ -481,7 +481,7 @@ export class DelivranceWorkflowComponent {
     });
   }
 
-  // ── Étape 3 → 4 : Calcul financier local ──────────────────────────────────
+  
   calculerRecapitulatif(): void {
     const rx = this.prescription();
     if (!rx) return;
@@ -490,7 +490,7 @@ export class DelivranceWorkflowComponent {
     const lignes: FinancierLigne[] = [];
     for (const med of rx.medications) {
       const scanned = this.boitesScannees()[med.cip] ?? 0;
-      // Chercher aussi par CIP réel si le CIP a été mis à jour après scan
+      
       const scannedAlt = Object.values(this.boitesScannees()).reduce((a, b) => a + b, 0);
       const qte = scanned > 0 ? scanned : (scannedAlt > 0 ? scannedAlt : (med.quantity - (med.quantityDelivered ?? 0)));
       if (qte <= 0) continue;
@@ -515,7 +515,7 @@ export class DelivranceWorkflowComponent {
     this.currentStep.set('recapitulatif');
   }
 
-  // ── Étape 5 : Confirmer la délivrance ─────────────────────────────────────
+  
   confirmerDelivrance(): void {
     const rx = this.prescription();
     const fin = this.financier();
@@ -550,7 +550,7 @@ export class DelivranceWorkflowComponent {
     });
   }
 
-  // ── Réinitialisation ───────────────────────────────────────────────────────
+  
   nouvelleDelivrance(): void {
     this.currentStep.set('scan-qr');
     this.prescription.set(null);
@@ -565,7 +565,7 @@ export class DelivranceWorkflowComponent {
     this.tauxInputs = {};
   }
 
-  // ── Helpers ────────────────────────────────────────────────────────────────
+  
   getMedicationsWithPrix(): MedicationDetail[] {
     return this.prescription()?.medications ?? [];
   }

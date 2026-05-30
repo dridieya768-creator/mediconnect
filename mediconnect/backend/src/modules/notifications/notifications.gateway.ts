@@ -20,7 +20,7 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
   @WebSocketServer()
   server: Server;
 
-  // Map userId -> socketId[]
+  
   private userSockets = new Map<string, Set<string>>();
 
   constructor(
@@ -46,9 +46,9 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
       client.data.userId = payload.sub;
       client.data.role   = payload.role;
 
-      // Rejoindre une room par userId
+      
       client.join(`user:${payload.sub}`);
-      // Rejoindre une room par rôle (ex: room admin)
+      
       client.join(`role:${payload.role}`);
 
       if (!this.userSockets.has(payload.sub)) {
@@ -73,12 +73,12 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
     console.log(`[WS] Déconnecté: socket ${client.id}`);
   }
 
-  /** Envoyer une notification à un utilisateur spécifique */
+  
   sendToUser(userId: string, event: string, data: any) {
     this.server.to(`user:${userId}`).emit(event, data);
   }
 
-  /** Envoyer une notification à tous les admins connectés */
+  
   sendToAdmins(event: string, data: any) {
     this.server.to('role:ADMIN').emit(event, data);
   }

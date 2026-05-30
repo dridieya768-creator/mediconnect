@@ -39,7 +39,7 @@ export class Notification {
   isRead: boolean;
 
   @Column({ nullable: true, name: "related_id" })
-  relatedId: string; // l'ID du rendez-vous
+  relatedId: string; 
 
   @CreateDateColumn({ name: "created_at" })
   createdAt: Date;

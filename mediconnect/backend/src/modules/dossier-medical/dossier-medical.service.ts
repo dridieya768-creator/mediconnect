@@ -28,12 +28,24 @@ export class DossierMedicalService {
     const patient = await this.patientRepo.findOne({ where: { id: patientId } });
     if (!patient) throw new NotFoundException('Patient introuvable');
 
-    // Propriétaire ou admin
+  
     if (patient.userId === demandeurId || demandeurRole === 'ADMIN') {
       return patient;
     }
+    // med ei rdv ma pat acces lecture automatique 
+    if (demandeurRole?.includes('MEDECIN')) {
+      const rdv = await this.patientRepo.manager.query(
+        `SELECT id FROM appointments
+         WHERE doctor_id = $1
+           AND patient_id = $2
+           AND status IN ('CONFIRMED','REQUESTED')
+         LIMIT 1`,
+        [demandeurId, patient.userId ?? patientId]
+      );
+      if (rdv?.length > 0) return patient;
+    }
 
-    // Médecin avec accès explicite
+    
     await this.accesService.verifierAcces(patientId, demandeurId, NiveauAcces.LECTURE);
     return patient;
   }

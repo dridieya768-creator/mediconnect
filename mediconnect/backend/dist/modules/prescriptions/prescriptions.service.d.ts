@@ -14,13 +14,17 @@ export declare class PrescriptionsService implements OnModuleInit {
     private emailService;
     constructor(repo: Repository<Prescription>, dataSource: DataSource, qrCodesService: QrCodesService, interactionChecker: InteractionCheckerService, pdfService: PdfService, emailService: EmailService);
     onModuleInit(): Promise<void>;
+    regeneratePdf(id: string): Promise<{
+        message: string;
+        url: string;
+    }>;
     private generateElectronicSignature;
     verifySignature(prescription: Prescription, pin: string): boolean;
     checkInteractions(medications: any[]): DrugInteraction[];
     create(dto: any): Promise<Prescription>;
     findOne(id: string): Promise<Prescription>;
     findByQrCode(qrCode: string): Promise<Prescription>;
-    findByPatient(patientId: string): Promise<Prescription[]>;
+    findByPatient(patientId: string): Promise<Partial<Prescription>[]>;
     scanAtPharmacy(qrCode: string, dispensedQuantities: Record<string, number>): Promise<Prescription>;
     signPrescription(id: string, signature: string): Promise<Prescription>;
     envoyerOrdonnance(id: string, patientEmail: string): Promise<Prescription>;

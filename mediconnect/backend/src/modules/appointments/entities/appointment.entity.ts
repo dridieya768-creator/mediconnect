@@ -27,7 +27,7 @@ export class Appointment {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  // ── Relations ──────────────────────────────────────────────────────────────
+  
     @Column({ name: "patient_id", type: "uuid", nullable: false })
   patientId: string;
 
@@ -42,14 +42,14 @@ export class Appointment {
   @JoinColumn({ name: "doctor_id" })
   doctor: User;
 
-  // ── Scheduling ─────────────────────────────────────────────────────────────
+  
   @Column({ type: "timestamptz", name: "appointment_date" })
   appointmentDate: Date;
 
   @Column({ type: "int", default: 30, name: "duration_minutes" })
   durationMinutes: number;
 
-  // ── Type / Status ──────────────────────────────────────────────────────────
+  
   @Column({
     type: "enum",
     enum: ConsultationType,
@@ -65,7 +65,7 @@ export class Appointment {
   })
   status: AppointmentStatus;
 
-  // ── Content ────────────────────────────────────────────────────────────────
+  
   @Column({ nullable: true })
   reason: string;
 
@@ -75,15 +75,15 @@ export class Appointment {
   @Column({ nullable: true, name: "cancellation_reason" })
   cancellationReason: string;
 
-  // ── Téléconsultation ───────────────────────────────────────────────────────
+  
   @Column({ nullable: true, name: "video_room_id" })
   videoRoomId: string;
 
-  // ── Rappel automatique (reminder service) ──────────────────────────────────
+  
   @Column({ type: "boolean", default: false, name: "reminder_sent" })
   reminderSent: boolean;
 
-  // ── Évaluation ─────────────────────────────────────────────────────────────
+  
   @Column({ type: "int", nullable: true })
   rating: number;
 
@@ -93,7 +93,7 @@ export class Appointment {
   @Column({ type: "boolean", default: false })
   rated: boolean;
 
-  // ── Bénéficiaire (membre familial) ─────────────────────────────────────────
+  
   @Column({ name: "beneficiary_id", type: "uuid", nullable: true })
   beneficiaryId: string | null;
 
@@ -103,7 +103,7 @@ export class Appointment {
   @Column({ name: "beneficiary_prenom", nullable: true, length: 100 })
   beneficiaryPrenom: string | null;
 
-  // ── Timestamps ─────────────────────────────────────────────────────────────
+  
   @CreateDateColumn({ name: "created_at" })
   createdAt: Date;
 

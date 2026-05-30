@@ -55,7 +55,7 @@ let AppointmentsReminderService = AppointmentsReminderService_1 = class Appointm
                     this.logger.log(` Rappel ${hoursAhead}h envoyé pour RDV ${appt.id}`);
                 }
                 catch (err) {
-                    this.logger.error(`❌ Erreur rappel RDV ${appt.id}:`, err.message);
+                    this.logger.error(` Erreur rappel RDV ${appt.id}:`, err.message);
                 }
             }
         }
@@ -102,7 +102,7 @@ let AppointmentsReminderService = AppointmentsReminderService_1 = class Appointm
               </div>
               <div style="display:flex;">
                 <span style="color:#64748b; width:120px; font-size:13px;"> Type</span>
-                <strong style="color:#0f172a; font-size:13px;">${appt.consultationType === 'TELECONSULTATION' ? '💻 Téléconsultation' : '🏥 Présentiel'}</strong>
+                <strong style="color:#0f172a; font-size:13px;">${appt.consultationType === 'TELECONSULTATION' ? ' Téléconsultation' : ' Présentiel'}</strong>
               </div>
             </div>
 

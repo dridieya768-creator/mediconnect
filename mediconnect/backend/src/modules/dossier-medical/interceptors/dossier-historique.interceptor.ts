@@ -22,7 +22,7 @@ export class DossierHistoriqueInterceptor implements NestInterceptor {
     const userId: string = request.user?.sub ?? request.user?.id;
     const role: string = request.user?.role ?? 'PATIENT';
 
-    // Snapshot avant modification
+    
     const avant = patientId
       ? await this.patientRepo.findOne({ where: { id: patientId } })
       : null;
@@ -30,7 +30,7 @@ export class DossierHistoriqueInterceptor implements NestInterceptor {
     return next.handle().pipe(
       tap(async (response) => {
         if (!avant || !patientId) return;
-        // Déclencher uniquement si la réponse indique un succès
+        
         const isSuccess = response?.success === true || response?.data !== undefined;
         if (!isSuccess) return;
 

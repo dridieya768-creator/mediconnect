@@ -462,8 +462,8 @@ let MedecinsService = class MedecinsService {
                 .andWhere('appointment.status IN (:...statuses)', {
                 statuses: [appointment_entity_1.AppointmentStatus.CONFIRMED, appointment_entity_1.AppointmentStatus.REQUESTED],
             })
-                .andWhere('appointment.appointmentDate >= :startDate', { startDate })
-                .andWhere('appointment.appointmentDate <= :endDate', { endDate })
+                .andWhere('appointment.appointmentDate >= :startDate', { startDate: new Date(startDate + 'T00:00:00') })
+                .andWhere('appointment.appointmentDate <= :endDate', { endDate: new Date(endDate + 'T23:59:59') })
                 .select(['appointment.appointmentDate', 'appointment.durationMinutes'])
                 .getMany();
             return appointments.map((a) => ({

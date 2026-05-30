@@ -8,7 +8,7 @@ import { PaymentsService } from './payments.service';
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
-  // ── Créer un lien de paiement Flouci (patient authentifié) ────────────────
+  
   @Post('checkout/:appointmentId')
   @UseGuards(JwtAuthGuard)
   async createCheckout(
@@ -20,7 +20,7 @@ export class PaymentsController {
     return this.paymentsService.createCheckoutSession(appointmentId, patientId);
   }
 
-  // ── Vérifier un paiement après retour Flouci ──────────────────────────────
+  
   @Get('verify')
   @UseGuards(JwtAuthGuard)
   @HttpCode(200)
@@ -34,7 +34,7 @@ export class PaymentsController {
     return { verified: true };
   }
 
-  // ── Historique paiements du patient ───────────────────────────────────────
+  
   @Get('history')
   @UseGuards(JwtAuthGuard)
   async getHistory(@Req() req: any) {

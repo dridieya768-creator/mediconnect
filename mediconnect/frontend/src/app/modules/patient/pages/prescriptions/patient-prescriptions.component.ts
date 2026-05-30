@@ -74,10 +74,7 @@ export class PatientPrescriptionsComponent implements OnInit {
 
   download(rx: any) {
     if (!rx.pdfUrl) return;
-    const a = document.createElement('a');
-    a.href = rx.pdfUrl;
-    a.download = `ordonnance-${rx.id}.pdf`;
-    a.target = '_blank';
-    a.click();
+    const url = rx.pdfUrl.startsWith('http') ? rx.pdfUrl : `http://localhost:3000${rx.pdfUrl}`;
+    window.open(url, '_blank');
   }
 }

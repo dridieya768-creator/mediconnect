@@ -296,7 +296,9 @@ let AppointmentsService = class AppointmentsService {
             appt.videoRoomId = `mediconnect-${(0, uuid_1.v4)().slice(0, 8)}`;
             await this.repo.save(appt);
         }
-        return { videoRoomId: appt.videoRoomId, jitsiUrl: `https://meet.jit.si/${appt.videoRoomId}` };
+        const patientRow = await this.repo.manager.query(`SELECT id FROM patients WHERE user_id = $1 LIMIT 1`, [appt.patientId]);
+        const patientId = patientRow?.[0]?.id ?? appt.patientId;
+        return { videoRoomId: appt.videoRoomId, jitsiUrl: `https://meet.jit.si/${appt.videoRoomId}`, patientId };
     }
     async resolvePatientUserId(patientId) {
         const result = await this.repo.manager.query(`SELECT user_id FROM patients WHERE id = $1 LIMIT 1`, [patientId]);

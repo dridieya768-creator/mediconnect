@@ -3,16 +3,16 @@ import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { UserRole } from '../../users/entities/user.entity';
 
-// ── DTO pour chaque document PDF ──────────────────────────────
+
 export class DoctorDocumentDto {
   @IsString()
-  type: string;        // ex: 'DIPLOME', 'CIN', etc.
+  type: string;        
 
   @IsString()
-  filename: string;    // nom original du fichier
+  filename: string;    
 
   @IsString()
-  base64: string;      // contenu base64 du PDF
+  base64: string;      
 }
 
 // ── DTO principal d'inscription ───────────────────────────────
@@ -43,7 +43,7 @@ export class RegisterDto {
   @IsEnum(UserRole)
   role: UserRole;
 
-  // ✅ Champ documents — optionnel, uniquement pour les médecins
+  
   @ApiProperty({ required: false, type: [DoctorDocumentDto] })
   @IsOptional()
   @IsArray()

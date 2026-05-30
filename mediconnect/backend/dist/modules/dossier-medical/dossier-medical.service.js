@@ -36,6 +36,15 @@ let DossierMedicalService = class DossierMedicalService {
         if (patient.userId === demandeurId || demandeurRole === 'ADMIN') {
             return patient;
         }
+        if (demandeurRole?.includes('MEDECIN')) {
+            const rdv = await this.patientRepo.manager.query(`SELECT id FROM appointments
+         WHERE doctor_id = $1
+           AND patient_id = $2
+           AND status IN ('CONFIRMED','REQUESTED')
+         LIMIT 1`, [demandeurId, patient.userId ?? patientId]);
+            if (rdv?.length > 0)
+                return patient;
+        }
         await this.accesService.verifierAcces(patientId, demandeurId, dossier_acces_medecin_entity_1.NiveauAcces.LECTURE);
         return patient;
     }

@@ -13,24 +13,7 @@ import { HttpClient } from "@angular/common/http";
 import { catchError } from "rxjs/operators";
 import { of } from "rxjs";
 
-/**
- * MedecinQrcodeComponent
- * ─────────────────────────────────────────────────────────────
- * Affiche un QR code pour le médecin connecté.
- * Le QR code encode l'URL publique de son profil :
- *   https://<domaine>/medecin/scan/<doctorId>
- *
- * Usage dans medecin-profile.component.ts :
- *   <app-medecin-qrcode />
- *
- * Dépendances :
- *   npm install qrcode   (types inclus dans @types/qrcode)
- *   npm install @types/qrcode --save-dev
- *
- * Le package QRCode est chargé dynamiquement (import()) pour
- * éviter d'alourdir le bundle si la page profil n'est pas visitée.
- * ─────────────────────────────────────────────────────────────
- */
+
 @Component({
   selector: "app-medecin-qrcode",
   standalone: true,
@@ -38,7 +21,7 @@ import { of } from "rxjs";
   template: `
     <div class="qr-wrapper">
 
-      <!-- ── En-tête ── -->
+      
       <div class="qr-header">
         <div class="qr-icon"></div>
         <div>
@@ -49,18 +32,18 @@ import { of } from "rxjs";
         </div>
       </div>
 
-      <!-- ── Chargement ── -->
+      
       <div class="qr-loading" *ngIf="isLoading()">
         <div class="spinner"></div>
         <span>Génération en cours…</span>
       </div>
 
-      <!-- ── Erreur ── -->
+      
       <div class="qr-error" *ngIf="!isLoading() && errorMsg()">
-        ⚠️ {{ errorMsg() }}
+         {{ errorMsg() }}
       </div>
 
-      <!-- ── QR Code ── -->
+      
       <div class="qr-body" *ngIf="!isLoading() && !errorMsg()">
 
         <!-- Canvas QR -->
@@ -70,13 +53,13 @@ import { of } from "rxjs";
           <div class="qr-logo-overlay"></div>
         </div>
 
-        <!-- URL encodée -->
+        
         <div class="qr-url-box">
           <span class="qr-url-label">⤷ Lien de profil</span>
           <span class="qr-url-text">{{ profileUrl() }}</span>
         </div>
 
-        <!-- Actions -->
+      
         <div class="qr-actions">
           <button class="btn-download" (click)="downloadQr()">
             ⬇↓ Télécharger PNG
@@ -89,14 +72,14 @@ import { of } from "rxjs";
           </button>
         </div>
 
-        <!-- Message copié -->
+        
         <div class="copy-toast" *ngIf="copied()">
           ✔ Lien copié dans le presse-papiers !
         </div>
 
       </div>
 
-      <!-- ── Note informative ── -->
+      
       <div class="qr-note" *ngIf="!isLoading() && !errorMsg()">
         <strong> Conseil :</strong> Imprimez ce QR code et affichez-le dans votre cabinet.
         Vos patients pourront scanner le code pour vérifier instantanément vos informations.
@@ -105,7 +88,7 @@ import { of } from "rxjs";
     </div>
   `,
   styles: [`
-    /* ── Wrapper ─────────────────────────────────────────── */
+  
     .qr-wrapper {
       background: white;
       border-radius: 16px;
@@ -116,7 +99,7 @@ import { of } from "rxjs";
       gap: 20px;
     }
 
-    /* ── Header ──────────────────────────────────────────── */
+    
     .qr-header {
       display: flex;
       align-items: flex-start;
@@ -140,7 +123,7 @@ import { of } from "rxjs";
       line-height: 1.5;
     }
 
-    /* ── Loading ─────────────────────────────────────────── */
+    
     .qr-loading {
       display: flex;
       align-items: center;
@@ -160,7 +143,7 @@ import { of } from "rxjs";
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── Error ───────────────────────────────────────────── */
+    
     .qr-error {
       background: #fef2f2;
       color: #dc2626;
@@ -170,7 +153,7 @@ import { of } from "rxjs";
       font-size: 13px;
     }
 
-    /* ── QR Body ─────────────────────────────────────────── */
+    
     .qr-body {
       display: flex;
       flex-direction: column;
@@ -279,7 +262,7 @@ import { of } from "rxjs";
     }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 
-    /* ── Note ────────────────────────────────────────────── */
+    
     .qr-note {
       background: #fffbeb;
       border: 1px solid #fde68a;
@@ -295,7 +278,7 @@ export class MedecinQrcodeComponent implements OnInit, AfterViewInit {
 
   @ViewChild("qrCanvas") canvasRef!: ElementRef<HTMLCanvasElement>;
 
-  /** Optionnel : si vous passez l'ID depuis le parent, pas besoin d'appel /me */
+  
   @Input() doctorId?: string;
 
   private http = inject(HttpClient);
@@ -307,25 +290,25 @@ export class MedecinQrcodeComponent implements OnInit, AfterViewInit {
 
   private resolvedId: string | null = null;
 
-  // ── Lifecycle ──────────────────────────────────────────────────────────────
+  
   ngOnInit() {
     if (this.doctorId) {
       this.resolvedId = this.doctorId;
       this.profileUrl.set(this.buildUrl(this.doctorId));
-      // Le canvas n'est pas encore disponible ici, on génère dans ngAfterViewInit
+      
     } else {
       this.fetchDoctorId();
     }
   }
 
   ngAfterViewInit() {
-    // Si l'ID était déjà connu (passé en @Input), on peut dessiner maintenant
+    
     if (this.resolvedId) {
       this.generateQr(this.profileUrl());
     }
   }
 
-  // ── Fetch ID depuis /api/v1/medecins/me ────────────────────────────────────
+  
   private fetchDoctorId() {
     this.http.get<any>("/api/v1/medecins/me")
       .pipe(catchError(() => of(null)))
@@ -352,16 +335,16 @@ export class MedecinQrcodeComponent implements OnInit, AfterViewInit {
       });
   }
 
-  // ── Génère le QR code dans le canvas ──────────────────────────────────────
+  
   private async generateQr(url: string) {
     this.isLoading.set(true);
     this.errorMsg.set(null);
 
     try {
-      // Import dynamique — le bundle QRCode n'est chargé qu'ici
+      
       const QRCode = (await import("qrcode")).default;
 
-      // Petit délai pour que le canvas soit dans le DOM après le signal update
+      
       await new Promise(r => setTimeout(r, 50));
 
       const canvas = this.canvasRef?.nativeElement;
@@ -374,7 +357,7 @@ export class MedecinQrcodeComponent implements OnInit, AfterViewInit {
       await QRCode.toCanvas(canvas, url, {
         width:           220,
         margin:          2,
-        errorCorrectionLevel: "H",   // H = 30 % de correction (nécessaire avec logo)
+        errorCorrectionLevel: "H",   
         color: {
           dark:  "#0f172a",
           light: "#ffffff",
@@ -390,7 +373,7 @@ export class MedecinQrcodeComponent implements OnInit, AfterViewInit {
     }
   }
 
-  // ── Téléchargement PNG ─────────────────────────────────────────────────────
+  
   downloadQr() {
     const canvas = this.canvasRef?.nativeElement;
     if (!canvas) return;
@@ -401,7 +384,7 @@ export class MedecinQrcodeComponent implements OnInit, AfterViewInit {
     link.click();
   }
 
-  // ── Copier l'URL ───────────────────────────────────────────────────────────
+  
   async copyUrl() {
     try {
       await navigator.clipboard.writeText(this.profileUrl());
@@ -412,7 +395,7 @@ export class MedecinQrcodeComponent implements OnInit, AfterViewInit {
     }
   }
 
-  // ── Impression ─────────────────────────────────────────────────────────────
+  
   printQr() {
     const canvas = this.canvasRef?.nativeElement;
     if (!canvas) return;
@@ -444,7 +427,7 @@ export class MedecinQrcodeComponent implements OnInit, AfterViewInit {
         </style>
       </head>
       <body>
-        <h1>🏥 MediConnect</h1>
+        <h1> MediConnect</h1>
         <p>Profil Médecin Vérifié</p>
         <img src="${dataUrl}" alt="QR Code" />
         <div class="url">${this.profileUrl()}</div>
@@ -456,7 +439,7 @@ export class MedecinQrcodeComponent implements OnInit, AfterViewInit {
     win.document.close();
   }
 
-  // ── Helper URL ─────────────────────────────────────────────────────────────
+  
   private buildUrl(id: string): string {
     // En production, remplacez window.location.origin par votre domaine fixe
     return `${window.location.origin}/medecin/scan/${id}`;

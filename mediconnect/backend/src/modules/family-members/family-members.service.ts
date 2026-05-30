@@ -21,7 +21,7 @@ export class FamilyMembersService {
     private readonly patientRepo: Repository<Patient>,
   ) {}
 
-  // ── Résoudre le patientId depuis le userId JWT ─────────────────────────────
+  
   async resolvePatientId(userId: string): Promise<string> {
     const patient = await this.patientRepo.findOne({ where: { userId } });
     if (!patient) {
@@ -30,7 +30,7 @@ export class FamilyMembersService {
     return patient.id;
   }
 
-  // ── Vérifier que le membre appartient au patient (lève 403 sinon) ──────────
+  
   private async assertOwnership(id: string, patientId: string): Promise<FamilyMember> {
     const member = await this.familyMemberRepo.findOne({ where: { id } });
     if (!member) {
@@ -42,7 +42,7 @@ export class FamilyMembersService {
     return member;
   }
 
-  // ── Lister les membres non supprimés du patient ────────────────────────────
+  
   async findAllByPatient(patientId: string): Promise<FamilyMember[]> {
     return this.familyMemberRepo.find({
       where: { patientId },
@@ -50,7 +50,7 @@ export class FamilyMembersService {
     });
   }
 
-  // ── Créer un membre familial ───────────────────────────────────────────────
+  
   async create(patientId: string, dto: CreateFamilyMemberDto): Promise<FamilyMember> {
     const member = this.familyMemberRepo.create({
       ...dto,
@@ -60,20 +60,20 @@ export class FamilyMembersService {
     return this.familyMemberRepo.save(member);
   }
 
-  // ── Mettre à jour un membre (ownership vérifié) ────────────────────────────
+  
   async update(id: string, patientId: string, dto: UpdateFamilyMemberDto): Promise<FamilyMember> {
     const member = await this.assertOwnership(id, patientId);
     Object.assign(member, dto);
     return this.familyMemberRepo.save(member);
   }
 
-  // ── Soft-delete (ownership vérifié) ───────────────────────────────────────
+  
   async remove(id: string, patientId: string): Promise<void> {
     await this.assertOwnership(id, patientId);
     await this.familyMemberRepo.softDelete(id);
   }
 
-  // ── Upload documents justificatifs (ownership vérifié) ────────────────────
+  
   async uploadDocuments(
     id: string,
     patientId: string,
@@ -82,7 +82,7 @@ export class FamilyMembersService {
   ): Promise<FamilyMember> {
     const member = await this.assertOwnership(id, patientId);
 
-    // Supprimer l'ancien fichier si remplacé
+    
     if (docMembrePath && member.docMembrePath) {
       this.deleteFileIfExists(member.docMembrePath);
     }

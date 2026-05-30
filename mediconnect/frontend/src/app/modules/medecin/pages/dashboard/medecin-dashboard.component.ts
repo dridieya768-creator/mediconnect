@@ -32,7 +32,7 @@ import { of } from "rxjs";
         </div>
       </div>
 
-      <!-- ══ STATS CARDS ═══════════════════════════════════════════ -->
+      
       <div class="stats-row">
         <div class="stat-card" *ngFor="let s of stats()">
           <div class="stat-icon">{{ s.icon }}</div>
@@ -46,10 +46,10 @@ import { of } from "rxjs";
         </div>
       </div>
 
-      <!-- ══ MAIN GRID ═════════════════════════════════════════════ -->
+      
       <div class="main-grid">
 
-        <!-- ── Prochains RDV ──────────────────────────────────── -->
+        
         <div class="card card-appts">
           <div class="card-head">
             <h2>Prochains rendez-vous</h2>
@@ -95,7 +95,7 @@ import { of } from "rxjs";
           </div>
         </div>
 
-        <!-- ── QR Code ─────────────────────────────────────────── -->
+        
         <div class="card card-qr">
           <div class="card-head">
             <h2> Mon QR Code</h2>
@@ -139,7 +139,7 @@ import { of } from "rxjs";
           </div>
         </div>
 
-        <!-- ── Accès rapides ───────────────────────────────────── -->
+        
         <div class="card card-quick">
           <div class="card-head">
             <h2> Accès rapides</h2>
@@ -166,10 +166,10 @@ import { of } from "rxjs";
   styles: [`
     .hidden { display: none !important; }
 
-    /* ── Page ─────────────────────────────────────────────── */
+    
     .dash { padding: 0; display: flex; flex-direction: column; gap: 24px; }
 
-    /* ── Header ───────────────────────────────────────────── */
+    
     .dash-header {
       display: flex; justify-content: space-between; align-items: center;
       flex-wrap: wrap; gap: 12px;
@@ -192,7 +192,7 @@ import { of } from "rxjs";
     }
     .btn-primary:hover { opacity: .88; }
 
-    /* ── Stats ────────────────────────────────────────────── */
+    
     .stats-row {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -217,7 +217,7 @@ import { of } from "rxjs";
     .stat-trend.up   { background: #f0fdf4; color: #16a34a; }
     .stat-trend.down { background: #fef2f2; color: #dc2626; }
 
-    /* ── Main grid ────────────────────────────────────────── */
+    
     .main-grid {
       display: grid;
       grid-template-columns: 1fr 320px;
@@ -241,7 +241,7 @@ import { of } from "rxjs";
     .link-more { font-size: 12px; color: #4f46e5; text-decoration: none; font-weight: 600; }
     .link-more:hover { text-decoration: underline; }
 
-    /* ── Appointments list ────────────────────────────────── */
+    
     .loading-state { display: flex; justify-content: center; padding: 40px; }
     .spinner {
       width: 32px; height: 32px; border: 3px solid #e2e8f0;
@@ -296,7 +296,7 @@ import { of } from "rxjs";
     }
     .empty-mini span { font-size: 32px; }
 
-    /* ── QR Code ──────────────────────────────────────────── */
+    
     .qr-section {
       padding: 20px; display: flex; flex-direction: column;
       align-items: center; gap: 14px;
@@ -349,7 +349,7 @@ import { of } from "rxjs";
       line-height: 1.5; margin: 0;
     }
 
-    /* ── Quick actions ────────────────────────────────────── */
+    
     .quick-grid {
       display: grid; grid-template-columns: 1fr 1fr;
       gap: 10px; padding: 16px;
@@ -365,7 +365,7 @@ import { of } from "rxjs";
     .quick-btn span:first-child { font-size: 22px; }
     .quick-btn:hover { border-color: #4f46e5; color: #4f46e5; background: #eef2ff; }
 
-    /* ── Responsive ───────────────────────────────────────── */
+    
     @media (max-width: 1024px) {
       .stats-row { grid-template-columns: repeat(2, 1fr); }
       .main-grid { grid-template-columns: 1fr; }
@@ -396,9 +396,9 @@ export class MedecinDashboardComponent implements OnInit, AfterViewInit {
   copied       = signal(false);
 
   private doctorId: string | null = null;
-  private pendingQrUrl: string | null = null; // URL en attente si AfterViewInit pas encore passé
+  private pendingQrUrl: string | null = null; 
 
-  // ── Computed ────────────────────────────────────────────────────────────
+  
   upcomingAppointments = computed(() => {
     const now = new Date();
     return this.appointments()
@@ -441,11 +441,11 @@ export class MedecinDashboardComponent implements OnInit, AfterViewInit {
     ];
   });
 
-  // ── Lifecycle ────────────────────────────────────────────────────────────
+  
   ngOnInit() { this.loadData(); }
 
   ngAfterViewInit() {
-    // Si loadData a déjà résolu l'URL avant qu'on arrive ici, on génère maintenant
+    
     if (this.pendingQrUrl) {
       this.generateQr(this.pendingQrUrl);
       this.pendingQrUrl = null;
@@ -459,7 +459,7 @@ loadData() {
     .subscribe(res => {
       console.log("🔍 medecins/me:", JSON.stringify(res, null, 2));
 
-      // ✅ Structure confirmée : res.data.id OU res.data.data.id
+      
       const medecinData = res?.data?.data ?? res?.data ?? res;
       if (medecinData) this.medecin.set(medecinData);
 
@@ -479,7 +479,7 @@ loadData() {
       const url = `${window.location.origin}/medecin/scan/${id}`;
       this.profileUrl.set(url);
 
-      // Charger les RDV
+      
       this.http.get<any>(`/api/v1/appointments/doctor/${id}`)
         .pipe(catchError(() => of([])))
         .subscribe(appts => {
@@ -567,7 +567,7 @@ loadData() {
     win.document.close();
   }
 
-  // ── Helpers ──────────────────────────────────────────────────────────────
+  
   getInitials(): string {
     const m = this.medecin();
     if (!m) return "M";

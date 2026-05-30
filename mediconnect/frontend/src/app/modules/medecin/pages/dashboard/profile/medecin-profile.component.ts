@@ -343,7 +343,7 @@ loadProfile() {
       if (data) {
         this.medecin.set(data);
  
-        // ── Le profil peut être dans data.profile OU directement dans data
+        
         const profile = data.profile ?? data;
  
         if (profile) {
@@ -353,14 +353,14 @@ loadProfile() {
             }
           });
  
-          // ── Photo pro : accepte base64 OU URL serveur (/uploads/...)
+          
           const photoPro = profile.photoPro ?? profile.photo_pro ?? profile.photoUrl ?? profile.photo_url;
           if (photoPro) {
             this.form.photoPro  = photoPro;
-            this.photoPreview   = photoPro; // fonctionne avec base64 ET avec /uploads/xxx.jpg
+            this.photoPreview   = photoPro; 
           }
  
-          // ── Photos cabinet : accepte base64 OU URLs serveur séparées par virgule
+          
           const photosCabinet = profile.photosCabinet ?? profile.photos_cabinet;
           if (photosCabinet) {
             this.form.photosCabinet = photosCabinet;
@@ -371,7 +371,7 @@ loadProfile() {
           }
         }
  
-        // Email pro par défaut
+      
         if (!this.form.emailPro && data.email) {
           this.form.emailPro = data.email;
         }
@@ -386,14 +386,14 @@ onPhotoSelected(event: Event) {
   if (input.files && input.files[0]) {
     const file = input.files[0];
     
-    // Vérifier la taille (max 5MB)
+    
     if (file.size > 5 * 1024 * 1024) {
       this.errorMsg.set("La photo ne doit pas dépasser 5MB");
       setTimeout(() => this.errorMsg.set(null), 3000);
       return;
     }
     
-    // Vérifier le type
+    
     if (!file.type.match(/image\/(jpeg|png|jpg)/)) {
       this.errorMsg.set("Format accepté: JPEG, PNG, JPG");
       setTimeout(() => this.errorMsg.set(null), 3000);
@@ -402,12 +402,12 @@ onPhotoSelected(event: Event) {
     
     this.isUploadingPhoto.set(true);
     
-    // Convertir en base64
+    
     const reader = new FileReader();
     reader.onload = (e) => {
       const base64 = e.target?.result as string;
       this.photoPreview = base64;
-      this.form.photoPro = base64; // Stocker directement le base64
+      this.form.photoPro = base64; 
       this.isUploadingPhoto.set(false);
       this.successMsg.set("Photo chargée avec succès !");
       setTimeout(() => this.successMsg.set(null), 3000);
@@ -427,21 +427,21 @@ onCabinetPhotosSelected(event: Event) {
     const files = Array.from(input.files);
     
     for (const file of files) {
-      // Vérifier la taille
+      
       if (file.size > 5 * 1024 * 1024) {
         this.errorMsg.set(`La photo "${file.name}" dépasse 5MB`);
         setTimeout(() => this.errorMsg.set(null), 3000);
         continue;
       }
       
-      // Vérifier le type
+      
       if (!file.type.match(/image\/(jpeg|png|jpg)/)) {
         this.errorMsg.set(`Format non accepté pour "${file.name}"`);
         setTimeout(() => this.errorMsg.set(null), 3000);
         continue;
       }
       
-      // Convertir en base64
+      
       const reader = new FileReader();
       reader.onload = (e) => {
         const base64 = e.target?.result as string;
@@ -479,10 +479,9 @@ saveProfile() {
       return of(null);
     }))
     .subscribe(res => {
-      if (!res) return; // erreur déjà traitée
+      if (!res) return; 
  
-      // ── Après sauvegarde, le backend retourne les URLs /uploads/...
-      // On met à jour le formulaire avec les vraies URLs persistées
+      
       const saved = res?.data ?? res;
  
       if (saved?.photoPro) {

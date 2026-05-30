@@ -1,6 +1,6 @@
 <div class="appt-page">
 
-  <!-- HEADER -->
+  
   <div class="page-header">
     <div>
       <h1 class="page-title">Mes Rendez-vous</h1>
@@ -8,11 +8,11 @@
     </div>
   </div>
 
-  <!-- MESSAGES -->
+  
   <div class="alert-success" *ngIf="successMsg()">✔ {{ successMsg() }}</div>
   <div class="alert-error"   *ngIf="errorMsg()">✖ {{ errorMsg() }}</div>
 
-  <!-- VUE LISTE -->
+  
   <ng-container *ngIf="view() === 'list'">
     <div class="tabs-bar">
       <button class="tab-btn" [class.active]="filterTab() === 'upcoming'" (click)="setFilter('upcoming')">
@@ -69,7 +69,7 @@
     </div>
   </ng-container>
 
-  <!-- VUE DÉTAIL -->
+  
   <ng-container *ngIf="view() === 'detail' && selectedAppt()">
     <div class="form-card">
       <div class="form-header">
@@ -124,7 +124,7 @@
     </div>
   </ng-container>
 
-  <!-- VUE ANNULATION -->
+
   <ng-container *ngIf="view() === 'cancel' && selectedAppt()">
     <div class="form-card">
       <div class="form-header">
@@ -163,7 +163,7 @@
     </div>
   </ng-container>
 
-  <!-- VUE ÉVALUATION -->
+  
   <ng-container *ngIf="view() === 'rate' && selectedAppt()">
     <div class="form-card">
       <div class="form-header">

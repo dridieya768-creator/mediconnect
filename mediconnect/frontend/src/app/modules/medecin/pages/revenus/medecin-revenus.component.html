@@ -1,6 +1,6 @@
 <div class="rev-page">
 
-  <!-- HEADER -->
+  
   <div class="page-header">
     <div>
       <h1 class="page-title">Mes Revenus</h1>
@@ -11,7 +11,7 @@
     </button>
   </div>
 
-  <!-- FILTRES -->
+  
   <div class="filters-bar">
     <div class="filter-group">
       <label>Du</label>
@@ -24,7 +24,7 @@
     <button class="btn-reset" (click)="resetFilters()">Réinitialiser</button>
   </div>
 
-  <!-- STATS CARDS -->
+
   <div class="stats-grid" *ngIf="stats()">
     <div class="stat-card blue">
       <div class="stat-icon"></div>
@@ -53,7 +53,7 @@
     </div>
   </div>
 
-  <!-- GRAPHIQUE PAR MOIS -->
+  
   <div class="chart-card" *ngIf="parMoisEntries().length > 0">
     <div class="chart-title">Revenus par mois</div>
     <div class="chart-bars">
@@ -76,7 +76,7 @@
     <p>Chargement...</p>
   </div>
 
-  <!-- TABLE FACTURES -->
+  
   <div class="table-card" *ngIf="!loading()">
     <div class="table-header">
       <span class="table-title">Détail des paiements reçus</span>
@@ -127,7 +127,7 @@
     </table>
   </div>
 
-  <!-- INFO BOX -->
+  
   <div class="info-box" *ngIf="!loading()">
     <div class="info-icon"></div>
     <div class="info-text">
