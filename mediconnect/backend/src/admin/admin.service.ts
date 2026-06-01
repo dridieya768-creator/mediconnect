@@ -123,7 +123,7 @@ export class AdminService {
     const htmlApproved = `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#f8fafc;padding:32px;border-radius:12px;">
         <div style="background:linear-gradient(135deg,#1a56db,#2563eb);padding:24px;border-radius:8px;text-align:center;margin-bottom:24px;">
-          <h1 style="color:white;margin:0;font-size:24px;">🏥 MediConnect</h1>
+          <h1 style="color:white;margin:0;font-size:24px;"> MediConnect</h1>
         </div>
         <div style="background:white;padding:24px;border-radius:8px;border:1px solid #e2e8f0;">
           <h2 style="color:#16a34a;margin-top:0;">✅ Compte approuvé !</h2>

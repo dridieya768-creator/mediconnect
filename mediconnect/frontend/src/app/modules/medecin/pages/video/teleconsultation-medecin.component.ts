@@ -3,8 +3,9 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { catchError } from 'rxjs/operators';
+import { catchError, switchMap } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { DossierService } from '@app/core/services/dossier.service';
 
 @Component({
   selector: 'app-teleconsultation-medecin',
@@ -165,7 +166,8 @@ export class TeleconsultationMedecinComponent implements OnInit {
   private router    = inject(Router);
   private http      = inject(HttpClient);
   private sanitizer = inject(DomSanitizer);
-
+  private dossierService = inject(DossierService);
+  
   loading  = signal(true);
   error    = signal<string | null>(null);
   roomId   = signal<string | null>(null);
@@ -215,40 +217,37 @@ export class TeleconsultationMedecinComponent implements OnInit {
 
     const doLoad = (pid: string) => {
       this.patientId = pid;
-      this.http.get<any>(`/api/v1/dossier-medical/${pid}`)
-        .pipe(catchError(() => of(null)))
-        .subscribe(r => {
+      this.dossierService.getDossier(pid).pipe(
+        catchError(() => of(null)),
+        switchMap(r => {
           const d = r?.data ?? r;
-          if (!d) { this.dossier.set(null); this.dossierLoading.set(false); return; }
+          if (!d) {
+            this.dossier.set(null);
+            this.dossierLoading.set(false);
+            return of(null);
+          }
           this.dossier.set(d);
-
-          this.http.get<any>(`/api/v1/dossier-medical/${pid}/acces/my-permissions`)
-            .pipe(catchError(() => of(null)))
-            .subscribe(p => {
-              const perms = p?.data?.permissions ?? p?.permissions;
-              if (perms) this.permissions.set(perms);
-              this.dossierLoading.set(false);
-            });
-        });
+          return this.dossierService.getMyPermissions(pid).pipe(catchError(() => of(null)));
+        })
+      ).subscribe(p => {
+        if (p) {
+          const perms = p?.data?.permissions ?? p?.permissions;
+          if (perms) this.permissions.set(perms);
+        }
+        this.dossierLoading.set(false);
+      });
     };
 
-    
     if (this.patientId) {
       doLoad(this.patientId);
       return;
     }
 
-    
     this.http.get<any>(`/api/v1/appointments/${this.appointmentId}`)
       .pipe(catchError(() => of(null)))
       .subscribe(res => {
-        const appt = res?.data ?? res;
-        const pid = appt?.patientId;
-        if (!pid) {
-          this.dossier.set(null);
-          this.dossierLoading.set(false);
-          return;
-        }
+        const pid = res?.data?.patientId ?? res?.patientId;
+        if (!pid) { this.dossier.set(null); this.dossierLoading.set(false); return; }
         doLoad(pid);
       });
   }

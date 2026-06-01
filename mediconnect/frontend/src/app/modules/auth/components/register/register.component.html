@@ -107,7 +107,7 @@
       <div class="doc-upload">
         <input type="file" accept=".pdf" (change)="onFileSelected($event, doc.type)" [id]="'doc-'+doc.type" style="display:none"/>
         <label [for]="'doc-'+doc.type" class="upload-btn">
-          {{ uploadedFiles[doc.type] ? '✅ ' + uploadedFiles[doc.type].name : '📎 Choisir un fichier' }}
+          {{ uploadedFiles[doc.type] ? ' ' + uploadedFiles[doc.type].name : '📎 Choisir un fichier' }}
         </label>
       </div>
     </div>

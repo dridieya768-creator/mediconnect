@@ -18,7 +18,7 @@ export class DossierHistoriqueService {
     @InjectRepository(DossierHistorique)
     private readonly historiqueRepo: Repository<DossierHistorique>,
   ) {}
-
+////////compare l'état avant et après modification
   computeDiff(
     avant: Record<string, any>,
     apres: Record<string, any>,
@@ -31,7 +31,7 @@ export class DossierHistoriqueService {
     }
     return diff;
   }
-
+/////netoyer
   private sanitizeSnapshot(snapshot: Record<string, any>): Record<string, any> {
     const clean = { ...snapshot };
     for (const champ of CHAMPS_SENSIBLES) {
@@ -56,7 +56,7 @@ export class DossierHistoriqueService {
       modifieParId,
       roleAuteur,
       champsModifies: diff,
-      snapshotAvant: this.sanitizeSnapshot(snapshotAvant),
+      snapshotAvant: this.sanitizeSnapshot(snapshotAvant),//sup pass w tokens
       commentaire,
     });
     return this.historiqueRepo.save(entry);
@@ -66,7 +66,7 @@ export class DossierHistoriqueService {
     patientId: string,
     query: HistoriqueQueryDto,
   ): Promise<{ data: DossierHistorique[]; total: number; page: number }> {
-    const { page = 1, limit = 20, champ, modifieParId } = query;
+    const { page = 1, limit = 20, champ, modifieParId, roleAuteur } = query;
 
     const qb = this.historiqueRepo
       .createQueryBuilder('h')
@@ -80,6 +80,9 @@ export class DossierHistoriqueService {
     }
     if (modifieParId) {
       qb.andWhere('h.modifieParId = :modifieParId', { modifieParId });
+    }
+    if (roleAuteur) {
+      qb.andWhere('h.roleAuteur = :roleAuteur', { roleAuteur });
     }
 
     const [data, total] = await qb.getManyAndCount();

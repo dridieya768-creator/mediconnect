@@ -133,6 +133,7 @@ acceptCgu:       [false, Validators.requiredTrue],
     this.form.get('role')?.valueChanges.subscribe(role => {
       const specCtrl = this.form.get('specialite');
       if (role === 'MEDECIN_SPECIALISTE') {
+        
         specCtrl?.setValidators([Validators.required]);
       } else {
         specCtrl?.clearValidators();
@@ -199,7 +200,25 @@ acceptCgu:       [false, Validators.requiredTrue],
       this.auth.register(payload).subscribe({
         next: (res: any) => this.handleRegisterSuccess(res),
         error: (err: any) => {
-          this.error = err?.status === 409 ? 'Cet email est déjà utilisé. Veuillez en choisir un autre.' : (typeof err === 'string' ? err : "Erreur lors de l'inscription");
+          
+const msg = typeof err === 'string' ? err
+  : (err?.error?.message?.[0] || err?.error?.message || err?.message || 'Erreur inscription');
+
+const lc = msg.toLowerCase();
+this.error = (
+  lc.includes('email') ||
+  lc.includes('already') ||
+  lc.includes('existe') ||
+  lc.includes('exist') ||
+  lc.includes('utilisé') ||
+  lc.includes('409') ||
+  lc.includes('deja') ||
+  lc.includes('déjà') ||
+  lc.includes('duplicate')
+)
+  ? 'Cet email est déjà utilisé. Veuillez en choisir un autre.'
+  : msg;
+
           this.isLoading = false;
         },
       });
@@ -207,8 +226,26 @@ acceptCgu:       [false, Validators.requiredTrue],
       this.auth.register(dto).subscribe({
         next: (res: any) => this.handleRegisterSuccess(res),
         error: (err: any) => {
-          this.error = err?.status === 409 ? 'Cet email est déjà utilisé. Veuillez en choisir un autre.' : (typeof err === 'string' ? err : "Erreur lors de l'inscription");
-          this.isLoading = false;
+          
+      const msg = typeof err === 'string' ? err
+        : (err?.error?.message?.[0] || err?.error?.message || err?.message || 'Erreur inscription');
+
+      const lc = msg.toLowerCase();
+      this.error = (
+        lc.includes('email') ||
+        lc.includes('already') ||
+        lc.includes('existe') ||
+        lc.includes('exist') ||
+        lc.includes('utilisé') ||
+        lc.includes('409') ||
+        lc.includes('deja') ||
+        lc.includes('déjà') ||
+        lc.includes('duplicate')
+      )
+        ? 'Cet email est déjà utilisé. Veuillez en choisir un autre.'
+        : msg;
+
+      this.isLoading = false;
         },
       });
     }

@@ -4,8 +4,6 @@ import * as bcrypt from "bcryptjs";
 async function seed() {
   const connection = await createConnection();
 
-  console.log("🌱 Début du seed...");
-
   const userRepo = connection.getRepository("User");
   const patientRepo = connection.getRepository("Patient");
 

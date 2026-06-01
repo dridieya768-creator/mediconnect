@@ -58,7 +58,7 @@ let DossierHistoriqueService = class DossierHistoriqueService {
         return this.historiqueRepo.save(entry);
     }
     async getHistorique(patientId, query) {
-        const { page = 1, limit = 20, champ, modifieParId } = query;
+        const { page = 1, limit = 20, champ, modifieParId, roleAuteur } = query;
         const qb = this.historiqueRepo
             .createQueryBuilder('h')
             .where('h.patientId = :patientId', { patientId })
@@ -70,6 +70,9 @@ let DossierHistoriqueService = class DossierHistoriqueService {
         }
         if (modifieParId) {
             qb.andWhere('h.modifieParId = :modifieParId', { modifieParId });
+        }
+        if (roleAuteur) {
+            qb.andWhere('h.roleAuteur = :roleAuteur', { roleAuteur });
         }
         const [data, total] = await qb.getManyAndCount();
         return { data, total, page };

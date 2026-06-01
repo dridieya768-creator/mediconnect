@@ -71,5 +71,6 @@ export const routes: Routes = [
     loadComponent:()=> 
       import("./pages/unauthorized").then((m) => m.Unauthorized),
   },
+  
   { path: "**", redirectTo: "/auth/login" },
 ];

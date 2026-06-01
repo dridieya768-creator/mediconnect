@@ -8,11 +8,12 @@ import { DoctorPatient } from "./entities/doctor-patient.entity";
 import { Appointment } from "@modules/appointments/entities/appointment.entity";
 import { Patient } from "@modules/patients/entities/patient.entity";
 import { NotificationsModule } from "../notifications/notifications.module";
+import { RevenusService } from "./revenus.service";
 
 @Module({
   imports: [TypeOrmModule.forFeature([User, MedecinProfile, Appointment, DoctorPatient, Patient]), NotificationsModule],
   controllers: [MedecinsController],
-  providers: [MedecinsService],
+  providers: [MedecinsService, RevenusService],
   exports: [MedecinsService],
 })
 export class MedecinsModule {}

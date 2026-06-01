@@ -24,15 +24,11 @@ export const AUTH_ROUTES: Routes = [
   },
   {
     path: "reset-password",
-    canActivate:[authGuard],
-
     loadComponent: () =>
       import("./components/reset-password/reset-password.component").then((m) => m.ResetPasswordComponent),
   },
   {
     path: "2fa-verify",
-    canActivate:[authGuard],
-
     loadComponent: () =>
       import("./components/two-factor/two-factor-verify.component").then((m) => m.TwoFactorVerifyComponent),
   },

@@ -54,7 +54,7 @@ async regeneratePdf(id: string) {
   await this.repo.update(id, { pdfUrl });
   return { message: 'PDF régénéré', url: pdfUrl };
 }
-  
+  /////HMAC-SHA256 basée sur les données de l'ordonnance et un PIN secret
   private generateElectronicSignature(
     prescriptionId: string,
     doctorId: string,
@@ -257,7 +257,7 @@ async regeneratePdf(id: string) {
 
   async findByPatient(patientId: string): Promise<Partial<Prescription>[]> {
     try {
-      // Exclure signatureImage (base64 lourd) de la liste — disponible via findOne si besoin
+      // Exclure signatureImage (base64 lourd) de la liste disponible via findOne si besoin
       return await this.repo.find({
         where: { patientId },
         order: { createdAt: 'DESC' },

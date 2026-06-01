@@ -102,7 +102,7 @@ let AiService = AiService_1 = class AiService {
         }
         let reply = '';
         if (triageLevel === 'emergency' || triageLevel === 'emergency_ambulance') {
-            reply = `Vos symptomes semblent urgents. Appelez le 15 (SAMU) ou rendez-vous aux urgences immediatement.`;
+            reply = `Vos symptomes semblent urgents. Appelez le 190 ou rendez-vous aux urgences immediatement.`;
             specialite = 'URGENTISTE';
         }
         else if (conditions.length > 0) {

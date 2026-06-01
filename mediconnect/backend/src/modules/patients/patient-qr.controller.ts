@@ -18,7 +18,7 @@ export class PatientQrController {
     private readonly patientRepository: Repository<Patient>,
   ) {}
 
-  // ✅ PUBLIC — sans authentification
+  
   @Get("public/:token")
   @ApiOperation({ summary: "Page publique QR code patient" })
   async getPublicPatientInfo(@Param("token") token: string) {
@@ -57,7 +57,7 @@ export class PatientQrController {
     }
   }
 
-  // 🔒 PROTÉGÉ — nécessite JWT
+
   @Get()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -78,7 +78,7 @@ export class PatientQrController {
     };
   }
 
-  // 🔒 PROTÉGÉ
+  
   @Get("pdf")
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()

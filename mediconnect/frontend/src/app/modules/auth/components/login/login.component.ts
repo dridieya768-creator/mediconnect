@@ -36,7 +36,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
   showPassword = false;
 
   testAccounts = [
-    { icon: "", role: "Patient",    email: "patient@test.com" },
+    { icon: "", role: "Patient",    email: "mhbelhassen@gmail.com" },
     { icon: "", role: "Médecin",    email: "medecin@test.com" },
     { icon: "", role: "Pharmacien", email: "pharmacien@test.com" },
 

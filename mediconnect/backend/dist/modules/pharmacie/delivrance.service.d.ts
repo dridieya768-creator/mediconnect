@@ -2,6 +2,7 @@ import { Repository, DataSource } from 'typeorm';
 import { QrCodesService } from '../qr-codes/qr-codes.service';
 import { TicketPdfService } from './ticket-pdf.service';
 import { Prescription, PrescriptionStatus } from '../prescriptions/entities/prescription.entity';
+import { DossierHistoriqueService } from '../dossier-medical/dossier-historique.service';
 import { ScanQrOrdDto } from './dto/scan-qr-ord.dto';
 import { ScanMedCipDto } from './dto/scan-med-cip.dto';
 import { ConfirmerDelivranceDto, MedicamentDelivreDto } from './dto/confirmer-delivrance.dto';
@@ -71,8 +72,9 @@ export declare class DelivranceService {
     private readonly dataSource;
     private readonly qrCodesService;
     private readonly ticketPdfService;
+    private readonly historiqueService;
     private readonly prescriptionRepo;
-    constructor(dataSource: DataSource, qrCodesService: QrCodesService, ticketPdfService: TicketPdfService, prescriptionRepo: Repository<Prescription>);
+    constructor(dataSource: DataSource, qrCodesService: QrCodesService, ticketPdfService: TicketPdfService, historiqueService: DossierHistoriqueService, prescriptionRepo: Repository<Prescription>);
     scanQrOrd(dto: ScanQrOrdDto, pharmacienId: string): Promise<PrescriptionDetailDto>;
     scanMedCip(dto: ScanMedCipDto, sessionCounts: Record<string, number>): Promise<{
         cip: string;

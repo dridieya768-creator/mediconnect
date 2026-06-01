@@ -13,7 +13,7 @@ import { UpdateAvailabilityDto } from './update-availability.dto';
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationType } from '../notifications/notification.entity';
 import { SmsService } from '../notifications/sms.service';
-
+import { RevenusService } from './revenus.service';
 @Injectable()
 export class MedecinsService {
   constructor(
@@ -29,13 +29,14 @@ export class MedecinsService {
     private patientRepository: Repository<Patient>,
     private readonly notificationsService: NotificationsService,
     private readonly smsService: SmsService,
+    private readonly revenusService: RevenusService,
   ) {}
 
   async getProfile(userId: string) {
     const profile = await this.medecinProfileRepository.findOne({
       where: { userId: userId },
     });
-    
+  
     if (!profile) {
       const newProfile = this.medecinProfileRepository.create({
         userId: userId,
@@ -96,7 +97,7 @@ export class MedecinsService {
     });
 
     if (!user || !medecinRoles.includes(user.role) || user.status !== 'ACTIVE') {
-      throw new NotFoundException('MÃ©decin non trouvÃ©');
+      throw new NotFoundException('Médecin non trouvé');
     }
 
     const profile = await this.medecinProfileRepository.findOne({
@@ -219,7 +220,7 @@ async getAvailability(userId: string) {
 }
   
 async addPatientToDoctorList(doctorId: string, patientId: string) {
-  console.log(`[Service] ðŸ”µ addPatientToDoctorList: doctor=${doctorId}, patient=${patientId}`);
+  console.log(`[Service]  addPatientToDoctorList: doctor=${doctorId}, patient=${patientId}`);
   
   try {
     
@@ -228,10 +229,10 @@ async addPatientToDoctorList(doctorId: string, patientId: string) {
     });
     
     if (!patientExists) {
-      console.error(`[Service] âŒ Patient ${patientId} does not exist in users table!`);
+      console.error(`[Service]  Patient ${patientId} does not exist in users table!`);
       return { 
         success: false, 
-        message: 'Patient non trouvÃ© dans la base de donnÃ©es',
+        message: 'Patient non trouver dans la base de donnÃ©es',
         patient: null
       };
     }
@@ -250,12 +251,12 @@ async addPatientToDoctorList(doctorId: string, patientId: string) {
         status: 'ACTIVE'
       });
       await this.doctorPatientRepository.save(newRelation);
-      console.log(`[Service] âœ… Patient ${patientId} added to doctor ${doctorId}`);
+      console.log(`[Service] Patient ${patientId} added to doctor ${doctorId}`);
       
       return { success: true, patient: patientExists };
     }
     
-    console.log(`[Service] â„¹ï¸ Patient ${patientId} already in doctor ${doctorId} list`);
+    console.log(`[Service]  Patient ${patientId} already in doctor ${doctorId} list`);
     return { success: false, message: 'Patient dÃ©jÃ  dans la liste', patient: patientExists };
   } catch (error) {
     console.error('[Service] âŒ Error in addPatientToDoctorList:', error);
@@ -266,7 +267,7 @@ async addPatientToDoctorList(doctorId: string, patientId: string) {
   
  
 async acceptAppointment(doctorId: string, appointmentId: string) {
-  console.log(`[Service] ðŸ”µ acceptAppointment called with doctorId=${doctorId}, appointmentId=${appointmentId}`);
+  console.log(`[Service]  acceptAppointment called with doctorId=${doctorId}, appointmentId=${appointmentId}`);
   
   try {
     
@@ -275,7 +276,7 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
       relations: ['patient']
     });
     
-    console.log(`[Service] ðŸ“‹ Appointment found:`, {
+    console.log(`[Service]  Appointment found:`, {
       id: appointment?.id,
       status: appointment?.status,
       patientId: appointment?.patientId,
@@ -283,12 +284,12 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
     });
     
     if (!appointment) {
-      throw new NotFoundException(`Rendez-vous ${appointmentId} non trouvÃ©`);
+      throw new NotFoundException(`Rendez-vous ${appointmentId} non trouvé`);
     }
     
   
     if (!appointment.patientId) {
-      throw new BadRequestException('Le rendez-vous n\'a pas de patient associÃ©');
+      throw new BadRequestException('Le rendez-vous n\'a pas de patient associé');
     }
     
     
@@ -297,7 +298,7 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
     });
     
     if (!patientExists) {
-      console.warn(`[Service] âš ï¸ Patient ${appointment.patientId} not found in users, but continuing with appointment acceptance`);
+      console.warn(`[Service] Patient ${appointment.patientId} not found in users, but continuing with appointment acceptance`);
       
     }
     
@@ -337,25 +338,25 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
       } catch (e) {
         console.warn('[Notifications] Impossible de notifier le patient (accept):', e.message);
       }
-      console.log(`[Service] âœ… Appointment status updated to CONFIRMED`);
+      console.log(`[Service]  Appointment status updated to CONFIRMED`);
     } else {
-      console.log(`[Service] â„¹ï¸ Appointment already confirmed`);
+      console.log(`[Service] Appointment already confirmed`);
     }
     
     
     let addedPatient = null;
     if (patientExists) {
       addedPatient = await this.addPatientToDoctorList(doctorId, appointment.patientId);
-      console.log(`[Service] ðŸ‘¤ Add patient result:`, addedPatient);
+      console.log(`[Service] Add patient result:`, addedPatient);
     } else {
-      console.log(`[Service] âš ï¸ Skipping adding patient to doctor list because patient doesn't exist`);
+      console.log(`[Service]  Skipping adding patient to doctor list because patient doesn't exist`);
     }
     
     return {
       success: true,
       message: patientExists 
-        ? 'Rendez-vous acceptÃ© et patient ajoutÃ© Ã  votre liste'
-        : 'Rendez-vous acceptÃ© (patient non trouvÃ© dans la base)',
+        ? 'Rendez-vous accepté et patient ajouté à votre liste'
+        : 'Rendez-vous accepté (patient non trouvé dans la base)',
       appointment: {
         ...appointment,
         status: AppointmentStatus.CONFIRMED
@@ -369,7 +370,7 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
 }
   
   
-  
+  // convertit patient id a user.id
   private async resolvePatientUserId(patientId: string): Promise<string> {
     const result = await this.appointmentRepository.manager.query(
       `SELECT user_id FROM patients WHERE id = $1 LIMIT 1`,
@@ -394,7 +395,7 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
     return fromUser?.[0]?.phone || null;
   }
   async getMyPatients(doctorId: string) {
-    // RÃ©cupÃ©rer les relations
+    // Récupérer les relations
     const relations = await this.doctorPatientRepository.find({
       where: { doctorId, status: 'ACTIVE' },
     });
@@ -460,11 +461,11 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
     });
     
     if (!relation) {
-      throw new NotFoundException('Patient non trouvÃ© dans la liste');
+      throw new NotFoundException('Patient non trouvé dans la liste');
     }
     
     await this.doctorPatientRepository.remove(relation);
-    return { success: true, message: 'Patient retirÃ© de la liste' };
+    return { success: true, message: 'Patient retirer de la liste' };
   }
   
   async getMedecinAvailabilityById(id: string) {
@@ -531,7 +532,7 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
         if (wd.morningStart && wd.morningEnd) {
           converted.push({ day: dayKey, startTime: wd.morningStart, endTime: wd.morningEnd });
         }
-        // AprÃ¨s-midi
+        
         if (wd.afternoonStart && wd.afternoonEnd) {
           converted.push({ day: dayKey, startTime: wd.afternoonStart, endTime: wd.afternoonEnd });
         }
@@ -584,8 +585,12 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
   }
 
   async getRevenus(doctorId: string, from?: string, to?: string) {
-    return RevenusService.getRevenus(this.appointmentRepository, doctorId, from, to);
-  }
+  return this.revenusService.getRevenus(
+    doctorId,
+    from,
+    to,
+  );
+}
 
   private async saveBase64Image(base64String: string, folder: string): Promise<string> {
     try {
@@ -619,56 +624,3 @@ async acceptAppointment(doctorId: string, appointmentId: string) {
 
 
 
-
-export class RevenusService {
-  static async getRevenus(
-    appointmentRepo: Repository<Appointment>,
-    doctorId: string,
-    from?: string,
-    to?: string,
-  ) {
-    const qb = appointmentRepo
-      .createQueryBuilder('a')
-      .leftJoinAndSelect('a.patient', 'patient')
-      .where('a.doctorId = :doctorId', { doctorId })
-      .andWhere('a.status IN (:...statuses)', {
-        statuses: [AppointmentStatus.COMPLETED],
-      });
-
-    if (from) qb.andWhere('a.appointmentDate >= :from', { from: new Date(from) });
-    if (to)   qb.andWhere('a.appointmentDate <= :to',   { to: new Date(to + 'T23:59:59') });
-
-    qb.orderBy('a.appointmentDate', 'DESC');
-    const appointments = await qb.getMany();
-
-    const TARIF = 50; 
-
-    const factures = appointments.map((a, idx) => ({
-      numero:          `FAC-${String(idx + 1).padStart(4, '0')}`,
-      date:            a.appointmentDate,
-      patientNom:      `${(a.patient as any)?.firstName ?? ''} ${(a.patient as any)?.lastName ?? ''}`.trim() || 'Patient',
-      type:            a.consultationType,
-      statut:          a.status,
-      montant:         TARIF,
-      devise:          'TND',
-    }));
-
-    const totalRevenu   = factures.reduce((s, f) => s + f.montant, 0);
-    const nbConsult     = factures.length;
-    const nbTeleconsult = factures.filter(f => f.type === 'TELECONSULTATION').length;
-    const nbPhysique    = factures.filter(f => f.type === 'PHYSICAL').length;
-
-    // Revenus par mois (12 derniers mois)
-    const parMois: Record<string, number> = {};
-    for (const f of factures) {
-      const key = new Date(f.date).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' });
-      parMois[key] = (parMois[key] ?? 0) + f.montant;
-    }
-
-    return {
-      factures,
-      stats: { totalRevenu, nbConsult, nbTeleconsult, nbPhysique, tarif: TARIF },
-      parMois,
-    };
-  }
-}

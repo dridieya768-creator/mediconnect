@@ -104,4 +104,18 @@
 .perm-check { display:flex; align-items:center; gap:8px; font-size:13px; color:#374151; cursor:pointer; }
 .perm-check input { width:16px; height:16px; cursor:pointer; }
 
+/* Historique des délivrances */
+.historique-list { display:flex; flex-direction:column; gap:12px; }
+.historique-item { background:#f0f9ff; border:1px solid #bae6fd; border-radius:10px; padding:14px; }
+.historique-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+.historique-pharmacie { font-size:13px; font-weight:700; color:#0369a1; }
+.historique-date { font-size:12px; color:#64748b; }
+.historique-content { display:flex; flex-direction:column; gap:6px; }
+.historique-ordonnance, .historique-details { display:flex; gap:8px; font-size:13px; }
+.historique-label { font-weight:600; color:#374151; min-width:80px; }
+.historique-value { color:#0f172a; }
+.historique-medicaments { display:flex; flex-direction:column; gap:4px; font-size:13px; }
+.medicaments-list { display:flex; flex-wrap:wrap; gap:4px; margin-top:4px; }
+.medicament-tag { background:#dbeafe; color:#1e40af; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:600; }
+
 @media(max-width:640px) { .edit-grid { grid-template-columns:1fr; } }

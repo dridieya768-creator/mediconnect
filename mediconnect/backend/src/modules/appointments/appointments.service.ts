@@ -1,4 +1,4 @@
-// appointments.service.ts - v2
+// appointments.service.ts 
 import { Injectable, NotFoundException, BadRequestException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository, Between, In } from "typeorm";
@@ -12,12 +12,13 @@ import { v4 as uuid } from "uuid";
 @Injectable()
 export class AppointmentsService {
   constructor(
+   
     @InjectRepository(Appointment)
     private readonly repo: Repository<Appointment>,
     private readonly notificationsService: NotificationsService,
     private readonly smsService: SmsService,
   ) {}
-
+ //// fonction create pour créer un nouveau rendez-vous avec vérification de conflit de créneau w notification du médecin
   async create(dto: CreateAppointmentDto): Promise<Appointment> {
     const apptDate = new Date(dto.appointmentDate);
     const endDate  = new Date(apptDate.getTime() + (dto.durationMinutes ?? 30) * 60000);
@@ -38,7 +39,7 @@ export class AppointmentsService {
     if (conflict) {
       throw new BadRequestException("Ce créneau est déjà réservé pour ce médecin.");
     }
-
+    /// sinon on lecree
     const appt = this.repo.create({
       patientId:        dto.patientId,
       doctorId:         dto.doctorId,
@@ -58,7 +59,7 @@ export class AppointmentsService {
 
     const saved = await this.repo.save(appt);
 
-    
+    ///notificationsService pour notifier le médecin de la nouvelle demande de RDV
     try {
       await this.notificationsService.create({
         userId:    saved.doctorId,
@@ -73,7 +74,7 @@ export class AppointmentsService {
 
     return this.findOneSafe(saved.id);
   }
-
+   ////Liste des RDV du patient
   async findByPatient(patientId: string): Promise<any[]> {
     try {
       
@@ -101,7 +102,7 @@ export class AppointmentsService {
       const resolvedId = await this.resolvePatientUserId(patientUserId);
       const idsToSearch = [...new Set([patientUserId, resolvedId])];
 
-      
+      //// ali 3ada andhom
       const appts = await this.repo
         .createQueryBuilder('a')
         .leftJoinAndSelect('a.doctor', 'doctor')
@@ -132,7 +133,7 @@ export class AppointmentsService {
       return [];
     }
   }
-
+////amltha hathi liste de rendez vous d'un médecin avec possibilité de filtrer par date
   async findByDoctor(doctorId: string, date?: string): Promise<Appointment[]> {
     console.log(`[Appointments] findByDoctor → doctorId=${doctorId} date=${date}`);
 
@@ -182,7 +183,7 @@ export class AppointmentsService {
       });
     }
   }
-
+  
   private async enrichWithBeneficiaryDocs(appointments: any[]): Promise<any[]> {
     const withBeneficiary = appointments.filter(a => a.beneficiaryId);
     if (withBeneficiary.length === 0) return appointments;
@@ -280,7 +281,7 @@ export class AppointmentsService {
       relatedId: appt.id,
     });
 
-    
+    /////nab3ath SMS de confirmation au patient
     const patientPhone = await this.resolvePatientPhone(appt.patientId);
     if (patientPhone) {
       await this.smsService.sendSms(
@@ -311,7 +312,7 @@ export class AppointmentsService {
     await this.repo.save(appt);
     return this.findOneSafe(id);
   }
-
+////Patient note le médecin
   async rate(id: string, dto: RateAppointmentDto): Promise<Appointment> {
     const appt = await this.findOne(id);
     if (appt.status !== AppointmentStatus.COMPLETED)
@@ -324,14 +325,15 @@ export class AppointmentsService {
     await this.repo.save(appt);
     return this.findOneSafe(id);
   }
-
+////prend  id rendez vous traja3 room id w  url jitsi 
   async generateVideoRoom(id: string): Promise<{ videoRoomId: string; jitsiUrl: string; patientId: string }> {
     const appt = await this.findOne(id);
+    //// kan fargh video room id natih id 
     if (!appt.videoRoomId) {
       appt.videoRoomId = `mediconnect-${uuid().slice(0, 8)}`;
       await this.repo.save(appt);
     }
-    // Résoudre le patient.id réel (appt.patientId est un user_id)
+    
     const patientRow = await this.repo.manager.query(
       `SELECT id FROM patients WHERE user_id = $1 LIMIT 1`,
       [appt.patientId]
@@ -372,13 +374,13 @@ export class AppointmentsService {
     );
     return fromUser?.[0]?.phone || null;
   }
-
+ 
   private async findOne(id: string): Promise<Appointment> {
     const appt = await this.repo.findOne({ where: { id } });
     if (!appt) throw new NotFoundException(`RDV #${id} introuvable.`);
     return appt;
   }
-
+// tlawij rdv
   private async findOneSafe(id: string): Promise<Appointment> {
     try {
       const appt = await this.repo.findOne({

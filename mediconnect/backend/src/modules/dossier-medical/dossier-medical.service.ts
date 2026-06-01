@@ -32,7 +32,7 @@ export class DossierMedicalService {
     if (patient.userId === demandeurId || demandeurRole === 'ADMIN') {
       return patient;
     }
-    // med ei rdv ma pat acces lecture automatique 
+    // med fi rdv ma pat acces lecture automatique 
     if (demandeurRole?.includes('MEDECIN')) {
       const rdv = await this.patientRepo.manager.query(
         `SELECT id FROM appointments

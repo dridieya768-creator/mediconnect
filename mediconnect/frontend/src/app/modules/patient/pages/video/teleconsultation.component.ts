@@ -39,7 +39,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
         <button class="btn-back-alt" (click)="goBack()">Retour aux rendez-vous</button>
       </div>
 
-      <!-- Jitsi iframe -->
+      < affichage  Jitsi iframe >
       <div class="jitsi-container" *ngIf="!loading() && !error() && jitsiUrl()">
         <iframe
           [src]="jitsiUrl()!"
@@ -105,10 +105,13 @@ export class TeleconsultationComponent implements OnInit, OnDestroy {
     this.error.set(null);
 
     this.http.post<any>(`/api/v1/appointments/${this.appointmentId}/video-room`, {}).subscribe({
+      ///// fireponse il faut avoir le video room id condition 
       next: res => {
         const data = res?.data ?? res;
         const room = data?.videoRoomId ?? data?.data?.videoRoomId;
-        if (!room) { this.error.set('Impossible de créer la salle vidéo'); this.loading.set(false); return; }
+        if (!room) { this.error.set('Impossible de créer la salle vidéo');
+           this.loading.set(false); return; 
+          }
 
         this.roomId.set(room);
         

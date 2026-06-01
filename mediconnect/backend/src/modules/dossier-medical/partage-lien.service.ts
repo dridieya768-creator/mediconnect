@@ -63,7 +63,7 @@ export class PartageLienService {
       permissions,
       expiresAt,
     };
-
+///////JWT est signé avec la clé secrète du serveur 
     const token = this.jwtService.sign(payload, {
       expiresIn: `${dureeHeures}h`,
       secret: process.env.JWT_SECRET,
@@ -75,7 +75,7 @@ export class PartageLienService {
   }
 
 
-
+////méthode est exécutée lorsqu'un médecin ouvre le lien
   async accederVieLien(token: string): Promise<{
     patient: Partial<Patient>;
     permissions: LienPartagePayload['permissions'];

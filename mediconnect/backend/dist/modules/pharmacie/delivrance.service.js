@@ -20,13 +20,15 @@ const uuid_1 = require("uuid");
 const qr_codes_service_1 = require("../qr-codes/qr-codes.service");
 const ticket_pdf_service_1 = require("./ticket-pdf.service");
 const prescription_entity_1 = require("../prescriptions/entities/prescription.entity");
+const dossier_historique_service_1 = require("../dossier-medical/dossier-historique.service");
 const dossier_historique_entity_1 = require("../dossier-medical/entities/dossier-historique.entity");
 const user_entity_1 = require("../users/entities/user.entity");
 let DelivranceService = class DelivranceService {
-    constructor(dataSource, qrCodesService, ticketPdfService, prescriptionRepo) {
+    constructor(dataSource, qrCodesService, ticketPdfService, historiqueService, prescriptionRepo) {
         this.dataSource = dataSource;
         this.qrCodesService = qrCodesService;
         this.ticketPdfService = ticketPdfService;
+        this.historiqueService = historiqueService;
         this.prescriptionRepo = prescriptionRepo;
     }
     async scanQrOrd(dto, pharmacienId) {
@@ -196,7 +198,8 @@ let DelivranceService = class DelivranceService {
                     })),
                     financier: { totalCnam, totalPatient, totalGeneral },
                 });
-                await em.save(dossier_historique_entity_1.DossierHistorique, {
+                console.log('🔍 Enregistrement historique pour patient:', prescription.patientId);
+                const historiqueEntry = em.create(dossier_historique_entity_1.DossierHistorique, {
                     patientId: prescription.patientId,
                     modifieParId: pharmacienId,
                     roleAuteur: 'PHARMACIEN',
@@ -206,10 +209,13 @@ let DelivranceService = class DelivranceService {
                             apres: {
                                 prescriptionId: prescription.id,
                                 delivranceId,
+                                qrOrdCode: prescription.qrCode,
+                                pharmacieNom: 'Pharmacie',
                                 medicaments: dto.medicamentsDelivres.map((m) => ({
                                     cip: m.cip,
                                     nom: prescription.medications.find((med) => med.cip === m.cip)?.name ?? m.cip,
                                     quantiteDelivree: m.quantiteDelivree,
+                                    quantitePrescrite: prescription.medications.find((med) => med.cip === m.cip)?.quantity ?? 0,
                                 })),
                                 pharmacienId,
                                 delivreAt: delivreAt.toISOString(),
@@ -219,6 +225,8 @@ let DelivranceService = class DelivranceService {
                     snapshotAvant: { prescriptionStatus: prescription_entity_1.PrescriptionStatus.ACTIVE },
                     commentaire: `Délivrance pharmacie — ${prescription.qrCode}`,
                 });
+                await em.save(dossier_historique_entity_1.DossierHistorique, historiqueEntry);
+                console.log('✅ Historique enregistré avec succès');
                 const financierDto = {
                     lignes: financierLignes.map((l) => ({
                         cip: l.cip,
@@ -302,10 +310,11 @@ let DelivranceService = class DelivranceService {
 exports.DelivranceService = DelivranceService;
 exports.DelivranceService = DelivranceService = __decorate([
     (0, common_1.Injectable)(),
-    __param(3, (0, typeorm_1.InjectRepository)(prescription_entity_1.Prescription)),
+    __param(4, (0, typeorm_1.InjectRepository)(prescription_entity_1.Prescription)),
     __metadata("design:paramtypes", [typeorm_2.DataSource,
         qr_codes_service_1.QrCodesService,
         ticket_pdf_service_1.TicketPdfService,
+        dossier_historique_service_1.DossierHistoriqueService,
         typeorm_2.Repository])
 ], DelivranceService);
 //# sourceMappingURL=delivrance.service.js.map

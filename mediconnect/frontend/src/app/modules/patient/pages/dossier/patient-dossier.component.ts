@@ -26,6 +26,7 @@ export class PatientDossierComponent implements OnInit {
   medicaments  = signal<string[]>([]);
   documents    = signal<any[]>([]);
   observations = signal<any[]>([]);
+  historique   = signal<any[]>([]);
 
   accesList     = signal<any[]>([]);
   medecinsList  = signal<any[]>([]);
@@ -64,12 +65,28 @@ export class PatientDossierComponent implements OnInit {
         this.loading.set(false);
 
         if (p?.id) {
+          console.log('Patient ID:', p.id);
           this.http.get<any>(`/api/v1/patients/${p.id}/observations-history`).subscribe({
             next: obsRes => {
               const list = Array.isArray(obsRes) ? obsRes : Array.isArray(obsRes?.data) ? obsRes.data : [];
               this.observations.set(list);
             },
             error: () => this.observations.set([])
+          });
+
+          this.http.get<any>(`/api/v1/dossier-medical/${p.id}/historique?roleAuteur=PHARMACIEN`).subscribe({
+            next: histRes => {
+              console.log('Historique API response:', histRes);
+              const histList = Array.isArray(histRes) ? histRes : Array.isArray(histRes?.data) ? histRes.data : [];
+              console.log('Historique list:', histList);
+              const formattedHistory = histList.map((h: any) => this.formatDeliveryHistory(h));
+              console.log('Formatted history:', formattedHistory);
+              this.historique.set(formattedHistory);
+            },
+            error: (err) => {
+              console.error('Erreur lors du chargement de l\'historique:', err);
+              this.historique.set([]);
+            }
           });
 
           this.http.get<any>(`/api/v1/dossier-medical/${p.id}/acces`).subscribe({
@@ -291,6 +308,36 @@ export class PatientDossierComponent implements OnInit {
       this.copie.set(true);
       setTimeout(() => this.copie.set(false), 2500);
     });
+  }
+
+  formatDeliveryHistory(historique: any): any {
+    // Check if this is a pharmacy delivery entry
+    if (historique.roleAuteur !== 'PHARMACIEN') return historique;
+    
+    // Extract delivery information from champsModifies or snapshotApres
+    let delivranceData = null;
+    
+    // Try to get from champsModifies first (old format)
+    if (historique.champsModifies?.delivrance_pharmacie?.apres) {
+      delivranceData = historique.champsModifies.delivrance_pharmacie.apres;
+    }
+    // Try to get from snapshotApres (new format)
+    else if (historique.snapshotApres?.delivrance_pharmacie) {
+      delivranceData = historique.snapshotApres.delivrance_pharmacie;
+    }
+    
+    if (!delivranceData) return historique;
+
+    return {
+      ...historique,
+      pharmacieNom: delivranceData.pharmacieNom || 'Pharmacie',
+      ordonnanceId: delivranceData.qrOrdCode || historique.commentaire,
+      details: `Délivrance de ${delivranceData.medicaments?.length || 0} médicament(s)`,
+      medicaments: delivranceData.medicaments?.map((m: any) => 
+        `${m.nom} (${m.quantiteDelivree}/${m.quantitePrescrite || m.quantiteDelivree})`
+      ) || [],
+      dateCreation: historique.createdAt
+    };
   }
 
   private parseList(val: any): string[] {

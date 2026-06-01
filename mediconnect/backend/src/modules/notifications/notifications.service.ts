@@ -19,7 +19,7 @@ export class NotificationsService {
     relatedId?: string;
   }): Promise<Notification> {
     const notif = this.repo.create(data);
-    return this.repo.save(notif);
+    return this.repo.save(notif);// ligne cree dan bd
   }
 
   async findForUser(userId: string) {

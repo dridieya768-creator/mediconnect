@@ -1,0 +1,34 @@
+"use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+exports.__esModule = true;
+exports.MedecinsModule = void 0;
+var common_1 = require("@nestjs/common");
+var typeorm_1 = require("@nestjs/typeorm");
+var medecins_controller_1 = require("./medecins.controller");
+var medecins_service_1 = require("./medecins.service");
+var user_entity_1 = require("../users/entities/user.entity");
+var medecin_profile_entity_1 = require("./entities/medecin-profile.entity");
+var doctor_patient_entity_1 = require("./entities/doctor-patient.entity");
+var appointment_entity_1 = require("@modules/appointments/entities/appointment.entity");
+var patient_entity_1 = require("@modules/patients/entities/patient.entity");
+var notifications_module_1 = require("../notifications/notifications.module");
+var revenus_service_1 = require("./revenus.service");
+var MedecinsModule = /** @class */ (function () {
+    function MedecinsModule() {
+    }
+    MedecinsModule = __decorate([
+        common_1.Module({
+            imports: [typeorm_1.TypeOrmModule.forFeature([user_entity_1.User, medecin_profile_entity_1.MedecinProfile, appointment_entity_1.Appointment, doctor_patient_entity_1.DoctorPatient, patient_entity_1.Patient]), notifications_module_1.NotificationsModule],
+            controllers: [medecins_controller_1.MedecinsController],
+            providers: [medecins_service_1.MedecinsService, revenus_service_1.RevenusService],
+            exports: [medecins_service_1.MedecinsService]
+        })
+    ], MedecinsModule);
+    return MedecinsModule;
+}());
+exports.MedecinsModule = MedecinsModule;

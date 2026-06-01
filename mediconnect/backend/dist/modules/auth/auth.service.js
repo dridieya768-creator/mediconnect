@@ -31,49 +31,6 @@ const notification_entity_1 = require("../notifications/notification.entity");
 const fs = require("fs");
 const path_1 = require("path");
 const speakeasy = require("speakeasy");
-function base32Encode(buffer) {
-    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-    let result = '';
-    let bits = 0;
-    let value = 0;
-    for (const byte of buffer) {
-        value = (value << 8) | byte;
-        bits += 8;
-        while (bits >= 5) {
-            result += alphabet[(value >>> (bits - 5)) & 31];
-            bits -= 5;
-        }
-    }
-    if (bits > 0)
-        result += alphabet[(value << (5 - bits)) & 31];
-    return result;
-}
-function generateTotpSecret() {
-    return crypto.randomBytes(20).toString('hex').toUpperCase();
-}
-function verifyTotpCode(secretHex, code) {
-    const timeStep = Math.floor(Date.now() / 1000 / 30);
-    console.log('[2FA DEBUG] secretHex:', secretHex);
-    console.log('[2FA DEBUG] code reçu:', code);
-    console.log('[2FA DEBUG] timeStep actuel:', timeStep);
-    for (const delta of [-1, 0, 1]) {
-        const counter = timeStep + delta;
-        const buf = Buffer.alloc(8);
-        buf.writeUInt32BE(Math.floor(counter / 0x100000000), 0);
-        buf.writeUInt32BE(counter >>> 0, 4);
-        const hmac = crypto.createHmac('sha1', Buffer.from(secretHex, 'hex'));
-        hmac.update(buf);
-        const hash = hmac.digest();
-        const offset = hash[hash.length - 1] & 0x0f;
-        const otp = ((hash.readUInt32BE(offset) & 0x7fffffff) % 1000000)
-            .toString()
-            .padStart(6, '0');
-        console.log(`[2FA DEBUG] delta=${delta} → OTP calculé: ${otp}`);
-        if (otp === code)
-            return true;
-    }
-    return false;
-}
 let AuthService = class AuthService {
     constructor(userRepository, patientRepository, pharmacienRepository, jwtService, configService, notificationsService, notificationsGateway) {
         this.userRepository = userRepository;

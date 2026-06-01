@@ -407,7 +407,7 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
   form!: FormGroup;
   familyMembers = signal<FamilyMember[]>([]);
 
-  // Expose signals as methods for template
+  
   selectedSlot = this.bookingState.selectedSlot;
 
   get isTeleconsultDisabled(): boolean {
@@ -416,7 +416,7 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
 
   get consultationTypeLabel(): string {
     const type = this.form?.get('consultationType')?.value;
-    return type === 'TELECONSULTATION' ? '💻 Téléconsultation' : '🏥 Présentiel';
+    return type === 'TELECONSULTATION' ? ' Téléconsultation' : ' Présentiel';
   }
 
   relationIcon(relation: string): string {
@@ -445,7 +445,7 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
       reason: [initialReason, [Validators.maxLength(500)]],
     });
 
-    // Sync form changes back to state
+    
     this.form.get('consultationType')?.valueChanges.subscribe(val => {
       this.bookingState.consultationType.set(val);
     });
@@ -456,7 +456,7 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
       this.bookingState.reason.set(val);
     });
 
-    // Charger les membres familiaux
+    
     this.familyMembersService.getAll().subscribe({
       next: (members) => this.familyMembers.set(members),
       error: () => this.familyMembers.set([]),
@@ -481,7 +481,7 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
     if (!this.selectedSlot() || this.isLoading) return;
     const { consultationType, durationMinutes, reason, beneficiaryId } = this.form.value;
 
-    // Résoudre les infos du bénéficiaire si sélectionné
+    
     let beneficiaryNom: string | null = null;
     let beneficiaryPrenom: string | null = null;
     if (beneficiaryId) {

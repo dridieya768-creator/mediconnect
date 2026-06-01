@@ -303,11 +303,17 @@ export class WeeklyCalendarComponent {
 
   private isOccupied(slotStart: Date, slotEnd: Date, occupiedSlots: OccupiedSlot[]): boolean {
     return occupiedSlots.some(os => {
+      // Normaliser en UTC pour éviter les décalages de timezone
       const osStart = new Date(os.appointmentDate);
-      const osEnd = new Date(osStart);
-      osEnd.setMinutes(osEnd.getMinutes() + os.durationMinutes);
-      
-      return slotStart < osEnd && slotEnd > osStart;
+      const osEnd = new Date(osStart.getTime() + os.durationMinutes * 60000);
+
+      // Comparer les timestamps UTC directement
+      const slotStartUTC = slotStart.getTime();
+      const slotEndUTC = slotEnd.getTime();
+      const osStartUTC = osStart.getTime();
+      const osEndUTC = osEnd.getTime();
+
+      return slotStartUTC < osEndUTC && slotEndUTC > osStartUTC;
     });
   }
 

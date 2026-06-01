@@ -133,6 +133,36 @@
         <div class="uploading" *ngIf="uploading()">Upload en cours...</div>
       </div>
 
+      <!-- Historique des délivrances -->
+      <div class="card">
+        <div class="card-title">Historique des délivrances</div>
+        <div class="historique-list" *ngIf="historique().length">
+          <div class="historique-item" *ngFor="let h of historique()">
+            <div class="historique-header">
+              <span class="historique-pharmacie">{{ h.pharmacieNom || 'Pharmacie' }}</span>
+              <span class="historique-date">{{ formatDate(h.dateCreation) }}</span>
+            </div>
+            <div class="historique-content">
+              <div class="historique-ordonnance" *ngIf="h.ordonnanceId">
+                <span class="historique-label">Ordonnance:</span>
+                <span class="historique-value">{{ h.ordonnanceId }}</span>
+              </div>
+              <div class="historique-details" *ngIf="h.details">
+                <span class="historique-label">Détails:</span>
+                <span class="historique-value">{{ h.details }}</span>
+              </div>
+              <div class="historique-medicaments" *ngIf="h.medicaments && h.medicaments.length">
+                <span class="historique-label">Médicaments délivrés:</span>
+                <div class="medicaments-list">
+                  <span class="medicament-tag" *ngFor="let med of h.medicaments">{{ med }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="empty" *ngIf="!historique().length">Aucune délivrance enregistrée</p>
+      </div>
+
       <!-- Accès médecins -->
       <div class="card">
         <div class="card-title">Accès médecins à mon dossier</div>

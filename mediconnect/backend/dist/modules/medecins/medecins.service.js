@@ -12,7 +12,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RevenusService = exports.MedecinsService = void 0;
+exports.MedecinsService = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
@@ -27,8 +27,9 @@ const uuid_1 = require("uuid");
 const notifications_service_1 = require("../notifications/notifications.service");
 const notification_entity_1 = require("../notifications/notification.entity");
 const sms_service_1 = require("../notifications/sms.service");
+const revenus_service_1 = require("./revenus.service");
 let MedecinsService = class MedecinsService {
-    constructor(medecinProfileRepository, doctorPatientRepository, userRepository, appointmentRepository, patientRepository, notificationsService, smsService) {
+    constructor(medecinProfileRepository, doctorPatientRepository, userRepository, appointmentRepository, patientRepository, notificationsService, smsService, revenusService) {
         this.medecinProfileRepository = medecinProfileRepository;
         this.doctorPatientRepository = doctorPatientRepository;
         this.userRepository = userRepository;
@@ -36,6 +37,7 @@ let MedecinsService = class MedecinsService {
         this.patientRepository = patientRepository;
         this.notificationsService = notificationsService;
         this.smsService = smsService;
+        this.revenusService = revenusService;
     }
     async getProfile(userId) {
         const profile = await this.medecinProfileRepository.findOne({
@@ -90,7 +92,7 @@ let MedecinsService = class MedecinsService {
             where: { id },
         });
         if (!user || !medecinRoles.includes(user.role) || user.status !== 'ACTIVE') {
-            throw new common_1.NotFoundException('MÃ©decin non trouvÃ©');
+            throw new common_1.NotFoundException('Médecin non trouvé');
         }
         const profile = await this.medecinProfileRepository.findOne({
             where: { userId: id },
@@ -187,16 +189,16 @@ let MedecinsService = class MedecinsService {
         };
     }
     async addPatientToDoctorList(doctorId, patientId) {
-        console.log(`[Service] ðŸ”µ addPatientToDoctorList: doctor=${doctorId}, patient=${patientId}`);
+        console.log(`[Service]  addPatientToDoctorList: doctor=${doctorId}, patient=${patientId}`);
         try {
             const patientExists = await this.userRepository.findOne({
                 where: { id: patientId }
             });
             if (!patientExists) {
-                console.error(`[Service] âŒ Patient ${patientId} does not exist in users table!`);
+                console.error(`[Service]  Patient ${patientId} does not exist in users table!`);
                 return {
                     success: false,
-                    message: 'Patient non trouvÃ© dans la base de donnÃ©es',
+                    message: 'Patient non trouver dans la base de donnÃ©es',
                     patient: null
                 };
             }
@@ -211,10 +213,10 @@ let MedecinsService = class MedecinsService {
                     status: 'ACTIVE'
                 });
                 await this.doctorPatientRepository.save(newRelation);
-                console.log(`[Service] âœ… Patient ${patientId} added to doctor ${doctorId}`);
+                console.log(`[Service] Patient ${patientId} added to doctor ${doctorId}`);
                 return { success: true, patient: patientExists };
             }
-            console.log(`[Service] â„¹ï¸ Patient ${patientId} already in doctor ${doctorId} list`);
+            console.log(`[Service]  Patient ${patientId} already in doctor ${doctorId} list`);
             return { success: false, message: 'Patient dÃ©jÃ  dans la liste', patient: patientExists };
         }
         catch (error) {
@@ -223,29 +225,29 @@ let MedecinsService = class MedecinsService {
         }
     }
     async acceptAppointment(doctorId, appointmentId) {
-        console.log(`[Service] ðŸ”µ acceptAppointment called with doctorId=${doctorId}, appointmentId=${appointmentId}`);
+        console.log(`[Service]  acceptAppointment called with doctorId=${doctorId}, appointmentId=${appointmentId}`);
         try {
             const appointment = await this.appointmentRepository.findOne({
                 where: { id: appointmentId, doctorId: doctorId },
                 relations: ['patient']
             });
-            console.log(`[Service] ðŸ“‹ Appointment found:`, {
+            console.log(`[Service]  Appointment found:`, {
                 id: appointment?.id,
                 status: appointment?.status,
                 patientId: appointment?.patientId,
                 hasPatient: !!appointment?.patient
             });
             if (!appointment) {
-                throw new common_1.NotFoundException(`Rendez-vous ${appointmentId} non trouvÃ©`);
+                throw new common_1.NotFoundException(`Rendez-vous ${appointmentId} non trouvé`);
             }
             if (!appointment.patientId) {
-                throw new common_1.BadRequestException('Le rendez-vous n\'a pas de patient associÃ©');
+                throw new common_1.BadRequestException('Le rendez-vous n\'a pas de patient associé');
             }
             const patientExists = await this.userRepository.findOne({
                 where: { id: appointment.patientId }
             });
             if (!patientExists) {
-                console.warn(`[Service] âš ï¸ Patient ${appointment.patientId} not found in users, but continuing with appointment acceptance`);
+                console.warn(`[Service] Patient ${appointment.patientId} not found in users, but continuing with appointment acceptance`);
             }
             if (appointment.status !== appointment_entity_1.AppointmentStatus.CONFIRMED) {
                 await this.appointmentRepository.update({ id: appointmentId }, { status: appointment_entity_1.AppointmentStatus.CONFIRMED });
@@ -274,24 +276,24 @@ let MedecinsService = class MedecinsService {
                 catch (e) {
                     console.warn('[Notifications] Impossible de notifier le patient (accept):', e.message);
                 }
-                console.log(`[Service] âœ… Appointment status updated to CONFIRMED`);
+                console.log(`[Service]  Appointment status updated to CONFIRMED`);
             }
             else {
-                console.log(`[Service] â„¹ï¸ Appointment already confirmed`);
+                console.log(`[Service] Appointment already confirmed`);
             }
             let addedPatient = null;
             if (patientExists) {
                 addedPatient = await this.addPatientToDoctorList(doctorId, appointment.patientId);
-                console.log(`[Service] ðŸ‘¤ Add patient result:`, addedPatient);
+                console.log(`[Service] Add patient result:`, addedPatient);
             }
             else {
-                console.log(`[Service] âš ï¸ Skipping adding patient to doctor list because patient doesn't exist`);
+                console.log(`[Service]  Skipping adding patient to doctor list because patient doesn't exist`);
             }
             return {
                 success: true,
                 message: patientExists
-                    ? 'Rendez-vous acceptÃ© et patient ajoutÃ© Ã  votre liste'
-                    : 'Rendez-vous acceptÃ© (patient non trouvÃ© dans la base)',
+                    ? 'Rendez-vous accepté et patient ajouté à votre liste'
+                    : 'Rendez-vous accepté (patient non trouvé dans la base)',
                 appointment: {
                     ...appointment,
                     status: appointment_entity_1.AppointmentStatus.CONFIRMED
@@ -371,10 +373,10 @@ let MedecinsService = class MedecinsService {
             where: { doctorId, patientId }
         });
         if (!relation) {
-            throw new common_1.NotFoundException('Patient non trouvÃ© dans la liste');
+            throw new common_1.NotFoundException('Patient non trouvé dans la liste');
         }
         await this.doctorPatientRepository.remove(relation);
-        return { success: true, message: 'Patient retirÃ© de la liste' };
+        return { success: true, message: 'Patient retirer de la liste' };
     }
     async getMedecinAvailabilityById(id) {
         const profile = await this.medecinProfileRepository.findOne({
@@ -477,7 +479,7 @@ let MedecinsService = class MedecinsService {
         }
     }
     async getRevenus(doctorId, from, to) {
-        return RevenusService.getRevenus(this.appointmentRepository, doctorId, from, to);
+        return this.revenusService.getRevenus(doctorId, from, to);
     }
     async saveBase64Image(base64String, folder) {
         try {
@@ -517,48 +519,7 @@ exports.MedecinsService = MedecinsService = __decorate([
         typeorm_2.Repository,
         typeorm_2.Repository,
         notifications_service_1.NotificationsService,
-        sms_service_1.SmsService])
+        sms_service_1.SmsService,
+        revenus_service_1.RevenusService])
 ], MedecinsService);
-class RevenusService {
-    static async getRevenus(appointmentRepo, doctorId, from, to) {
-        const qb = appointmentRepo
-            .createQueryBuilder('a')
-            .leftJoinAndSelect('a.patient', 'patient')
-            .where('a.doctorId = :doctorId', { doctorId })
-            .andWhere('a.status IN (:...statuses)', {
-            statuses: [appointment_entity_1.AppointmentStatus.COMPLETED],
-        });
-        if (from)
-            qb.andWhere('a.appointmentDate >= :from', { from: new Date(from) });
-        if (to)
-            qb.andWhere('a.appointmentDate <= :to', { to: new Date(to + 'T23:59:59') });
-        qb.orderBy('a.appointmentDate', 'DESC');
-        const appointments = await qb.getMany();
-        const TARIF = 50;
-        const factures = appointments.map((a, idx) => ({
-            numero: `FAC-${String(idx + 1).padStart(4, '0')}`,
-            date: a.appointmentDate,
-            patientNom: `${a.patient?.firstName ?? ''} ${a.patient?.lastName ?? ''}`.trim() || 'Patient',
-            type: a.consultationType,
-            statut: a.status,
-            montant: TARIF,
-            devise: 'TND',
-        }));
-        const totalRevenu = factures.reduce((s, f) => s + f.montant, 0);
-        const nbConsult = factures.length;
-        const nbTeleconsult = factures.filter(f => f.type === 'TELECONSULTATION').length;
-        const nbPhysique = factures.filter(f => f.type === 'PHYSICAL').length;
-        const parMois = {};
-        for (const f of factures) {
-            const key = new Date(f.date).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' });
-            parMois[key] = (parMois[key] ?? 0) + f.montant;
-        }
-        return {
-            factures,
-            stats: { totalRevenu, nbConsult, nbTeleconsult, nbPhysique, tarif: TARIF },
-            parMois,
-        };
-    }
-}
-exports.RevenusService = RevenusService;
 //# sourceMappingURL=medecins.service.js.map

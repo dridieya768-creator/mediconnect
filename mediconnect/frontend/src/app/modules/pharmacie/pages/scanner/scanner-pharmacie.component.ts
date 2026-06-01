@@ -185,8 +185,8 @@ export class ScannerPharmacieComponent {
     this.successMsg.set('');
     this.prescription.set(null);
     this.dispensed = {};
-
-    this.http.get<any>(`/api/v1/prescriptions/qr/${encodeURIComponent(code)}`).subscribe({
+     //tisna3 qrcode saisir
+    this.http.post<any>('/api/v1/pharmacie/scan-qr-ord', { qrCode: code }).subscribe({
       next: res => {
         const outer = res?.data ?? res;
         const data = outer?.data ?? outer;
@@ -197,11 +197,15 @@ export class ScannerPharmacieComponent {
         });
         this.searching.set(false);
       },
-      error: err => {
-        const msg = err?.error?.message;
-        this.errorMsg.set(Array.isArray(msg) ? msg.join(', ') : msg || 'Ordonnance introuvable');
-        this.searching.set(false);
-      }
+error: err => {
+  this.errorMsg.set(
+    err?.error?.message?.message ||
+    err?.error?.message ||
+    'Erreur lors de la recherche'
+  );
+
+  this.searching.set(false);
+}
     });
   }
 

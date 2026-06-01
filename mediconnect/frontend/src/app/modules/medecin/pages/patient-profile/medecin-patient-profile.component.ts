@@ -3,8 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { catchError } from 'rxjs/operators';
+import { catchError, switchMap } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { DossierService } from '@core/services/dossier.service';
 
 @Component({
   selector: 'app-medecin-patient-profile',
@@ -208,18 +209,21 @@ import { of } from 'rxjs';
   `]
 })
 export class MedecinPatientProfileComponent implements OnInit {
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
-  private http = inject(HttpClient);
+  private route         = inject(ActivatedRoute);
+  private router        = inject(Router);
+  private http          = inject(HttpClient);
+  private dossierService = inject(DossierService);
 
-  patient = signal<any>(null);
-  loading = signal(true);
+  patient     = signal<any>(null);
+  loading     = signal(true);
+  permissions = signal<any>({ allergies: false, documents: false, observations: false });
+  patientId   = '';
+
   newObservation = '';
   obsSaving = signal(false);
   obsSaved  = signal(false);
   obsError  = signal<string | null>(null);
-  patientId = '';
-  permissions = signal<any>({ allergies: false, documents: false, observations: false });
+
   initials = () => {
     const p = this.patient();
     if (!p) return '?';
@@ -232,33 +236,22 @@ export class MedecinPatientProfileComponent implements OnInit {
     this.patientId = userId;
 
     this.http.get<any>(`/api/v1/patients/${userId}`)
-      .pipe(catchError((err) => {
-        console.error('[MedecinPatientProfile] GET /patients error:', err);
-        return of(null);
-      }))
-      .subscribe(res => {
-        console.log('[MedecinPatientProfile] GET /patients response:', JSON.stringify(res));
-        const data = res?.data?.data ?? res?.data ?? null;
-        this.patient.set(data);
-        if (data?.id) this.patientId = data.id;
-        this.newObservation = data?.observationsMedecin ?? '';
-        this.loading.set(false);
+      .pipe(
+        catchError(() => of(null)),
+        switchMap(res => {
+          const data = res?.data?.data ?? res?.data ?? null;
+          this.patient.set(data);
+          if (data?.id) this.patientId = data.id;
+          this.newObservation = data?.observationsMedecin ?? '';
+          this.loading.set(false);
 
-        
-        if (data?.id) {
-          this.http.get<any>(`/api/v1/dossier-medical/${data.id}/acces/my-permissions`)
-            .pipe(catchError((err) => {
-              console.error('[MedecinPatientProfile] my-permissions error:', err?.status, err?.error);
-              return of(null);
-            }))
-            .subscribe(r => {
-              console.log('[MedecinPatientProfile] my-permissions response:', JSON.stringify(r));
-              const perms = r?.data?.permissions ?? r?.permissions;
-              if (perms) {
-                this.permissions.set(perms);
-              }
-            });
-        }
+          if (!data?.id) return of(null);
+          return this.dossierService.getMyPermissions(data.id).pipe(catchError(() => of(null)));
+        })
+      )
+      .subscribe(r => {
+        const perms = r?.data?.permissions ?? r?.permissions;
+        if (perms) this.permissions.set(perms);
       });
   }
 

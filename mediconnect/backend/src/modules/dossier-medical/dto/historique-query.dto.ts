@@ -22,4 +22,8 @@ export class HistoriqueQueryDto {
   @IsOptional()
   @IsUUID()
   modifieParId?: string;
+
+  @IsOptional()
+  @IsString()
+  roleAuteur?: string;
 }

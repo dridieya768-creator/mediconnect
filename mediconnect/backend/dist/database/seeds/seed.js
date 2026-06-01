@@ -4,7 +4,6 @@ const typeorm_1 = require("typeorm");
 const bcrypt = require("bcryptjs");
 async function seed() {
     const connection = await (0, typeorm_1.createConnection)();
-    console.log("🌱 Début du seed...");
     const userRepo = connection.getRepository("User");
     const patientRepo = connection.getRepository("Patient");
     const users = [

@@ -27,54 +27,6 @@ import { join } from "path";
 import * as speakeasy from 'speakeasy';
 
 
-function base32Encode(buffer: Buffer): string {
-  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-  let result = '';
-  let bits = 0;
-  let value = 0;
-  for (const byte of buffer) {
-    value = (value << 8) | byte;
-    bits += 8;
-    while (bits >= 5) {
-      result += alphabet[(value >>> (bits - 5)) & 31];
-      bits -= 5;
-    }
-  }
-  if (bits > 0) result += alphabet[(value << (5 - bits)) & 31];
-  return result;
-}
-
-function generateTotpSecret(): string {
-  
-  return crypto.randomBytes(20).toString('hex').toUpperCase();
-}
-
-function verifyTotpCode(secretHex: string, code: string): boolean {
-  const timeStep = Math.floor(Date.now() / 1000 / 30);
-  console.log('[2FA DEBUG] secretHex:', secretHex);
-  console.log('[2FA DEBUG] code reçu:', code);
-  console.log('[2FA DEBUG] timeStep actuel:', timeStep);
-
-  for (const delta of [-1, 0, 1]) {
-    const counter = timeStep + delta;
-    const buf = Buffer.alloc(8);
-    buf.writeUInt32BE(Math.floor(counter / 0x100000000), 0);
-    buf.writeUInt32BE(counter >>> 0, 4);
-
-    const hmac = crypto.createHmac('sha1', Buffer.from(secretHex, 'hex'));
-    hmac.update(buf);
-    const hash = hmac.digest();
-
-    const offset = hash[hash.length - 1] & 0x0f;
-    const otp = ((hash.readUInt32BE(offset) & 0x7fffffff) % 1000000)
-      .toString()
-      .padStart(6, '0');
-
-    console.log(`[2FA DEBUG] delta=${delta} → OTP calculé: ${otp}`);
-    if (otp === code) return true;
-  }
-  return false;
-}
 
 @Injectable()
 export class AuthService {
@@ -92,7 +44,7 @@ export class AuthService {
     private notificationsService: NotificationsService,
     private notificationsGateway: NotificationsGateway,
   ) {}
-
+////conx
   async validateUser(email: string, password: string): Promise<User | null> {
     const user = await this.userRepository
       .createQueryBuilder("user")
@@ -101,10 +53,11 @@ export class AuthService {
       .andWhere("user.deletedAt IS NULL")
       .getOne();
     if (!user) return null;
+    // comparaison
     const isValid = await bcrypt.compare(password, user.password);
     return isValid ? user : null;
   }
-
+/// inscri
   async register(registerDto: RegisterDto) {
     const existing = await this.userRepository
       .createQueryBuilder("user")
@@ -170,6 +123,7 @@ export class AuthService {
 
     const user = this.userRepository.create({
       ...registerDto,
+      /// houni zedt hashed password
       phone: registerDto.phone?.substring(0, 20),
       password: hashedPassword,
       status: isProfessionnel ? UserStatus.PENDING_VERIFICATION : UserStatus.ACTIVE,
@@ -238,7 +192,7 @@ export class AuthService {
 async setup2fa(userId: string) {
   const user = await this.userRepository.findOne({ where: { id: userId } });
   if (!user) throw new NotFoundException('Utilisateur introuvable');
-
+///Génère secret bi speakeasy
   const secret = speakeasy.generateSecret({
     name: `MediConnect:${user.email}`,
     issuer: 'MediConnect',
@@ -254,7 +208,7 @@ async setup2fa(userId: string) {
     instructions: 'Scannez ce QR code avec Google Authenticator ou Authy',
   };
 }
-
+///activation
 async enable2fa(userId: string, dto: Enable2faDto) {
   const user = await this.userRepository.findOne({
     where: { id: userId },
@@ -361,6 +315,7 @@ async changePassword(userId: string, currentPassword: string, newPassword: strin
     lastName: string;
     avatarUrl?: string;
   }) {
+    ///Recherche bi find one 
     let user = await this.userRepository.findOne({ where: { email: ssoData.email } });
     if (!user) {
       const randomPassword = await bcrypt.hash(uuidv4(), 12);
@@ -388,6 +343,7 @@ async changePassword(userId: string, currentPassword: string, newPassword: strin
 
   async googleLogin(googleToken: string) {
     if (!googleToken) throw new BadRequestException("Token Google requis");
+    // appel de handleSsoLogin
     return this.handleSsoLogin({
       provider: "google",
       providerId: "google_" + crypto.randomBytes(8).toString("hex"),

@@ -11,6 +11,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { QrCodesService } from '../qr-codes/qr-codes.service';
 import { TicketPdfService } from './ticket-pdf.service';
 import { Prescription, PrescriptionStatus } from '../prescriptions/entities/prescription.entity';
+import { DossierHistoriqueService } from '../dossier-medical/dossier-historique.service';
 import { DossierHistorique } from '../dossier-medical/entities/dossier-historique.entity';
 import { User } from '../users/entities/user.entity';
 import { ScanQrOrdDto } from './dto/scan-qr-ord.dto';
@@ -94,6 +95,7 @@ export class DelivranceService {
     private readonly dataSource: DataSource,
     private readonly qrCodesService: QrCodesService,
     private readonly ticketPdfService: TicketPdfService,
+    private readonly historiqueService: DossierHistoriqueService,
     @InjectRepository(Prescription)
     private readonly prescriptionRepo: Repository<Prescription>,
   ) {}
@@ -107,6 +109,7 @@ export class DelivranceService {
     
     let result: { valid: boolean; data: any };
     try {
+      ////namil vérification la signature JWT du QR
       result = await this.qrCodesService.scanQr(dto.qrCode, pharmacienId);
     } catch {
       throw new BadRequestException('Signature QR invalide');
@@ -249,7 +252,7 @@ export class DelivranceService {
     dto: ConfirmerDelivranceDto,
     pharmacienId: string,
   ): Promise<DelivranceResultDto> {
-    // Charger la prescription avec ses relations avant la transaction
+    ///// Charger la prescription avec ses relations avant la transaction
     const prescription = await this.prescriptionRepo.findOne({
       where: { id: dto.prescriptionId },
       relations: ['patient', 'patient.user', 'doctor'],
@@ -336,7 +339,10 @@ export class DelivranceService {
         });
 
         
-        await em.save(DossierHistorique, {
+        console.log('🔍 Enregistrement historique pour patient:', prescription.patientId);
+        
+        // Create history entry directly for pharmacy delivery
+        const historiqueEntry = em.create(DossierHistorique, {
           patientId: prescription.patientId,
           modifieParId: pharmacienId,
           roleAuteur: 'PHARMACIEN',
@@ -346,10 +352,13 @@ export class DelivranceService {
               apres: {
                 prescriptionId: prescription.id,
                 delivranceId,
+                qrOrdCode: prescription.qrCode,
+                pharmacieNom: 'Pharmacie',
                 medicaments: dto.medicamentsDelivres.map((m) => ({
                   cip: m.cip,
                   nom: prescription.medications.find((med) => med.cip === m.cip)?.name ?? m.cip,
                   quantiteDelivree: m.quantiteDelivree,
+                  quantitePrescrite: prescription.medications.find((med) => med.cip === m.cip)?.quantity ?? 0,
                 })),
                 pharmacienId,
                 delivreAt: delivreAt.toISOString(),
@@ -359,6 +368,9 @@ export class DelivranceService {
           snapshotAvant: { prescriptionStatus: PrescriptionStatus.ACTIVE },
           commentaire: `Délivrance pharmacie — ${prescription.qrCode}`,
         });
+        
+        await em.save(DossierHistorique, historiqueEntry);
+        console.log('✅ Historique enregistré avec succès');
 
        
         const financierDto: FinancierDto = {

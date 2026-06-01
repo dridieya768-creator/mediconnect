@@ -16,12 +16,12 @@ import { UpdateFamilyMemberDto } from './dto/update-family-member.dto';
 export class FamilyMembersService {
   constructor(
     @InjectRepository(FamilyMember)
-    private readonly familyMemberRepo: Repository<FamilyMember>,
+    private readonly familyMemberRepo: Repository<FamilyMember>,// table ta famillies meb
     @InjectRepository(Patient)
     private readonly patientRepo: Repository<Patient>,
   ) {}
 
-  
+  // ntawlo id 
   async resolvePatientId(userId: string): Promise<string> {
     const patient = await this.patientRepo.findOne({ where: { userId } });
     if (!patient) {
@@ -30,7 +30,7 @@ export class FamilyMembersService {
     return patient.id;
   }
 
-  
+  ///vérifie que le membre familial appartient bien au patient 
   private async assertOwnership(id: string, patientId: string): Promise<FamilyMember> {
     const member = await this.familyMemberRepo.findOne({ where: { id } });
     if (!member) {

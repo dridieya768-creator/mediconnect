@@ -159,7 +159,6 @@ export class AuthService {
       MEDECIN_GENERALISTE:     "/medecin/dashboard",
       MEDECIN_SPECIALISTE:     "/medecin/dashboard",
       MEDECIN_CHEF_SERVICE:    "/medecin/dashboard",
-      PHARMACIEN_TITULAIRE:    "/pharmacie/dashboard",
       ADMIN_SYSTEM:            "/admin/dashboard",
     };
     return routes[role] || "/auth/login";

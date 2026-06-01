@@ -7,6 +7,7 @@ import { Appointment, AppointmentStatus } from '../appointments/entities/appoint
 import { UpdateAvailabilityDto } from './update-availability.dto';
 import { NotificationsService } from '../notifications/notifications.service';
 import { SmsService } from '../notifications/sms.service';
+import { RevenusService } from './revenus.service';
 export declare class MedecinsService {
     private medecinProfileRepository;
     private doctorPatientRepository;
@@ -15,7 +16,8 @@ export declare class MedecinsService {
     private patientRepository;
     private readonly notificationsService;
     private readonly smsService;
-    constructor(medecinProfileRepository: Repository<MedecinProfile>, doctorPatientRepository: Repository<DoctorPatient>, userRepository: Repository<User>, appointmentRepository: Repository<Appointment>, patientRepository: Repository<Patient>, notificationsService: NotificationsService, smsService: SmsService);
+    private readonly revenusService;
+    constructor(medecinProfileRepository: Repository<MedecinProfile>, doctorPatientRepository: Repository<DoctorPatient>, userRepository: Repository<User>, appointmentRepository: Repository<Appointment>, patientRepository: Repository<Patient>, notificationsService: NotificationsService, smsService: SmsService, revenusService: RevenusService);
     getProfile(userId: string): Promise<MedecinProfile>;
     updateProfile(userId: string, updateData: any): Promise<MedecinProfile>;
     getMedecinById(id: string): Promise<{
@@ -130,25 +132,4 @@ export declare class MedecinsService {
         parMois: Record<string, number>;
     }>;
     private saveBase64Image;
-}
-export declare class RevenusService {
-    static getRevenus(appointmentRepo: Repository<Appointment>, doctorId: string, from?: string, to?: string): Promise<{
-        factures: {
-            numero: string;
-            date: Date;
-            patientNom: string;
-            type: import("../appointments/entities/appointment.entity").ConsultationType;
-            statut: AppointmentStatus;
-            montant: number;
-            devise: string;
-        }[];
-        stats: {
-            totalRevenu: number;
-            nbConsult: number;
-            nbTeleconsult: number;
-            nbPhysique: number;
-            tarif: number;
-        };
-        parMois: Record<string, number>;
-    }>;
 }

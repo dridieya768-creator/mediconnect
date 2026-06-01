@@ -27,7 +27,7 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
     private jwtService: JwtService,
     private configService: ConfigService,
   ) {}
-
+/// 
   async handleConnection(client: Socket) {
     try {
       const token =
@@ -61,7 +61,7 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
       client.disconnect();
     }
   }
-
+/// cette fonction est appele quand le client se deconnecte du serveur de websocket
   handleDisconnect(client: Socket) {
     const userId = client.data?.userId;
     if (userId && this.userSockets.has(userId)) {

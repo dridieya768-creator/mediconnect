@@ -3,4 +3,5 @@ export declare class HistoriqueQueryDto {
     limit?: number;
     champ?: string;
     modifieParId?: string;
+    roleAuteur?: string;
 }

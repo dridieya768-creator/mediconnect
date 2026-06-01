@@ -12,7 +12,7 @@ export const SPECIALITES_VALIDES = [
 export type Specialite = typeof SPECIALITES_VALIDES[number];
 
 const DISCLAIMER = "Ceci est une aide a l'orientation uniquement. Consultez toujours un medecin.";
-
+///// map bach namil conversion
 const INFERMEDICA_MAP: Record<string, Specialite> = {
   cardiologist:'CARDIOLOGUE', dermatologist:'DERMATOLOGUE', gynecologist:'GYNECOLOGUE',
   neurologist:'NEUROLOGUE', ophthalmologist:'OPHTALMOLOGUE', otolaryngologist:'ORL',
@@ -33,25 +33,25 @@ const GEMINI_MODELS = [
 export class AiService {
   private readonly logger = new Logger(AiService.name);
   constructor(private readonly config: ConfigService) {}
-
+    ////Méthode principale
   async analyzeSymptoms(messages: ChatMessageDto[]): Promise<{reply:string; specialite:string|null; conditions?:any[]}> {
     const appId  = this.config.get<string>('INFERMEDICA_APP_ID');
     const appKey = this.config.get<string>('INFERMEDICA_APP_KEY');
-
+ //// kan andi infermidica ids w key 
     if (appId && appKey && appId !== 'your_app_id_here') {
       try { return await this.infermedica(messages, appId, appKey); }
       catch (e: any) { this.logger.warn(`Infermedica echec: ${e.response?.status} ${e.message}`); }
     }
-
+   //// sinon kan andi gemini api key
     const geminiKey = this.config.get<string>('GEMINI_API_KEY');
     if (geminiKey) {
       try { return await this.gemini(messages, geminiKey); }
       catch (e: any) { this.logger.warn(`Gemini echec: ${e.message}`); }
     }
-
+ //// sinon fallback local
     return this.localFallback(messages);
   }
-
+//// Analyse bi Infer
   private async infermedica(messages: ChatMessageDto[], appId: string, appKey: string) {
     const headers = {
       'App-Id': appId, 'App-Key': appKey,
@@ -62,7 +62,7 @@ export class AiService {
 
     const lastMsg  = [...messages].reverse().find(m => m.role === 'user')?.content ?? '';
     const msgCount = messages.filter(m => m.role === 'user').length;
-
+     ////Extraction des symptômes tsir bi POST https://api.infermedica.com/v3/parse
     const nlpRes = await axios.post(
       'https://api.infermedica.com/v3/parse',
       { text: lastMsg, age: { value: 30 }, sex: 'male', include_tokens: false },
@@ -82,7 +82,7 @@ export class AiService {
     }
 
     const evidence = mentions.map((m: any) => ({ id: m.id, choice_id: m.choice_id ?? 'present' }));
-
+//////Diagnostic bi POST https://api.infermedica.com/v3/diagnosis
     const diagRes = await axios.post(
       'https://api.infermedica.com/v3/diagnosis',
       { sex: 'male', age: { value: 30 }, evidence },
@@ -101,8 +101,9 @@ export class AiService {
     }
 
     let reply = '';
+    ///Détection urgence
     if (triageLevel === 'emergency' || triageLevel === 'emergency_ambulance') {
-      reply = `Vos symptomes semblent urgents. Appelez le 15 (SAMU) ou rendez-vous aux urgences immediatement.`;
+      reply = `Vos symptomes semblent urgents. Appelez le 190 ou rendez-vous aux urgences immediatement.`;
       specialite = 'URGENTISTE';
     } else if (conditions.length > 0) {
       const top = conditions.slice(0, 3).map((c: any) => `- ${c.name} (${Math.round((c.probability ?? 0) * 100)}%)`).join('\n');
@@ -115,12 +116,13 @@ export class AiService {
     reply += !shouldStop && msgCount < 4
       ? `Avez-vous d'autres symptomes associes ?`
       : `${DISCLAIMER}`;
-
+ /////Réponse possible hiya : json avec reply, specialite, et liste de conditions possibles (avec probas)
     return { reply, specialite, conditions };
   }
 
   private async gemini(messages: ChatMessageDto[], apiKey: string) {
     const specialitesList = SPECIALITES_VALIDES.join(', ');
+    ////Prompt systèmepour guider gemini bach yanalyse les asymtomes 
     const systemPrompt = `Tu es MediBot, assistant medical de MediConnect. Reponds en JSON strict sans markdown:
 {"reply":"<reponse empathique en langue du patient>","specialite":"<ENUM ou null>"}
 Specialites: ${specialitesList}

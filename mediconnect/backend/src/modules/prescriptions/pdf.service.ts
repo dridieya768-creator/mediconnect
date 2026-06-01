@@ -34,11 +34,33 @@ export class PdfService {
         doc.fontSize(20).fillColor('#1a56db').text('MediConnect', 50, 50);
         doc.fontSize(10).fillColor('#64748b').text('Plateforme e-Santé', 50, 75);
 
-        doc.fontSize(18).fillColor('#0f172a').text('ORDONNANCE MÉDICALE', 200, 50, { align: 'right', width: 200 });
-        doc.fontSize(10).fillColor('#64748b').text(
-          `N° ${(prescription.qrCode || prescription.id || '').toUpperCase()}`,
-          200, 75, { align: 'right', width: 200 }
-        );
+        
+doc.fontSize(13)
+   .fillColor('#0f172a')
+   .font('Helvetica-Bold')
+   .text(
+      'ORDONNANCE MÉDICALE',
+      340,
+      42,
+      {
+        width: 200,
+        align: 'center'
+      }
+   );
+
+
+doc.fontSize(10)
+   .fillColor('#64748b')
+   .font('Helvetica')
+   .text(
+      `N° QR-ORD : ${(prescription.qrCode || prescription.id || '').toUpperCase()}`,
+      340,
+      72,
+      {
+        width: 200,
+        align: 'center'
+      }
+   );
 
         doc.moveTo(50, 100).lineTo(545, 100).strokeColor('#1a56db').lineWidth(2).stroke();
 
@@ -46,11 +68,11 @@ export class PdfService {
         doc.fontSize(9).fillColor('#94a3b8').font('Helvetica').text('MÉDECIN PRESCRIPTEUR', 50, 115);
         doc.fontSize(13).fillColor('#0f172a').font('Helvetica-Bold').text(`Dr. ${doctorName}`, 50, 130);
 
-        // Colonne Patient (x=220)
+        
         doc.fontSize(9).fillColor('#94a3b8').font('Helvetica').text('PATIENT', 220, 115);
         doc.fontSize(13).fillColor('#0f172a').font('Helvetica-Bold').text(patientName, 220, 130);
 
-        // Dates sous patient
+        
         const issuedStr = prescription.issuedAt
           ? new Date(prescription.issuedAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })
           : '—';
@@ -142,7 +164,7 @@ export class PdfService {
           y += 10;
         }
 
-        // ── Bon d'analyse médicale ────────────────────────────
+        // Bon d'analyse médicale 
         const analyses = prescription.analysisRequests ?? [];
         if (analyses.length > 0) {
           y += 10;

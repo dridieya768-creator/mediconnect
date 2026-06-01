@@ -21,7 +21,7 @@ export class UploadService {
       
       fs.writeFileSync(filePath, file.buffer);
 
-      
+    
       const url = `/uploads/${folder}/${fileName}`;
       return { url };
     } catch (error) {
